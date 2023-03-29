@@ -1,0 +1,30 @@
+- name: Modules
+  items:
+  - name: Core
+    href: Core/
+    homepage: Core/README.md
+#    href: Core/toc.yml
+#    homepage: Core/README.md
+#  - name: Transforms QVVS
+#    href: Transforms/toc.yml
+#    homepage: Transforms/README.md
+#  - name: Psyshock
+#    href: Psyshock/toc.yml
+#    homepage: Psyshock/README.md
+#  - name: Myri
+#    href: Myri/toc.yml
+#    homepage: Myri/README.md
+#  - name: Kinemation
+#    href: Kinemation/toc.yml
+#    homepage: Kinemation/README.md
+#- name: Articles
+#  items:
+#  - name: How-To Guides
+#    href: How-To Guides/toc.yml
+#  - name: Optimization Adventures
+#    href: Optimization Adventures/toc.yml
+#  - name: FAQ
+#    href: FAQ/toc.yml
+  homepage: README.html
+- name: API Reference
+  href: api/
