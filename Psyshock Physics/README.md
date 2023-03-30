@@ -24,10 +24,10 @@ First, let me introduce you to the decisions that make no sense to me:
 -   A simulation requires all steps to be ticked rather than allowing each step
     to be ticked manually by the user
 -   Simulation callbacks are single-threaded
--   Physics is very decoupled from ECS, trashing the Transform system and using
-    layers rather than the superior ECS query system; yet simultaneously, it is
-    tightly coupled as colliders use blobs, `RigidBody` has an `Entity` field,
-    and all of its authoring uses GameObjectConversion
+-   Physics is very decoupled from ECS, trashing the transform hierarchy and
+    using layers rather than the superior ECS query system; yet simultaneously,
+    it is tightly coupled as colliders use blobs, `RigidBody` has an `Entity`
+    field, and all of its authoring uses baking
 
 Now, to understand why this is terrible for me, let me present to you a game
 idea a friend of mine and I came up with during a game jam:
@@ -160,20 +160,15 @@ this trade any day.
 As a bonus, Psyshock colliders are constructable and copyable on the stack. That
 makes them a lot more pleasant to work with.
 
-*Feedback Request: I am still considering options for complex mutable colliders.
-Originally I was thinking requiring a scripting define which modifies the API to
-require an EcsContext object. But now I am thinking of implementing this using
-planned Blob safety management utilities in Core. I would love to hear your
-thoughts on this!*
-
 ### Transform Hierarchy Support
 
 The physics algorithms apply a local to world space conversion when capturing
 data from entities. They will also support world to local space conversion on
 simulation write back when simulation is supported.
 
-In a future release, dynamic scaling will also be fully automatic. Currently,
-you can manually scale a collider with the `PhysicsScale` component.
+Other transform features like scale and stretch are also supported and work
+automatically. For shapes which don’t have well-defined stretch algorithms, you
+can choose from one of several approximation methods.
 
 ### Infinite Layers
 
@@ -190,6 +185,7 @@ So instead of building two large broadphase structures with layer masks and then
 untangling the results, you can build a [CollisionLayer](Collision%20Layers.md)
 per unique `EntityQuery` (or from arbitrary data from a job). Then you can ask
 for all collisions within a single layer or for the collisions between layers.
+You can also query against each layer separately.
 
 ### FindPairs – A Multibox Broadphase
 
@@ -319,9 +315,6 @@ with Psyshock, this can be achieved with little effort.
 
 -   This release is missing quite a few collider shapes, queries, and simulation
     features.
--   `PhysicsScale` is not added when authoring a scaled collider. Instead, the
-    collider’s scale is baked in during conversion.
--   Composite Transform components are not currently supported.
 -   Compound Colliders use linear brute force algorithms and lack an underlying
     acceleration structure. Try to keep the count of primitive colliders down to
     a reasonable amount.
@@ -344,19 +337,14 @@ with Psyshock, this can be achieved with little effort.
 -   Simplified Overlap Queries
 -   Manifold Generation
 -   More Force Equations
--   Collider Improvements
-    -   Allow manipulating the Collider data directly using the specialized type
-        as a ref
 -   Authoring Improvements
     -   Autofitting
-    -   Scale baking options
--   Query Debug Tools
+    -   Stretch mode baking options
+-   More Debug Tools
 -   Debug Gizmo Integration Hooks
     -   If you are an asset developer interested in this, please reach out to me
 
 ## Not-So-Near-Term
 
 -   Simulations (The first piece of this is Manifold Generation)
--   Dual axis broadphase
--   BVH broadphase
--   2D (Need Tiny 2D lighting support)
+-   Spatial hash broadphase

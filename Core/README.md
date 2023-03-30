@@ -321,9 +321,6 @@ about them. An `EntityWith<Prefab>` should probably be instantiated. An
 `EntityWith<LocalToWorld>` is a transform to spawn things at or attach things
 to.
 
-These new types also come with some syntax sugar methods which may make some
-complex code a little more compact and readable.
-
 ### Smart Blobbers
 
 Blob Asset Baking is tough to get right, especially if you want to cache
@@ -360,38 +357,8 @@ do those workarounds anymore.
 Just be warned. It really truly is a gun eager to put a bullet through your
 foot.
 
-### Better Transforms
-
-While building Kinemation, I found a whole bunch of bugs and issues with Unity’s
-transform systems, specifically with how they handle the hierarchy and hierarchy
-updates. So I fixed them.
-
-Improved Transforms is superior in pretty much every way. It resolves bugs with
-Disabled components and prefabs. It has better and more deterministic change
-filtering. And it uses a lazier algorithm for fetching matrices which in the
-worst case still outperforms Unity’s solution by 4%. It is installed by default
-in most bootstraps.
-
-Extreme Transforms is designed for extreme amounts of entities. It uses a
-breadth-first chunk iteration technique for the first 16 depth levels which
-better leverages L2 and L3 and the hardware prefetchers. However, it has a
-sizeable main-thread penalty and struggles when the majority of entity
-hierarchies undergo a structural change each frame. If you have large worker
-thread times for updating the hierarchy transforms, try this out and see if it
-wins you back a few milliseconds.
-
-Both Improved and Extreme Transforms replace `ParentSystem` and run fully in
-Burst. This usually cuts the `ParentSystem` runtime in half during frames where
-hierarchies are instantiated.
-
 ## Known Issues
 
--   There’s a limit to how many generic components you can add at runtime before
-    everything explodes (you’ll rarely hit it in practice). If you want to
-    expand that limit, write a T4 script to generate hundreds of non-generic
-    `IComponentData` types. Your compiler will hate you, but Unity might stop
-    exploding. I’ll take dealing with one enemy over death any day. This will be
-    fixed in the future.
 -   `IManagedComponent` and `ICollectionComponent` are not true components.
     Under the hood, I use generic components to modify the Entity archetypes.
     Expect them to not work with a lot of query and archetype sugar. I do try to
@@ -409,24 +376,13 @@ hierarchies are instantiated.
 
 ## Near-Term Roadmap
 
--   Latios Transforms
-    -   Transforms V2, but with local-only non-uniform scale that affects child
-        positions but not rotations nor scales
 -   Bootstrap Profiles
     -   Allow multiple bootstraps per project for samples and tests
--   Local Allocator
-    -   Custom allocator with a per-element of loop scope
--   Gameplay Toolkit
-    -   Reduce cognitive overhead of DOTS for gameplay programmers
-    -   Hierarchy navigation and modification
-    -   A/B systems
 -   More custom command buffer types
--   Codegen generic components
 -   Improved collection components
     -   Default initialization interface
-    -   Dependency backup/restore for `Entities.ForEach`
     -   Get as ref
-    -   Conversion and serialization
+    -   Inspectors
 -   Profiling tools
     -   Port and cleanup from Lsss
 -   Reflection-free improvements

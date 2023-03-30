@@ -6,8 +6,8 @@ Kinemation is an animation and rendering solution for Entities which aims to
 tightly integrate gameplay and animation for large-scale worlds. Kinemation is
 still under active development, and it has only laid down the foundations
 towards what it aims to achieve. Yet those foundations are already usable in
-projects. As of Unity DOTS 1.0 experimental, no official Entities-based
-animation solution exists.
+projects. As of Unity DOTS 1.0, no official Entities-based animation solution
+exists.
 
 Check out the [Getting Started](Getting%20Started%20-%20Part%201.md) page!
 
@@ -33,10 +33,9 @@ using the same exported bone settings. But there’s one big difference.
 Kinemation provides direct access to the optimized hierarchy buffer, so that you
 can always remain in complete control.
 
-Kinemation is even smart enough to figure out what skinning algorithm your
-shaders use. Whether you use Linear Blend Skinning, Compute Deform, or even
-both, Kinemation will automatically use the correct algorithms to fulfill your
-shaders’ needs.
+Kinemation analyzes your meshes and materials and picks the most likely default
+configurations for its wide array of deformation functionality. But you are also
+able to customize these configurations if necessary.
 
 And if you think all of that sounds amazing, this next one deserves its own
 section!
@@ -46,7 +45,7 @@ section!
 Classical Unity uses baked animation data of a character to figure out if it is
 on screen. But when you start procedurally stretching bones outside the confines
 of the baked animations, Unity might think your character is out of view when
-its stretched out arms are right in front of the camera.
+your character’s stretched out arms are right in front of the camera.
 
 Kinemation doesn’t care how your character’s bones got where they are. It will
 find a bounding box around all your character’s vertices and not much else. It
@@ -56,6 +55,10 @@ positions and a small table to find a suitable bounding box.
 
 You don’t need to do anything. It works automatically using the full potential
 of jobs and Burst.
+
+This mechanism also works with blendshapes, even for weights outside the range
+of [0f, 1f]. And no. It is not just computing all the vertices. It is doing
+something far more efficient.
 
 ### A Better Entities Graphics
 
@@ -93,16 +96,15 @@ filtering order that removes many computationally expensive checks early in the
 pipeline, all while preserving fancy culling features like shadow map splits,
 picking, and highlighting.
 
-### Linear Blend Skinning
+One last thing, Kinemation has **no per-frame GC allocations**!
 
-Entities Graphics removed support for the Linear Blend Skinning node, which was
-a strange decision, because this mode of skinning is much faster. Sure, it is
-limited to only four bones per vertex and won’t work with blend shapes, but for
-lower LODs, the drastic decrease in memory usage and bandwidth make it quite
-viable.
+### Custom Shader Graph Nodes
 
-Kinemation still supports Linear Blend Skinning, and intends to support the
-feature as long as possible.
+Kinemation has more features to offer than what Unity’s built-in Shader Graph
+nodes provide. That’s why Kinemation provides its own. Look for the Latios
+Vertex Skinning node if you want motion vectors using vertex skinning.
+
+![](media/5342e4cc79a0e5d5b1d9b9b640c467b9.png)
 
 ### Easy Binding System
 
@@ -133,8 +135,8 @@ for. You then get a blob asset containing that collection of clips. At runtime
 from any thread, with or without the skeleton at hand, you can sample the clip.
 You can get the local transform of all bones, or just a single bone. And what
 you do with that sampled transform is completely up to you. You can blend it,
-discard it, perform some physics analysis on it, or you know, write it to the
-bone entity’s transform components.
+discard it, perform some physics analysis on it, or you know, write it to your
+entities.
 
 You remain in complete control over animation, and can fully customize it for
 your project’s needs. KISS animation is trivial. And if you want to build an
@@ -166,6 +168,12 @@ defaults, with even smaller compressed sizes.
 
 Now if only Myri had something this good…
 
+### Inertial Motion Blending and Motion Vectors
+
+Kinemation has built-in motion history mechanisms that features like Inertial
+Motion Blending or Motion Vectors can leverage. Both features are baked into
+entities by default, and the latter is fully in your control with a simple API.
+
 ### Native Squash and Stretch
 
 Squash and Stretch is one of the fundamental principles of animation. The most
@@ -173,39 +181,41 @@ natural way to express this using skeletal animation is to non-uniformly scale
 bones. But that doesn’t work in game engines. The issue game engines have is
 that the scaling causes child transforms to shear in undesirable ways.
 
-*Native Support for Squash and Stretch was a key feature in Latios Frameowrk
-0.5, but has been temporarily removed in 0.6. It is being redesigned to work
-out-of-the-box in 0.7 with the new Transform system which will be available in
-that version.*
+Non-shearing stretch is built into many features of the Latios Framework, and
+Kinemation takes full advantage of it to deliver the juiciest of animations.
+
+### Lots of Features
+
+While the above features might be the most impactful, Kinemation has plenty more
+to offer. **Blend Shapes** offer an alternative to skeletal animation. **Dual
+Quaternion Skinning** is available in both vertex and compute flavors and even
+works for scale and stretch. **Dynamic Meshes** let you animate the vertices
+directly in Burst jobs. **Enable Toggles** let you quickly toggle the visibility
+of entities based on gameplay without sync points. Both exposed and optimized
+skeletons support **attachments**, including nested skeletons.
+
+### Performance Guarantee
+
+Except for Android devices which often have crippling GPU limitations,
+Kinemation is **fast**! No other ECS animation solution offers the same level
+flexibility at the scale Kinemation can achieve. If you aren’t satisfied, report
+a bug!
 
 ## Known Issues
 
--   Kinemation only supports desktop platforms. While the ACLUnity native plugin
-    is expected to work across all platforms, I do not have the capability to
-    compile and test for other platforms. If you would like to see Kinemation
-    support your target platform, please reach out to me!
--   Kinemation supports a max hierarchy count of 341. It can go a little higher
-    depending on which meshes are bound. Higher amounts should be possible in a
-    future release.
+-   Kinemation only supports desktop platforms out-of-the-box. While the
+    ACLUnity native plugin is expected to work across all platforms, you will
+    have to compile the library yourself. If you would like to help Kinemation
+    support your target platform officially, please reach out!
 -   Occlusion Culling is not supported. Support should be possible in a future
     release.
 -   Entities Graphics stats don’t work. Kinemation will provide its own solution
     for this in a future release which will be more extensible and customizable.
--   Skeletons are uploaded to the GPU multiple times in a frame if different
-    LODs are used in different culling passes.
 
 ## Near-Term Roadmap
 
--   Procedural Mesh Baking
--   Native Squash and Stretch
--   Skinned Motion Vectors
--   Animation Aspects
--   Forced Optimized Skeletons Mode from Exposed Game Objects
--   Pose sampling for exposed skeletons
-    -   Significantly faster
-    -   May require local allocator
--   Blend Shapes
--   Dual Quaternion Skinning
--   Support for larger hierarchies
+-   Forced Optimized Skeleton Baking from Exposed Game Objects
 -   Stats and Troubleshooting Diagnostics
 -   IK Utilities
+-   Animation Override Layers
+-   Skinning Normal Correction

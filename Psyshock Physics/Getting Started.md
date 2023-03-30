@@ -1,8 +1,8 @@
 # Getting Started with Psyshock Physics
 
-This is the sixth preview version I am releasing out to the public. It currently
-only supports a small number of use cases. The number of supported use cases
-will grow with each release.
+This is the seventh preview version I am releasing out to the public. It
+currently only supports a small number of use cases. The number of supported use
+cases will grow with each release.
 
 ## Authoring
 
@@ -12,8 +12,8 @@ Collider, or Mesh Collider to the GameObject you wish to convert. Mesh Colliders
 must have their convex checkbox checked.
 
 There’s one exception. I added support for Compound Colliders and this uses the
-new Collider Authoring component. Though you can also create them by attaching
-more than one Physx collider component to a Game Object.
+new Collider Authoring component. But you can also create them by attaching more
+than one Physx collider component to a Game Object.
 
 ## Colliders in code
 
@@ -63,7 +63,7 @@ the start point to get inside hit info.*
 ## Simple Modifiers
 
 -   Current
-    -   Physics.ScaleCollider
+    -   Physics.ScaleStretchCollider
     -   Physics.CombineAabb
 
 ## Scheduling Jobs
@@ -149,20 +149,3 @@ with `PhysicsComponentLookup` which can be implicitly constructed from a
         parallelization. This is unsafe and should only be used for marking
         colliders as hit or for writing to an
         `EntityCommandBuffer.ParallelWriter`
-
-## Why is FindPairs so slow?
-
-Great question! Psyshock internally schedules multiple generic jobs for
-FindPairs dynamically. The Burst Compiler currently does not support generic
-jobs without declarations of their concrete types.
-
-Beginning in Psyshock 0.2.2, the dispatcher was updated to implicitly generate
-concrete instances of these generic jobs. However, this only works if a concrete
-instance of `IFindPairsProcessor` is passed into the FindPairs function.
-Invoking FindPairs in a generic context with a generic `IFindPairsProcessor` is
-not supported by Burst.
-
-Prior to Psyshock 0.2.2, the dispatcher relied on a tool called BurstPatcher.
-However, BurstPatcher is now removed.
-
-With Burst, FindPairs typically runs 20x – 100x faster.
