@@ -40,23 +40,16 @@ The following systems are created by the `LatiosInitializationSystemGroup`:
 -   [MergeBlackboardsSystem](Blackboard%20Entities.md) – Merges
     `BlackboardEntityData` entities into the `sceneBlackboardEntity` and
     `worldBlackboardEntity`
--   [ManagedComponentsReactiveSystemGroup](Collection%20and%20Managed%20Struct%20Components.md)
-    – This is a `RootSuperSystem` that creates multiple concrete instances of
-    generic systems to react to each `IManagedComponent` and
-    `ICollectionComponent` type. Due to `World` not properly implementing
-    extendible `IDisposable`, this system group is also responsible for
-    disposing of the `CollectionComponentStorage` belonging to the `LatiosWorld`
-    inside of `OnDestroy()`. The generic systems this system creates are as
-    follows:
-    -   ManagedComponentCreateSystem\<T\>
-    -   ManagedComponentDestroySystem\<T\>
-    -   CollectionComponentCreateSystem\<T\>
-    -   CollectionComponentDestroySystem\<T\>
+-   [ICollectionComponentsReactiveSystem and
+    ManagedStructComponentsReactiveSystem](Collection%20and%20Managed%20Struct%20Components.md)
+    – These are `RootSuperSystem`s that synchronize `ICollectionComponent` and
+    `IManagedStructComponent` types.
 -   LatiosWorldSyncGroup – This is a `ComponentSystemGroup` designed for
     application code. Its purpose is to provide a safe location in
     `LatiosInitializationSystemGroup` for application code to execute. Since
-    many systems in `LatiosInitializationSystemGroup` generate sync points, it
-    is common to place systems that induce sync points here and treat
+    many systems in `LatiosInitializationSystemGroup` generate structural change
+    sync points, it is common to place systems that induce structural change
+    sync points via batch `EntityManager` calls here and treat
     `LatiosInitializationSystemGroup` as a mega sync point.
 
 ## System Ordering in LatiosInitializationSystemGroup
@@ -72,7 +65,8 @@ Currently, the `LatiosInitializationSystemGroup` orders itself as follows:
 -   [Unity SceneSystemGroup or ConvertToEntitySystem, whichever is latter]
 -   LatiosWorldSyncGroup
     -   MergeBlackboardsSystem
-    -   ManagedComponentReactiveSystemGroup
+    -   ManagedStructComponentReactiveSystem
+    -   CollectionComponentReactiveSystem
     -   [End OrderFirst region]
 -   [Remaining Injected Systems]
 -   EndInitializationEntityCommandBufferSystem
@@ -87,16 +81,16 @@ ECS recognizes them, assuming they haven’t been injected already.
 
 Second, it creates a `LatiosWorldUnmanagedSystem`, which is an unmanaged system
 that does not update but rather governs the lifecycle of the
-`LatiosWorldUnmanagedImpl`. The impl creates instances of
-`ManagedStructComponentStorage` and `CollectionComponentStorage`. As their names
-imply, these objects store the collection components and managed struct
-components that can be attached to entities. `CollectionComponentStorage` also
-stores the `JobHandle`s with each collection component.
-`ManagedStructComponentStorage` is lazily initialized to ensure it is
-initialized in a non-Burst-compiled context. `CollectionComponentStorage` can be
-initialized fully within Burst.
+`LatiosWorldUnmanagedImpl`. During the system’s `OnCreate()`, it creates for the
+impl an instance of `CollectionComponentStorage`. As its name implies, this
+object stores the collection components that can be attached to entities.
+`CollectionComponentStorage` also stores the `JobHandle`s with each collection
+component. `CollectionComponentStorage` can be initialized fully within Burst.
+`ManagedStructComponentStorage` on the other hand is lazily initialized to
+ensure it is initialized in a non-Burst-compiled context, and is not constructed
+during the system `OnCreate()`.
 
-Third, it creates `worldBlackboardEntity`.
+Third, the `LatiosWorldUnmanagedSystem` creates `worldBlackboardEntity`.
 
 Fourth, it creates a cache of the collection component dependencies pending
 update of an executing `SystemState.Dependency`’s final value. The cache is

@@ -30,7 +30,7 @@ namespace Dragons.Authoring
         public AnimationClip clip;
     }
 
-    struct SingleClipSmartBakeItem : ISmartBakeItem<SingleClipAuthoring>
+    [TemproaryBakingType] struct SingleClipSmartBakeItem : ISmartBakeItem<SingleClipAuthoring>
     {
         SmartBlobberHandle<SkeletonClipSetBlob> blob;
 
@@ -55,7 +55,11 @@ namespace Dragons.Authoring
 }
 ```
 
-The first thing you may notice is the new interface `ISmartBakeItem`. This
+The first thing you may notice is the `[TemporaryBakingType]` attribute on the
+`SingleClipSmartBakeItem`. Don’t worry about the details of this. Just know that
+this is required for proper functionality.
+
+The second thing you may notice is the new interface `ISmartBakeItem`. This
 interface defines a method `Bake()` which is called when the `SmartBaker`
 executes. At this point, the “bake item” is default-initialized.
 
@@ -103,7 +107,7 @@ receive requests from `Baker`s, and the results are only made available to
 baking systems. To avoid making users write custom baking systems, Smart Bakers
 automatically generate the code for each step, and provide a stateful “bake
 item” to retain context between steps. The “bake item” is actually an
-`IComponentData` decorated with [TemporaryBakingType] which is added to a
+`IComponentData` decorated with `[TemporaryBakingType]` which is added to a
 Baking-Only Entity created by the Smart Baker. By making temporary entities,
 each authoring component can have its own bake item.
 
@@ -322,7 +326,7 @@ public class DigitsAuthoring : MonoBehaviour
     public int[] digits = { 3, 8, 1 };
 }
 
-public struct DigitsBakeItem : ISmartBakeItem<DigitsAuthoring>
+[TemporaryBakingType] public struct DigitsBakeItem : ISmartBakeItem<DigitsAuthoring>
 {
     SmartBlobberHandle<DigitsBlob> blob;
 
@@ -443,3 +447,8 @@ hierarchy information of an optimized Animator.
 The third advantage is that input transformations can be reasoned about in an
 ECS fashion. It may help break down the problem for extremely complex blob
 assets.
+
+And lastly, using `BlobAssetStore` directly in a baking system can expose many
+pitfalls that are present at the time of writing this, like lack of Burst
+support without internal access, or double dispose bugs. Smart Blobbers deal
+with this for you.
