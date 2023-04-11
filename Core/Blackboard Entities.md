@@ -20,15 +20,21 @@ You may however find it advantageous to use these tags in queries like in the
 following example:
 
 ```csharp
-var matchingCard = sceneBlackboardEntity.GetComponentData<Card>();
-
-Entities.WithNone<SceneBlackboardTag>().ForEach((Entity entity, int entityInQueryIndex, in Card card) =>
+[BurstCompile]
+public void OnUpdate(ref SystemState state)
 {
-    if (card == matchingCard)
+    var dcb = latiosWorld.syncPoint.CreateDestroyCommandBuffer();
+
+    var matchingCard = latiosWorld.sceneBlackboardEntity.GetComponentData<Card>();
+
+    foreach ((var card, var entity) in SystemAPI.Query<Card>().WithEntityAccess().WithNone<SceneBlackboardTag>())
     {
-        ecb.DestroyEntity(entityInQueryIndex, entity);
+        if (card.Equals(matchingCard))
+        {
+            dcb.Add(entity);
+        }
     }
-}).ScheduleParallel();
+}
 ```
 
 ## BlackboardEntity Type
