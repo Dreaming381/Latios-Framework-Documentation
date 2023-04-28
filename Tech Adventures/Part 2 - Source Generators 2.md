@@ -1,4 +1,4 @@
-# Tech Adventures: Source Generators Part 1
+# Tech Adventures: Source Generators Part 2
 
 Last time we investigated source generators, I encountered an issue about not
 finding a particular DLL when the source generators tried to run. As you can
