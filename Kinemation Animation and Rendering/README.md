@@ -47,9 +47,9 @@ on screen. But when you start procedurally stretching bones outside the confines
 of the baked animations, Unity might think your character is out of view when
 your character’s stretched out arms are right in front of the camera.
 
-Kinemation doesn’t care how your character’s bones got where they are. It will
-find a bounding box around all your character’s vertices and not much else. It
-does this using a special precomputation step during baking which maps
+Kinemation doesn’t care how your character’s bones got to where they are. It
+will find a bounding box around all your character’s vertices and not much else.
+It does this using a special precomputation step during baking which maps
 relationships between vertices and bones. From this, it only needs the bone
 positions and a small table to find a suitable bounding box.
 
@@ -170,16 +170,16 @@ Now if only Myri had something this good…
 
 ### Inertial Motion Blending and Motion Vectors
 
-Kinemation has built-in motion history mechanisms that features like Inertial
-Motion Blending or Motion Vectors can leverage. Both features are baked into
-entities by default, and the latter is fully in your control with a simple API.
+Kinemation has built-in motion history mechanisms that features such as Inertial
+Motion Blending and Motion Vectors can leverage. Both features are baked into
+entities by default, and the former is fully in your control with a simple API.
 
 ### Native Squash and Stretch
 
 Squash and Stretch is one of the fundamental principles of animation. The most
 natural way to express this using skeletal animation is to non-uniformly scale
 bones. But that doesn’t work in game engines. The issue game engines have is
-that the scaling causes child transforms to shear in undesirable ways.
+that the scaling causes rotated child transforms to shear in undesirable ways.
 
 Non-shearing stretch is built into many features of the Latios Framework, and
 Kinemation takes full advantage of it to deliver the juiciest of animations.
@@ -187,12 +187,11 @@ Kinemation takes full advantage of it to deliver the juiciest of animations.
 ### Lots of Features
 
 While the above features might be the most impactful, Kinemation has plenty more
-to offer. **Blend Shapes** offer an alternative to skeletal animation. **Dual
-Quaternion Skinning** is available in both vertex and compute flavors and even
-works for scale and stretch. **Dynamic Meshes** let you animate the vertices
-directly in Burst jobs. **Enable Toggles** let you quickly toggle the visibility
-of entities based on gameplay without sync points. Both exposed and optimized
-skeletons support **attachments**, including nested skeletons.
+to offer. **Blend Shapes** offer an alternative to skeletal animation. **Dynamic
+Meshes** let you animate the vertices directly in Burst jobs. **Enable Toggles**
+let you quickly toggle the visibility of entities based on gameplay without sync
+points. Both exposed and optimized skeletons support **attachments**, including
+nested skeletons.
 
 ### Performance Guarantee
 
@@ -214,8 +213,11 @@ a bug!
 
 ## Near-Term Roadmap
 
+-   Dual Quaternion Skinning (already implemented, but currently disabled
+    because it is bugged)
 -   Forced Optimized Skeleton Baking from Exposed Game Objects
 -   Stats and Troubleshooting Diagnostics
 -   IK Utilities
+-   Cycle-Matching Utilities
 -   Animation Override Layers
 -   Skinning Normal Correction

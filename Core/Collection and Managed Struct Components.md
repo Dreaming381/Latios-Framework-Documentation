@@ -74,7 +74,7 @@ You can find the add and remove methods on the `LatiosWorldUnmanaged` or
 these extensions require an additional lookup and are consequently less
 performant.
 
-### Indirect Mode – AssociatedComponentType
+### Indirect Mode – ExistComponent
 
 Sometimes you need to use an `EntityCommandBuffer` to instantiate entities or
 add components that you wish to have a collection component. Or sometimes you

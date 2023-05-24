@@ -4,7 +4,6 @@
 
 In *Project Settings*, under the *Player* tab, in *Other Settings* and under the
 *Configuration* header, set the *API Compatibility Level* to *.NET Standard*.
-Also, you may need to add the scripting define symbol `ENABLE_TRANSFORM_V1`.
 
 ### Mono
 
@@ -24,7 +23,7 @@ You can create one from one of the templates using the Project folder’s create
 menu and selecting *Latios-\>Bootstrap*.
 
 For beginners, it is recommended to choose the *Standard-Injection Workflow*
-variant, as this matches the default Unity behavior while brining in all Latios
+variant, as this matches the default Unity behavior while bringing in all Latios
 Framework features.
 
 For those who prefer explicit ordering of systems, you may find the *Explicit
@@ -35,7 +34,8 @@ info on this workflow.
 
 For NetCode Projects, the Latios Framework will detect the NetCode package and
 enable additional C\# files for compilation. One of these provides a dedicated
-NetCode bootstrap file.
+NetCode bootstrap file. *Note: NetCode is not officially supported at this
+time.*
 
 After the bootstrap is created, it can be
 [customized](Customizing%20the%20Bootstraps.md).

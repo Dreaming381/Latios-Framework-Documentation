@@ -1,6 +1,6 @@
 # Colliders
 
-In version 0.6.0 of Psyshock, only a small subset of colliders are supported,
+In version 0.7.0 of Psyshock, only a small subset of colliders are supported,
 and authoring for these are not complete.
 
 -   Sphere Collider
@@ -22,25 +22,25 @@ the component is enabled:
 
 ### Sphere Collider
 
-Use the PhysX (legacy) *Sphere Collider*.
+Use the PhysX *Sphere Collider*.
 
 ![](media/edee1c765d995b12f65bff2dfb3a5d35.png)
 
 ### Capsule Collider
 
-Use the PhysX (legacy) *Capsule Collider*.
+Use the PhysX *Capsule Collider*.
 
 ![](media/85df620e9bdc341d5b9d0978112189c1.png)
 
 ### Box Collider
 
-Use the PhysX (legacy) *Box Collider*.
+Use the PhysX *Box Collider*.
 
 ![](media/87073ef01be44817f3ceed69d82cfdeb.png)
 
 ### Convex Collider
 
-Use the PhysX (legacy) *Mesh Collider* and ensure *Convex* is checked.
+Use the PhysX *Mesh Collider* and ensure *Convex* is checked.
 
 ![](media/de907201d91649d712e91c0b54d2f7d3.png)
 
@@ -111,7 +111,9 @@ void TranslateColliderInColliderSpace(ref Collider collider, float3 translation)
 ### Sphere Collider
 
 A `SphereCollider` is a struct which contains a `float3 center` and a `float
-radius`, both of which are public fields.
+radius`, both of which are public fields. It also contains a stretch mode which
+dictates how it reacts to stretched transforms. The default displaces the
+sphere’s center point.
 
 ### Capsule Collider
 
@@ -128,11 +130,17 @@ the following expression:
 float height = math.distance(capsule.pointA, capsule.pointB) + 2f * capsule.radius;
 ```
 
+The capsule also contains a stretch mode which dictates how it reacts to
+stretched transforms. The default displaces both interior points, stretching the
+cylindrical part of the capsule and potentially changing the capsule’s
+orientation.
+
 ### Box Collider
 
 A `BoxCollider` is a struct which defines an axis-aligned box in local space. It
 contains a `float3 center`, and a `float3 halfWidth`, which is the distances
-from the center to either face along each axis.
+from the center to either face along each axis. The box collider reacts to
+stretched transforms exactly.
 
 ### Convex Collider
 
@@ -146,7 +154,7 @@ radius disabled such that corners and edges are sharp. It can be created via
 baking a *Mesh Collider* component or via a Smart Blobber.
 
 A `ConvexCollider` exposes a `public float3 scale` which can apply a non-uniform
-scale to the collider.
+scale to the collider. And it reacts to stretched transforms exactly.
 
 ### Compound Collider
 
@@ -169,7 +177,10 @@ There are three ways to create a `CompoundColliderBlob`:
 
 A `CompoundCollider` also exposes a `public float scale` which is a uniform
 scale factor to be applied to the collider. This scale factor not only scales
-the collider sizes but also their relative offsets to each other.
+the collider sizes but also their relative offsets to each other. It also
+contains a `public float3 stretch` which supports transform stretching. By
+default, the `stretch` vector will be rotated into each sub-collider’s local
+space and then applied to that sub-collider.
 
 ### Triangle Collider (Experimental)
 

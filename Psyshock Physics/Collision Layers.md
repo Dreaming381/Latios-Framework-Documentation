@@ -59,7 +59,7 @@ has three overloads. All overloads return a `BuildCollisionLayerConfig`. The
 config does not internally allocate any native containers, so it is safe to
 discard.
 
-#### (EntityQuery query, ComponentSystemBase system)
+#### (EntityQuery query, BuildCollisionLayerTypeHandles handles)
 
 This overload allows you to build a `CollisionLayer` from an `EntityQuery`.
 Currently, the only requirement of the `EntityQuery` is that it specifies a
@@ -67,27 +67,22 @@ Currently, the only requirement of the `EntityQuery` is that it specifies a
 correctness by calling ` PatchQueryForBuildingCollisionLayer()` in the
 `FluentQuery` chain.
 
-The `system` argument must be an actively running system. The builder uses this
-to obtain necessary `ComponentTypeHandle`s. It obtains the following read-only
-handles:
+The `handles` argument must be provided by an actively running system. The
+builder uses this to obtain necessary `ComponentTypeHandle`s. It obtains the
+following read-only handles:
 
 -   Collider
--   Translation
--   Rotation
--   PhysicsScale
--   Parent
--   LocalToWorld
 -   Entity
+-   WorldTransform / LocalToWorld
 
-These handles are obtained immediately during the call.
+You should cache these handles inside of `OnCreate()` and remember to `Update()`
+them each `OnUpdate()`.
 
-You may also cache these handles inside of a `BuildCollisionLayerTypeHandles`
-member in `OnCreate()` and use those instead. Just remember to `Update()` them.
-
-`remapSrcIndices` arrays refer to the `entityInQueryIndex` of the `EntityQuery`.
+`srcIndices` arrays refer to the `entityInQueryIndex` of the `EntityQuery`.
 
 **Warning: This method will call** `EntityQuery.CalculateEntityCount`
-**immediately, which can force completion of jobs if using a ChangeFilter.**
+**immediately, which can force completion of jobs if using a Change Filter or
+Enabled Components.**
 
 #### (NativeArray\<ColliderBody\> bodies)
 
@@ -140,23 +135,6 @@ purposes.
 This method sets the `max` values of `worldAabb` property of the
 `CollisionLayerSettings`. This method should primarily be used for prototyping
 purposes.
-
-#### WithRemapArray(NativeArray\<int\> remapSrcIndices)
-
-This method specifies that the passed-in array should be populated with the
-source indices of the resulting order of elements in the `CollisionLayer`.
-
-When safety checks are enabled, an exception is thrown if the size of the array
-does not match the number of elements to be processed.
-
-#### WithRemapArray(out NativeArray\<int\> remapSrcIndices, Allocator allocator)
-
-This method allocates an array that will be populated with the source indices of
-the resulting order of elements in the `CollisionLayer`.
-
-The array is not populated until the construction of the `CollisionLayer` is
-complete. However, this overload guarantees the array is allocated to the
-correct size. This method supports custom allocators.
 
 ### Step 3: RunXXX / ScheduleXXX – Choose your scheduler
 
@@ -215,12 +193,11 @@ of a lack of reusing temp memory in the single-threaded use-case.
 
 ### Sort your Data
 
-In case you have a `remapSrcIndices` and want to use it to reorder your data
-such that it aligns with the `CollisionLayer`, here’s an example of how to do
-it:
+In case you want to reorder your data such that it aligns with the
+`CollisionLayer`, here’s an example of how to do it:
 
 ```csharp
-Physics.BuildCollisionLayer(query, this).WithRemapArray(out var remapSrcIndices, Allocator.TempJob).Run(out var layer, Allocator.TempJob);
+Physics.BuildCollisionLayer(query, this).Run(out var layer, Allocator.TempJob);
 var translations = query.ToComponentDataArray<Translation>(Allocator.TempJob);
 var reorderedTranslations = new NativeArray<Translation>(translations.Length, Allocator.TempJob, NativeArrayOptions.UninitializedMemory);
 
@@ -228,7 +205,7 @@ Job.WithCode(() =>
 {
     for (int i = 0; i < reorderedTranslations.Length; i++)
     {
-        reorderedTranslations[i] = translations[remapSrcIndices[i]];
+        reorderedTranslations[i] = translations[layer.srcIndices[i]];
     }
 }).Run();
 ```
@@ -285,10 +262,14 @@ finds a pair of overlapping `Aabb`s. It contains the following properties:
 -   bodyB – The `ColliderBody` representing the second element in the pair
 -   layerA – The full `CollisionLayer` the first element in the pair comes from
 -   layerB – The full `CollisionLayer` the second element in the pair comes from
--   bodyAIndex – The index of the first element in the pair as stored in its
+-   bodyIndexA – The index of the first element in the pair as stored in its
     `CollisionLayer`
--   bodyBIndex – The index of the second element in the pair as stored in its
+-   bodyIndexB – The index of the second element in the pair as stored in its
     `CollisionLayer`
+-   sourceIndexA – The index of the first element in the pair relative to the
+    `CollisionLayer`’s created source.
+-   sourceIndexB – The index of the second element in the pair relative to the
+    `CollisionLayer`’s created source.
 -   jobIndex – An index for deterministically writing to
     `EntityCommandBuffer.ParallelWriter` and similar API
 
@@ -465,3 +446,9 @@ as disable drawing non-overlapping colliders.
 
 If you need a Burst-safe method to draw an AABB just like the previous methods,
 you can use `PhysicsDebug.DrawAABB()`.
+
+### Draw a Collider
+
+If you need a Burst-safe method to draw a transformed collider, you can use
+`PhysicsDebug.DrawCollider()`. Some overloads contain a `segmentsPerPi` argument
+for specifying the amount of detail to be drawn for round collider types.

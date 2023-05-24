@@ -10,7 +10,7 @@ behavior or performance. Transforms affect nearly every aspect of a project.
 Picking the correct one is important.
 
 -   Cached QVVS
-    -   Extreme Transforms Augmentation (Not yet implemented)
+    -   Extreme Transforms Augmentation
 -   Non-cached QVVS (Not yet implemented)
     -   Extreme Transforms Augmentation (Not yet implemented)
 -   Unity Transforms (Not yet implemented)
@@ -59,8 +59,8 @@ component.
 Compared to its cached counterpart, Non-cached QVVS omits the
 `ParentToWorldTransform` and `TransformAspect` in order to reduce memory and
 computation cost. However, this may make it more difficult to develop with as
-data may be more stale and writing transforms requires knowledge of the
-hierarchy state by the user.
+the `WorldTransform` may be more stale and writing transforms requires knowledge
+of the hierarchy state by the user.
 
 Entity sizes are identical to cached, except that child entities only require 80
 bytes excluding `Parent` and `Child` components.
@@ -83,7 +83,7 @@ matrix-centric workflow. There is a `LocalTransform` component and a
 
 The `DynamicBuffer<Child>` has an in-chunk capacity of 16, requiring 144 bytes
 of chunk space. `LocalToWorld` is also 16 bytes larger than a QVVS because it
-uses a `float4x4` instead of a `float3x4`. The systems have been plagued with
+uses a `float4x4` instead of a `float3x4`. The systems may be plagued with
 determinism flaws with regards to its hierarchy. Entity in chunk order and
 change filters are not deterministic. In addition, because it is matrix-based,
 additional computation is required for accessing world-space transform data for

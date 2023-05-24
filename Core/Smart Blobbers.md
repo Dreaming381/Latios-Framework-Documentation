@@ -36,7 +36,7 @@ namespace Dragons.Authoring
 
         public bool Bake(SingleClipAuthoring authoring, IBaker baker)
         {
-            baker.AddComponent<SingleClip>();
+            baker.AddComponent<SingleClip>(baker.GetEntity(TransformUsageFlags.Dynamic));
             var clips = new NativeArray<SkeletonClipConfig>(1, Allocator.Temp);
             clips[0]  = new SkeletonClipConfig { clip = authoring.clip, settings = SkeletonClipCompressionSettings.kDefaultSettings };
             blob      = baker.RequestCreateBlobAsset(baker.GetComponent<Animator>(), clips);

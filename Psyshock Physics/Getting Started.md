@@ -102,10 +102,6 @@ The settings are given as follows:
 performing queries across multiple* `CollisionLayer`*s. A safety check exists to
 detect this when safety checks are enabled.*
 
-You can also create or pass in a `remapSrcArray` which will map indices in
-`FindPairsResult` to the source indices of either your `EntityQuery` or
-`NativeArray`s.
-
 Lastly, after customizing things the way you want, you can call one of the many
 schedulers:
 
@@ -117,6 +113,15 @@ schedulers:
 
 *Feedback Request: Anyone have a better name for
 PatchQueryForBuildingCollisionLayer?*
+
+## Using Collision Layers
+
+Collision Layers can be passed into jobs as `[ReadOnly]` and queried. You can
+fire raycasts at them, or colliders, or perform distance queries. You can also
+iterate through the colliders and all their data via the `colliderBodies`
+property. Note that these bodies will be spatially reordered relative to how
+they were created. Use the `srcIndices` property to get the original creation
+index (`entityInQueryIndex` or `ColliderBody` array index).
 
 ## Using FindPairs
 

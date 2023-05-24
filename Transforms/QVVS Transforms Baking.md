@@ -55,7 +55,8 @@ A `Renderable` entity will always receive a `WorldTransform` component. If the
 entity does not have a parent that has the `Dynamic` flag nor has the `Dynamic`
 flag itself, then `WorldTransform` will be the only component of the four to
 exist once the baking system completes. Otherwise, it is treated as if it were
-`Dynamic`.
+`Dynamic`. This is a good flag for bakers that know the transform will need to
+be read but may or may not need to move.
 
 ### Dynamic
 
@@ -86,3 +87,9 @@ comes with one side-effect, in that it will also fail to remove non-requested
 components, which may result in incorrect results during incremental baking.
 Such results will be resolved upon closing the subscene. A workaround for this
 issue is planned for a future release.
+
+## Systems
+
+You can add systems to the `UserPreTransformsBakingSystemGroup` to have systems
+which add tag components or set up transforms manually but should interact with
+the rest of the hierarchy.

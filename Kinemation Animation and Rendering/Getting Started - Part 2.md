@@ -18,7 +18,7 @@ The *Avatar Definition* must be set to *Create From This Model* (for this
 example only). *Skin Weights* is dependent on which skinning algorithm you plan
 to use. If you use *Linear Blend Skinning*, you must set it to *Standard (4
 Bones)* as shown above. For *Compute Deform*, you can change it to custom with a
-max weights set up to 128. Leave *Optimize Game Objects* unchecked (for this
+max weights set up to 256. Leave *Optimize Game Objects* unchecked (for this
 example only).
 
 Lastly, turn **off** compression of animation clips.
@@ -35,15 +35,19 @@ significantly reduced without any benefit.*
 
 Kinemation has the same requirements as Entities Graphics in that skinned meshes
 must use a shader that supports one of the two skinning algorithms. You can
-easily create such a shader using *Shader Graph*. Only the *Vertex* block
-matters for skinning. Here’s what such a graph looks like using *Linear Blend
-Skinning*:
+easily create such a shader using *Shader Graph* and the provided deform nodes.
+Only the *Vertex* block matters for skinning. Here’s what such a graph looks
+like using *Latios Vertex Skinning*:
 
-![](media/10a34866524fa5e0995075b5573ab5f6.png)
+![](media/eedd8e6559dc35bc7dedda9dc55c9317.png)
 
-And here’s what it looks like using *Compute Deform*:
+And here’s what it looks like using *Latios Deform*:
 
-![](media/228e54fe61e4aa6308b1b0d74dc505bc.png)
+![](media/1ccddd38ca9b0f7bc01002d59f428565.png)
+
+*Q: What about Unity’s Linear Blend Skinning and Compute Deform nodes?*
+
+*A: Those are supported too, but may have slightly worse performance.*
 
 Once you’ve done that, you will need to create materials using your new shaders.
 
@@ -56,9 +60,7 @@ sure it has an *Animator* component attached. The *Animator* doesn’t need to b
 configured with anything. It just serves as a marker so Kinemation converts it
 to a skeleton.
 
-![](media/41535c619a4504589e7e373af918383a.png)
-
-*Ignore the “Convert To Entity” in this image.*
+![](media/9be6de904e3dc9e73410fc9762c0a304.png)
 
 Now press Play. If everything went right, the character should still be posed,
 but now using Kinemation. I included some of the components on the skeleton in
@@ -69,7 +71,7 @@ Kinemation. But I encourage you to explore the components yourself!
 
 You can even mess with the transform components!
 
-![](media/b36141bbacc99acfb7e6edc96c27675a.gif)
+![](media/2c8bdb8a31c10c3d5f2e6a600a47870e.gif)
 
 ## On to Part 3
 

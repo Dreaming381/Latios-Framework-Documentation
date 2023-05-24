@@ -26,7 +26,7 @@ are complimentary.
 -   Destroyed entities
     -   In Unity, only the entities that were contained within the subscene are
         destroyed
-    -   In Latios, all entities without the `WorldGlobalTag` or the
+    -   In Latios, all entities without the `WorldBlackboardTag` or the
         `DontDestroyOnSceneChangeTag` are destroyed during the pause frame
 -   Querying the scene
     -   In Unity, you can detect if a current scene is loaded using
@@ -38,20 +38,19 @@ are complimentary.
 
 Even when using the synchronous API, scene switching does not occur until the
 next `EarlyUpdate.UpdatePreloading` `PlayerloopSystem`. By default, this occurs
-after `LatiosInitializationSystemGroup` but before
-`LatiosSimulationSystemGroup`. This behavior meant that on the first scene,
-systems in the `LatiosInitializationSystemGroup` would first see the new
-`sceneBlackboardEntity`, but would be the last systems to see it for any other
-scene.
+after `InitializationSystemGroup` but before `SimulationSystemGroup`. This
+behavior meant that on the first scene, systems in the
+`InitializationSystemGroup` would first see the new `sceneBlackboardEntity`, but
+would be the last systems to see it for any other scene.
 
-To resolve this, all top-level Latios system groups stop executing for the
-remainder of the frame. During that time, a special system called
+To resolve this, all top-level system groups stop executing for the remainder of
+the frame. During that time, a special system called
 `DestroyEntitiesOnSceneChangeSystem` will execute, destroying all entities
 (including prefabs and disabled entities) except for the `worldBlackboardEntity`
 and entities with the `DontDestroyOnSceneChangeTag` component.
 
-Afterward, all systems in the `LatiosInitializationSystemGroup` with `OrderFirst
-= true` will run (important if you do hybrid stuff), followed by
+Afterward, all systems in the `InitializationSystemGroup` with `OrderFirst =
+true` will run (important if you do hybrid stuff), followed by
 `SceneManagerSystem` which will update itself with the successful scene load.
 Finally, the remaining systems will execute as if there was never a pause.
 

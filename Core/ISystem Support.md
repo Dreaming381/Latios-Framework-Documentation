@@ -13,14 +13,14 @@ functions do not support Burst compilation.
 ## Fluent Queries
 
 Fluent query API can be accessed via the `SystemState.Fluent()` extension
-method. Currently they do not work in Burst, but will soon.
+method.
 
 ## Latios World
 
 You can get a subset of the `LatiosWorld` API by calling
 `SystemState.GetLatiosWorldUnmanaged()`. It is recommended you do this during
 `OnCreate()` and cache the returned instance in a member field for later use.
-`OnCreate()` can be Burst-compiled.
+Acquiring the `LatiosWorld` can be Burst-compiled.
 
 ## Blackboard Entities
 
@@ -40,7 +40,14 @@ Collection components can be accessed from `LatiosWorldUnmanaged`. If one of the
 associated methods is called from within a system updated by a `SuperSystem`
 method (which is true for root-level `ComponentSystemGroup`s as well as all
 Latios Framework-defined `ComponentSystemGroup` types), automatic dependency
-management is performed using the `Dependency` property of `SystemState`.
+management is performed using the `Dependency` property of `SystemState`. All
+collection component operations are fully Burst-compatibile.
+
+## Managed Struct Components
+
+Managed struct components can also be accessed from LatiosWorldUnmanaged.
+However, these are not Burst-compatible. Still, they can be useful if only plan
+to Burst-compile parts of an ISystem.
 
 ## Sync Point
 

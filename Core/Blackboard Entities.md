@@ -128,7 +128,7 @@ types waiting to be cleaned up.*
 You can author blackboard entities using the `BlackboardEntityData` component or
 its authoring equivalent:
 
-![](media/0c07d270e2c3b7b9620e879901487aa6.png)
+![](media/66f6dfe6742192bcd39b47de654e593f.png)
 
 In the `LatiosInitializationSystemGroup`, the `MergeBlackboardsSystem` will
 iterate through each entity with the `BlackboardEntityData` component and copy

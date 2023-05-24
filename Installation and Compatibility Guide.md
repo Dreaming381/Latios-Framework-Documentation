@@ -6,9 +6,11 @@ framework.
 
 ## Installation
 
-Latios Framework 0.6 uses Transforms V1. If your project does not use Unity
-Physics or NetCode, you need to enable Transforms V1 by adding
-`ENABLE_TRANSFORM_V1` to the scripting define symbols of your project.
+Latios Framework 0.7 uses a custom transform system rather than Unity’s
+Transforms. This system will bake `GameObject` `Transform`s fine, but may pose
+compatibility issues with other ECS packages. If compatibility is a larger
+concern to you than the performance and feature advantages of this custom
+transform system, please get involved in the conversation in the community.
 
 Nearly all Latios Framework functionality requires that the World instance be a
 subclass instance called `LatiosWorld`. If your project currently uses default
@@ -38,9 +40,8 @@ often avoids this problem but otherwise produces the same results.
 
 ## Managing Features
 
-Beginning with Latios Framework 0.5, features are controlled through the use of
-*installers*. You can see these installers in action by looking through the
-bootstrap templates.
+Features are controlled through the use of *installers*. You can see these
+installers in action by looking through the bootstrap templates.
 
 ## Platform Support
 

@@ -1,14 +1,8 @@
 # Fluent Queries
 
 `FluentQuery` is a struct with a fluent builder API for constructing
-`EntityQuery` instances. It streamlines the process of creating EntityQueries in
-`OnCreate()` inside `Subsystem`s and `SuperSystem`s by accounting for strange
-nuances in the Unity API and reducing boilerplate.
-
-There is slightly more boilerplate using `FluentQuery` over storing an
-`EntityQuery` from an `Entities.ForEach`. Use a `FluentQuery` when an
-`Entities.ForEach` does not match the problem, such as in a system that relies
-on `IJobChunk` instead.
+`EntityQuery` instances. It aims to accommodate use cases where partial queries
+across different packages need to be aggregated together.
 
 ## Creating EntityQueries using FluentQuery
 
@@ -34,15 +28,6 @@ The primary methods for application code are provided as follows:
     -   If any component is repeated in the “All” list, the “Any” list is
         dropped entirely
 -   Without\<T\>() – Excludes the component from the resulting `EntityQuery`
--   WithSharedComponent\<T\>(T value) – Adds a shared component filter to the
-    `EntityQuery`
-    -   Up to two of these calls may be performed in a single `FluentQuery`
-        chain
--   WithChangeFilter\<T\>() – Adds a change filter for the type to the
-    `EntityQuery`
-    -   There is no limit to the number of calls performed on the `FluentQuery`,
-        but at the time of writing, `EntityQuery` only supports two filters of
-        this type
 -   IncludeDisabled() – Sets the `EntityQuery` to use disabled entities
 -   IncludePrefabs() – Sets the `EntityQuery` to use prefab entities
 -   UseWriteGroups() – Sets the `EntityQuery` to use write group filtering

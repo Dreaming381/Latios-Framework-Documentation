@@ -25,7 +25,8 @@ techniques used in VR applications, the model is customizable through a listener
 profile API. From 2D panning to up to 127 distinct direction channels, Myri can
 be tuned to meet your project’s needs.
 
-The default profile produces a similar sound experience to the Megacity demo.
+The default profile produces a similar sound experience to the Megacity 2019
+demo.
 
 ### Voice Combining
 
@@ -99,7 +100,9 @@ resolved in Myri. If you encounter one of these issues, submit a bug report to
 Unity!
 
 -   Background subscene baking crashes while reading the AudioClip assets on
-    some systems.
+    some systems. As this is system-specific, it is very important that you
+    report this issue to me if you encounter it. It is also helpful to report if
+    you do not suffer from this issue.
 -   Sometimes in the editor, audio may stutter despite a lack of warnings of the
     DSPGraph being starved. This is because GC spikes stall the audio thread if
     Burst Compilation is disabled.
@@ -108,14 +111,14 @@ Unity!
 -   The Unity Editor sometimes emits an exception from a Bursted job. This is a
     DSPGraph and job system bug related to scheduling, and does not appear to
     have any adverse effects currently.
--   Exiting play mode while an active listener exists will cause a warning
-    regarding DSPGraph nodes not being disposed. This is an execution order
-    issue on teardown.
 
 ## Near-Term Roadmap
 
--   Clip compression for long clips in blobs
+-   Exposed limiter controls
 -   Layers
--   Custom sample generation API
--   DSPGraph post-processing API
+-   Effect Stacks (Includes user DSP APIs)
+
+## Not-So-Near-Term Roadmap
+
+-   Clip compression
 -   Pitch shifting

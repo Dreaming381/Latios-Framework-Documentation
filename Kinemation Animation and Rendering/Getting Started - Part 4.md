@@ -1,7 +1,7 @@
 # Getting Started with Kinemation – Part 4
 
-Optimized skeletons. They are fast. But their `OptimizedBoneToRoot` buffers can
-be quite raw. In this part, we’ll write some code to work with them.
+Optimized skeletons are fast. In this part, we’ll write some code to work with
+them.
 
 ## Making an Optimized Skeleton via Import
 
@@ -13,152 +13,66 @@ We can do so by checking this box.
 Of course, if we wanted to have additional exported bones to attach weapons or
 accessories, we could do that with the dropdown below it.
 
-## Sampling an Entire Pose the Easy Way
+## Sampling an Entire Pose at Once
 
-Unlike with exposed skeletons, optimized skeletons don’t have a transform system
-to automatically update their hierarchy. Instead, they have a buffer of
-root-relative matrices called `OptimizedBoneToRoot`. They also typically store
-their hierarchy information in `OptimizedSkeletonHierarchyBlobReference`.
-
-Calculating the matrices using the blob asset and individual local space sampled
-bones can be quite tricky. But if you just want to sample a single clip and have
-it update the entire buffer, then all you need to do is call `SamplePose()` and
-pass in the relevant arguments. It looks like this:
+Unlike exposed skeletons which rely on the entity transform system, optimized
+skeletons maintain their own root-space hierarchy in Dynamic Buffers and Blob
+Assets. Due to this complexity, it is not recommended to work with the raw
+components. Instead, we will be using `OptimizedSkeletonAspect`.
 
 ```csharp
-Entities.ForEach((ref DynamicBuffer<OptimizedBoneToRoot> btrBuffer, in OptimizedSkeletonHierarchyBlobReference hierarchyRef, in SingleClip singleClip) =>
+[BurstCompile]
+partial struct OptimizedJob : IJobEntity
 {
-    ref var clip     = ref singleClip.blob.Value.clips[0];
-    var     clipTime = clip.LoopToClipTime(t);
+    public float et;
 
-    clip.SamplePose(btrBuffer, hierarchyRef.blob, clipTime);
-}).ScheduleParallel();
-```
-
-Not only does this handle the entire hierarchy for you, it also uses a special
-fast-path making this the most performant way to play an animation.
-
-If you need more control over the bone transforms, such as animation blending,
-you can use a `BufferPoseBlender` which offers similar fast-path APIs but more
-granular control over the process. `BufferPoseBlender` will be covered in a
-future part.
-
-## Writing to OptimizedBoneToRoot without ParentScaleInverse
-
-*This next part is provided simply for understanding purposes and those curious.
-The information here is less important as of version 0.5.2 when*
-`BufferPoseBlender` *was introduced. If* `BufferPoseBlender` *does not cover
-your use case, please report it as an issue.*
-
-We’re going to assume our character does not use `ParentScaleInverse`, as that
-complicates the code quite a bit in Kinemation’s current state.
-
-Fortunately, baking defaults to generating skeletons without it. But if you are
-ever unsure, there is a flag in `OptimizedSkeletonHierarchyBlob` called
-`hasAnyParentScaleInverseBone` which you can check.
-
-We’ll start by removing `SamplePose()`:
-
-```csharp
-Entities.ForEach((ref DynamicBuffer<OptimizedBoneToRoot> btrBuffer, in OptimizedSkeletonHierarchyBlobReference hierarchyRef, in SingleClip singleClip) =>
-{
-    ref var clip     = ref singleClip.blob.Value.clips[0];
-    var     clipTime = clip.LoopToClipTime(t);
-
-                
-}).ScheduleParallel();
-```
-
-With optimized skeletons, we don’t have to worry about modifying the world-space
-transforms anymore. We still need to watch out for root motion animation, but if
-we don’t have that, we can start our loop at 0. However, there’s no point since
-the first matrix should always be the identity matrix, which baking kindly set
-for us. Don’t believe me? Well let’s temporarily remove our Single Clip
-Authoring and look at the buffer in the inspector.
-
-![](media/723f64ab1435586644a2f46c11c58007.png)
-
-And now you have probably seen that even optimized characters keep their pose
-during baking. So go ahead and explore the rest of the components.
-
-Alright, before we write our loop, let’s convert our buffer into its underlying
-type so it is easier to work with:
-
-```csharp
-var bones = btrBuffer.Reinterpret<float4x4>().AsNativeArray();
-
-for (int i = 1; i < bones.Length; i++)
-{
-    var boneTransform = clip.SampleBone(i, clipTime);
-
-
-}
-```
-
-Next, we need to convert our `boneTransform` into a matrix. We can do that using
-the `TRS()` method.
-
-```csharp
-var mat = float4x4.TRS(boneTransform.translation, boneTransform.rotation, boneTransform.scale);
-```
-
-Finally, we need to get the matrix into the skeleton’s coordinate space. To do
-that, we need to multiply the matrix by the bone’s parent matrix, and then by
-that bone’s parent matrix, and then by that bone’s parent matrix, all the way up
-to the root.
-
-But there’s a trick. If the parent has a fully computed `OptimizedBoneToRoot`
-matrix, we only need to multiply our matrix with that. And if we iterated
-through our buffer from start to end, this will always be the case. Kinemation
-baking orders the bones such that each parent is always before its children.
-That means we just have to do this:
-
-```csharp
-var parentIndex = hierarchyRef.blob.Value.parentIndices[i];
-bones[i]        = math.mul(bones[parentIndex], mat);
-```
-
-Here’s what it looks like in its final form:
-
-```csharp
-using Latios;
-using Latios.Kinemation;
-using Unity.Entities;
-using Unity.Jobs;
-using Unity.Mathematics;
-using Unity.Transforms;
-
-namespace Dragons
-{
-    [UpdateBefore(typeof(TransformSystemGroup))]
-    public partial class SingleClipPlayerSystem : SubSystem
+    public void Execute(OptimizedSkeletonAspect skeleton, in SingleClip singleClip)
     {
-        protected override void OnUpdate()
-        {
-            float t = (float)Time.ElapsedTime;
+        ref var clip = ref singleClip.blob.Value.clips[0];
+        var clipTime = clip.LoopToClipTime(et);
 
-            Entities.ForEach((ref DynamicBuffer<OptimizedBoneToRoot> btrBuffer, in OptimizedSkeletonHierarchyBlobReference hierarchyRef, in SingleClip singleClip) =>
-            {
-                ref var clip     = ref singleClip.blob.Value.clips[0];
-                var     clipTime = clip.LoopToClipTime(t);
-
-                var bones = btrBuffer.Reinterpret<float4x4>().AsNativeArray();
-
-                for (int i = 1; i < bones.Length; i++)
-                {
-                    var boneTransform = clip.SampleBone(i, clipTime);
-
-                    var mat         = float4x4.TRS(boneTransform.translation, boneTransform.rotation, boneTransform.scale);
-                    var parentIndex = hierarchyRef.blob.Value.parentIndices[i];
-                    bones[i]        = math.mul(bones[parentIndex], mat);
-                }
-            }).ScheduleParallel();
-        }
     }
 }
 ```
 
+There are multiple ways that we can sample the animations for the bones. For
+example, we could iterate through the `bones` and write to the `localTransform`
+of each. However, doing so will sync the hierarchy on every write, which is
+slow.
+
+A faster way that minimizes syncing would be to write to `rawLocalTransformsRW`
+instead. This does no syncing whatsoever. And when we are done, we have to call
+`EndSamplingAndSync()`.
+
+However, there’s one further optimization we can employ. Sampling all the bones
+in a clip (a pose) is significantly faster than sampling each bone one-by-one.
+We can use the `SamplePose()` method for this. However, this requires a third
+argument which specifies a `weight`. When using pose sampling, weight blending
+is built-in for performance reasons. For a single clip, we can set this to `1f`.
+Afterwards, we have to call `EndSamplingAndSync()`.
+
+```csharp
+[BurstCompile]
+partial struct OptimizedJob : IJobEntity
+{
+    public float et;
+
+    public void Execute(OptimizedSkeletonAspect skeleton, in SingleClip singleClip)
+    {
+        ref var clip     = ref singleClip.blob.Value.clips[0];
+        var     clipTime = clip.LoopToClipTime(et);
+
+        clip.SamplePose(ref skeleton, clipTime, 1f);
+        skeleton.EndSamplingAndSync();
+    }
+}
+```
+
+Yes. It really is that simple! It is also worth noting that unlike exposed
+skeletons, optimized skeletons can safely write to bone index 0. Often, this
+bone contains the root motion state, and is not reflected in rendering.
+
 ## What’s Next
 
-Kinemation is new, and its potential is still being explored. Let me know what
-you would like to see showcased next!
+Kinemation is new cutting-edge technology, and its potential is still being
+explored. Let me know what you would like to see showcased next!

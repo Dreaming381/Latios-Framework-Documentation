@@ -1,6 +1,6 @@
 # Getting Started with Myri Audio
 
-This is the fourth preview version released publicly. It currently supports
+This is the fifth preview version released publicly. It currently supports
 simple use cases appropriate for game jams, experiments, and maybe even some
 commercial projects. However, it likely lacks the necessary control features
 required to deliver a final product. I unfortunately lack the expertise to
@@ -52,8 +52,8 @@ the other assuming the speed of sound in Earth’s atmosphere. A higher resoluti
 may increase the amount of sampling performed when audio sources are merged.
 
 The *Listener Response Profile* allows for providing a custom spatial profile
-which describes the filters applied to the audio sources. Such profiles are
-scriptable objects which derive from the abstract `AudioIldProfileBuilder`
+which describes the filters applied to the audio sources. Such profiles can be
+scriptable objects which derive from the abstract `ListenerProfileBuilder`
 class. If no custom profile is applied, a default profile which provides basic
 horizontally-spatialized audio is used. More info on creating these profile
 builders in code can be found further down this page.
@@ -159,7 +159,7 @@ played by looped sources.
 The `AudioListener` component is very simple, containing only three values. The
 volume is the most useful. The `itdResolution` (inter-aural time difference
 resolution) will be clamped to [0, 15]. The value measures the number of steps
-from center to either side that audio will be delayed by. Higher values increase
+from center to either side that audio can be delayed by. Higher values increase
 fidelity but decrease the effectiveness of voice-combining, which comes with a
 performance cost. The `listenerProfile` contains the metadata used to describe
 the spatialization filtering.
@@ -246,3 +246,15 @@ DSPGraph samples. These filters share a unified state-variable filter (SVF)
 kernel. The code has been slightly modified from the samples to improve the
 flexibility of the code and remove unnecessary allocations. However, the actual
 filtering logic remains unchanged.*
+
+## Custom DSP
+
+Custom DSP processing is currently not supported in Myri. The underlying
+DSPGraph is not exposed in any way. For a long time, it has been an unsolved
+problem how to expose an API for custom DSP logic that is safe and intuitive.
+Now with source generators, a solution is coming in the form of Effect Stacks!
+It is a big overhaul of Myri, so if you want this feature, make sure to request
+it to help get it prioritized.
+
+In the meantime, you can procedurally generate audio clips at bake time using
+the Smart Blobber API.

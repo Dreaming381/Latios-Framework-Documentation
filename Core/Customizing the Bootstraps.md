@@ -7,28 +7,30 @@ requirement, the framework does not impose any restrictions on the
 bootstrap from the templates or write a custom one from scratch. Additional
 utilities are provided in the static class `BootstrapTools`.
 
-A `LatiosWorld` populates itself with a `LatiosInitializationSystemGroup`, a
-`LatiosSimulationSystemGroup`, and a `LatiosPresentationSystemGroup`. It further
-populates `LatiosInitializationSystemGroup` with necessary framework systems.
-For more details, see [LatiosWorld in detail](LatiosWorld%20in%20Detail.md).
+A `LatiosWorld` populates itself with an `InitializationSystemGroup`, a
+`SimulationSystemGroup`, and a `PresentationSystemGroup`, each with a special
+`IRateManager`. It further populates `InitializationSystemGroup` with necessary
+framework systems. For more details, see [LatiosWorld in
+detail](LatiosWorld%20in%20Detail.md).
 
 ## Customizing Features
 
-Beginning with Latios Framework 0.5, many features come as optional components
-which can be installed via the three bootstrap interfaces `ICustomBootstrap`,
-`ICustomBakingBootstrap`, and `ICustomEditorBootstrap`. These installers inject
-systems into their respective worlds and may also disable existing systems which
-they intend to replace.
+Many features come as optional components which can be installed via the three
+bootstrap interfaces `ICustomBootstrap`, `ICustomBakingBootstrap`, and
+`ICustomEditorBootstrap`. These installers inject systems into their respective
+worlds and may also disable existing systems which they intend to replace.
 
 Installers can be found in the following static classes:
 
 -   Runtime or Editor World
     -   Latios.CoreBootstrap
+    -   Latios.Transforms.TransformsBootstrap
     -   Latios.Myri.MyriBootstrap
     -   Latios.Kinemation.KinemationBootstrap
 -   Baking World
-    -   Latios.Psyshock.Authoring.PsyshockConversionBootstrap
-    -   Latios.Kinemation.Authoring.KinemationConversionBootstrap
+    -   Latios.Transforms.Authoring.TransformsBakingBootstrap
+    -   Latios.Psyshock.Authoring.PsyshockBakingBootstrap
+    -   Latios.Kinemation.Authoring.KinemationBakingBootstrap
 
 `ICustomBakingBootstrap` also provides granular control for enabling and
 disabling Baker types.
@@ -47,6 +49,8 @@ useful functions:
     whose namespace contains the passed-in string
     -   This is especially useful for third-party systems
 -   `InjectSystem()` - injects a single system
+-   `InjectSystems()` – injects multiple systems, creating them in the order
+    specified in the list
 
 ## Customizing the PlayerLoop
 
@@ -61,4 +65,4 @@ common use-cases.
 -   `AddWorldToCurrentPlayerLoopWithDelayedSimulation()` - This runs the
     `SimulationSystemGroup` after rendering. This may be useful in removing a
     sync point or a `TransformSystemGroup` update depending on how your logic is
-    structured.
+    structured. This is also referred to as *N – 1 Rendering*.

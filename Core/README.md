@@ -111,7 +111,8 @@ the custom culling API.
 Blackboard entities can be accessed as properties of `LatiosWorld`,
 `LatiosWorldUnmanaged`, `SubSystem`, and `SuperSystem`.
 
-See more: [Blackboard Entities](Blackboard%20Entities.md)
+See more: [Blackboard Entities](Blackboard%20Entities.md) and [Blackboard
+Entities vs Singletons](Blackboard%20Entities%20Vs%20Singletons.md)
 
 ### Scene Management
 
@@ -162,23 +163,12 @@ I wasn’t really satisfied with these solutions, so I made my own. They are
 structs that implement `ICollectionComponent`.
 
 **Warning: Managed components and collection components are not real components.
-There are some special ways you need to work with them.**
+The real component is the ExistComponent nested type defined by source
+generators.**
 
-They do not affect the archetype. Instead, they “follow” an existing component
-you can specify as the `AssociatedComponentType`. Whenever you add or remove the
-`AssociatedComponentType`, a system will add or remove the collection component
-in the `ManagedComponentReactiveSystemGroup` which runs in
-`LatiosInitializationSystemGroup`.
-
-The typical way to iterate through these collection components is to use
-
-```csharp
-Entities.WithAll\<{AssociatedComponentType}\>().ForEach((Entity)
-=\>{}).WithoutBurst().Run();
-```
-
-You can then access the collection component using the `LatiosWorldUnmanaged`
-methods.
+You can query for the ExistComponent in your own code to find entities with a
+collection component. You can then access the collection component using the
+`LatiosWorldUnmanaged` methods.
 
 Collection components have this nice feature of automatically updating their
 dependencies if you use them in a system.
@@ -191,13 +181,13 @@ Components](Collection%20and%20Managed%20Struct%20Components.md)
 So you got some SOs or some Meshes and Materials or something that you want to
 live on individual entities, but you don’t want to use Shared Components and
 chop your memory and performance into gravel. You also don’t want to use class
-`IComponentData` because that’s garbage every time you instantiate a new entity
-and you know how to reference data on other entities using Entity fields.
+`IComponentData` because that’s GC allocations every time you instantiate a new
+entity and you know how to reference data on other entities using Entity fields.
 Really, you just want GC-free structs that can store shared references. You
 can’t use them in jobs, but that’s not the concern.
 
 Meet `IManagedStructComponent`. It is a struct that can hold references. You can
-get and set them using `LatiosWorldUnmanaged.Get/SetManagedComponent` and
+get and set them using `LatiosWorldUnmanaged.Get/SetManagedStructComponent` and
 friends. They work essentially the same as `ICollectionComponent` except without
 the automatic dependency management because there’s no dependencies to manage.
 
@@ -218,8 +208,6 @@ under development. And sometimes, I need this missing API. Sometimes this can be
 fixed using an extension method. Sometimes this requires extending the package
 directly using asmrefs. The former can be found in the Utilities folder, and the
 latter shows up in the `Unity.Entities.Exposed` namespace.
-
-See more: [Extensions and Exposed](Extensions%20and%20Exposed.md)
 
 ### Fluent Queries
 
@@ -359,19 +347,12 @@ foot.
 
 ## Known Issues
 
--   `IManagedComponent` and `ICollectionComponent` are not true components.
-    Under the hood, I use generic components to modify the Entity archetypes.
-    Expect them to not work with a lot of query and archetype sugar. I do try to
-    make them blend in where I can though.
--   Automatic dependency management for `latiosWorld.SyncPoint` and collection
-    components do not function correctly when used inside `OnStartRunning()` or
-    `OnStopRunning()`. This is due to a bug in `SystemBase` which assumes no
-    exceptions occur inside these methods.
+-   `IManagedComponent` and `ICollectionComponent` are not true components. They
+    instead rely on a source-generated `ExistComponent` to signify presence with
+    a specific entity.
 -   Compile errors are generated when using .Net Framework. Use .Net Standard.
 -   IL2CPP requires the IL2CPP Code Generation to use the “Faster (smaller)
     builds” option.
--   Fluent Queries do not work in Burst, though you can use them in an `ISystem`
-    which Burst-compiles the `OnUpdate()` method.
 -   Blackboard Entities do not retain blob asset reference counts.
 
 ## Near-Term Roadmap

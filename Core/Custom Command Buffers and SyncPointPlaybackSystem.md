@@ -31,6 +31,34 @@ To manually play back an `EnableCommandBuffer`, you must provide both an
 `EntityManager` and a read-only `BufferFromEntity<LinkedEntityGroup>`. You must
 dispose the command buffer after manual playback.
 
+Example:
+
+```csharp
+[BurstCompile]
+public void OnUpdate(ref SystemState state)
+{
+    var ecb = new EnableCommandBuffer(Allocator.TempJob);
+
+    foreach ((var payload, var times, var entity) in Query<RefRW<SpawnPayload>, RefRO<SpawnTimes> >().WithEntityAccess())
+    {
+        if (times.ValueRO.enableTime <= 0f && payload.ValueRO.disabledShip != Entity.Null)
+        {
+            var ship = payload.ValueRO.disabledShip;
+            ecb.Add(ship);
+
+            var entityTransform          = GetComponent<WorldTransform>(entity);
+            var shipTransform            = GetAspect<TransformAspect>(ship);
+            shipTransform.worldRotation  = entityTransform.rotation;
+            shipTransform.worldPosition  = entityTransform.position;
+            payload.ValueRW.disabledShip = Entity.Null;
+        }
+    }
+
+    ecb.Playback(state.EntityManager, GetBufferLookup<LinkedEntityGroup>(true));
+    ecb.Dispose();
+}
+```
+
 ### DisableCommandBuffer
 
 `DisableCommandBuffer` is identical to `EnableCommandBuffer` except it
@@ -74,6 +102,41 @@ both in instantiation and value initialization, frequently outperforming
 `EntityCommandBuffer` for such usages. It also generates far fewer archetypes to
 reach an end result.
 
+Example:
+
+```csharp
+[BurstCompile]
+public void OnUpdate(ref SystemState state)
+{
+    var icb = latiosWorld.syncPoint.CreateInstantiateCommandBuffer<WorldTransform>().AsParallelWriter();
+    var dcb = latiosWorld.syncPoint.CreateDestroyCommandBuffer().AsParallelWriter();
+
+    new Job { dcb = dcb, icb = icb }.ScheduleParallel();
+}
+
+[BurstCompile]
+[WithChangeFilter(typeof(ShipHealth))]
+partial struct Job : IJobEntity
+{
+    public InstantiateCommandBuffer<WorldTransform>.ParallelWriter icb;
+    public DestroyCommandBuffer.ParallelWriter                     dcb;
+
+    public void Execute(Entity entity,
+                        [ChunkIndexInQuery] int chunkIndexInQuery,
+                        in ShipHealth health,
+                        in ShipExplosionPrefab explosionPrefab,
+                        in WorldTransform worldTransform)
+    {
+        if (health.health <= 0f)
+        {
+            dcb.Add(entity, chunkIndexInQuery);
+            if (explosionPrefab.explosionPrefab != Entity.Null)
+                icb.Add(explosionPrefab.explosionPrefab, worldTransform, chunkIndexInQuery);
+        }
+    }
+}
+```
+
 ### EntityOperationCommandBuffer
 
 In the case where you need to store only the entity in some command buffer
@@ -95,7 +158,7 @@ new features or better performance when performing structural changes. One might
 suspect that these command buffers are taking shortcuts which could potentially
 corrupt Unity’s internal data structures and easily break between DOTS releases.
 
-Rest assured, these command buffers rely almost entirely on public API. The one
+Rest assured; these command buffers rely almost entirely on public API. The one
 exception is `InstantiateCommandBuffer` which uses `EntityLocationInChunk` in
 the `Unity.Entities.Exposed` namespace provided in this framework. Otherwise,
 the new features and performance improvements come from clever operations and a
@@ -152,7 +215,8 @@ This does have the caveat that command buffers will play back at the next
 instance the `SyncPointPlaybackSystem` executes, so make sure you are fully
 aware of your system order if there is concern for a command buffer to play back
 too early. Note that `SyncPointPlaybackSystem` is a Burst-compiled `ISystem`
-that is dispatched from a managed `SyncPointPlaybackSystemDispatch`.
+that is dispatched from a managed `SyncPointPlaybackSystemDispatch`. The latter
+is what you want to add to other `ComponentSystemGroups`.
 
 ## PreSyncPointGroup
 
@@ -170,22 +234,22 @@ examples which may or may not be valid or applicable depending on your project:
 
 -   Audio – only if the result does not feed back into the simulation
 -   Game stats crunching
--   Procedural geometry – especially useful when running simulation after
-    rendering
--   Procedural CPU textures – especially useful when running simulation after
-    rendering
+-   Procedural geometry – especially useful for n-1 rendering
+-   Procedural CPU textures – especially useful for n-1 rendering
 -   File compression/decompression
 -   Network message packing/unpacking
 
 For systems which are capable of scheduling such jobs, it is recommended to
 update them in `PreSyncPointGroup`. As its name implies, this group runs at the
 very beginning of the frame right before
-`BeginInitializationEntityCommandBufferSystem` executes.
+`BeginInitializationEntityCommandBufferSystem` and `SyncPointPlaybackSystem`
+execute.
 
 ### Preventing Jobs from Completing Early
 
 A challenge when scheduling these jobs is preventing the sync point from trying
-to complete them. To do that, these jobs cannot be assigned to `Dependency`.
+to complete them. To do that, these jobs cannot be assigned to
+`SystemState.Dependency`.
 
 1.  Allocate NativeContainers to store captured ECS state
 2.  Schedule ECS jobs which capture the state
@@ -208,12 +272,8 @@ that other systems can read the results. A good candidate for this is a
 collection component on the `worldBlackboardEntity`. The `worldBlackboardEntity`
 should only be destroyed when the ECS World is also being destroyed, in which
 case the framework will ensure the job is completed before teardown. And it is
-also easy to enough to avoid removing the collection component from the
+also easy enough to avoid removing the collection component from the
 `worldBlackboardEntity` during sync by establishing conventions.
 
 There are other methods for handling this `JobHandle`, but these two usually
 account for all use cases and leverage the strengths of the framework.
-
-## Code Examples
-
-Todo:
