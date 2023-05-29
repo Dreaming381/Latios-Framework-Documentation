@@ -6,6 +6,83 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic
 Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [0.7.0] – 2023-5-29
+
+Officially supports Entities [1.0.10]
+
+### Added
+
+-   Added `optimizationSystemTypesToDisable` and`
+    optimizationSystemTypesToInject` to `CustomBakingBootstrapContext`
+-   Added default `Dispose()` method to `IManagedStructComponent` which can be
+    reimplemented for object pooling purposes
+-   Added `UnsafeParallelBlockList.AllThreadsEnumerator` to enumerate the entire
+    container on a single thread
+-   Added `BlackboardEntity.RemoveComponent<T>()` which was missing for some
+    reason
+-   Added `BootstrapTools.IsAssemblyReferencingSubstring()` which allows
+    searching for assemblies referencing assemblies other than Latios Framework
+    assemblies
+-   Added `LatiosWorldUnmanaged.isValid` to check if a cached
+    `LatiosWorldUnmanaged` instance was actually initialized and not left as
+    default
+
+### Changed
+
+-   **Breaking:** Most bootstrap APIs now use `SystemTypeHandle` instead of
+    `System.Type`
+-   **Breaking:** `ICollectionComponent` and `IManagedStructComponent` now rely
+    on source generators and must be declared as partial
+-   **Breaking:** `ICollectionComponent` and `IManagedStructComponent` no longer
+    use `AssociatedComponentType` and instead define a nested `ExistComponent`
+    via source generators which can be referenced in user code
+-   **Breaking:** `EntityWith` and `EntityWithBuffer` now have special accessor
+    methods instead of the indexer and require the lookup to all methods be
+    passed by ref, as the previous methods and indexer did not take advantage of
+    the lookup caches
+-   Updated all templates to be compatible with the new changes
+-   `InitializationSystemGroup`, `SimulationSystemGroup`, and
+    `PresentationSystemGroup` now have custom `IRateManager` instances applied
+    to them
+
+### Fixed
+
+-   Fixed baking override leaks
+-   Fixed issue registering a Smart Blobber in `OnCreate()` when the Smart
+    Blobber system was injected before the `SmartBlobberCleanupBakingGroup`
+-   Fixed leak in `EnableCommandBuffer` playback
+-   Fixed crash in `UnsafeParallelBlockList.Enumerator` when a thread index is
+    empty
+-   Fixed leak in the mechanism used to call `OnNewScene()` and
+    `ShouldUpdateSystem()` callbacks on unmanaged systems
+-   Fixed leaks in teardown of collection component and managed struct component
+    storages
+-   Fixed leaks in teardown of `SyncPointPlaybackSystem` if pending buffers
+    still are present at shutdown
+
+### Improved
+
+-   Improved XML documentation coverage
+-   Fluent queries are now Burst-compatible
+-   Instead of a bunch of generic systems inside
+    `ManagedComponentsReactiveSystemGroup`, there are now just
+    `CollectionsComponentsReactiveSystem` and
+    `ManagedStructComponentsReactiveSystem` which rely less on reflection and
+    more on Burst
+
+### Removed
+
+-   Removed `BootstrapTools.PopulateTypeManagerForGenerics()` as incremental
+    source generators are a more stable solution to the problems this method
+    solved
+-   Fluent Queries no longer have shared components or change filters as part of
+    their API. These should be added to the query after creating it via fluent
+    queries.
+-   Removed `LatiosInitializationSystemGroup`, `LatiosSimulationSystemGroup`,
+    and `LatiosPresentationSystemGroup`, as the base classes are used instead
+-   Removed Improved Transforms and Extreme Transforms functionality, as such
+    functionality now exists in the QVVS Transforms module
+
 ## [0.6.5] – 2023-2-18
 
 Officially supports Entities [1.0.0 prerelease 15]

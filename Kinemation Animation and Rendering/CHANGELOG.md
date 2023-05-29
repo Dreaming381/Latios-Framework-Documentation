@@ -6,6 +6,81 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic
 Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [0.7.0] – 2023-5-29
+
+Officially supports Entities [1.0.10]
+
+### Added
+
+-   *New Feature:* Added Blend Shapes support
+-   *New Feature:* Added Dynamic Meshes which allow meshes to be animated in
+    Burst jobs without separate Mesh instances
+-   *New Feature:* Added `OptimizedSkeletonAspect` and `OptimizedBone` which
+    provide a synchronized hierarchy API for working with optimized skeleton
+    bones in local, root, and world space at the same time
+-   *New Feature:* Added Inertial Blending components for both exposed and
+    optimized skeletons
+-   *New Feature:* Added custom shader graph nodes for deformations which allow
+    targeting the motion history of a deforming mesh
+-   *New Feature:* Added `RenderQuickToggleEnableFlag` which is an optional flag
+    to quickly toggle whether or not an entity can be rendered
+-   *New Feature:* Added support for skeletons up to 32 767 bones
+-   Added `PostProcessMatrix` for augmenting a `WorldTransform` with shear for
+    rendering purposes
+-   Added `SkeletonClipCompressionSettings.maxUniformScaleError` as this
+    parameter is compressed into a separate clip currently
+-   Added several material property components that are compatible with the new
+    shader graph nodes
+
+### Changed
+
+-   **Breaking:** Updated the AclUnity C\# API to work with QVVS
+-   **Breaking:** Kinemation is now designed to work with QVVS Transforms
+    instead of Unity Transforms for skeletal deformations and rendering in
+    general
+-   **Breaking:** The culling loop has been reworked for improved performance
+    using a round-robin scheduler, which any custom culling code must now adjust
+    for
+-   **Breaking:** `OptimizedBoneToRoot` and associated API were replaced with
+    new components abstracted by `OptimizedSkeletonAspect`, which is the new way
+    to work with optimized skeletons
+-   **Breaking:** Renamed `MeshSkinningBlob` and `MeshSkinningBlobReference` to
+    `MeshDeformDataBlob` and `MeshDeformDataBlobReference` and their internals
+    have been significantly refactored
+-   **Breaking:** Replaced `OverrideMeshRendererBakerBase` with Baker extension
+    methods
+-   **Breaking:** Renamed `ShareSkinFromEntity` to `CopySkinFromEntity`
+-   Many Unity systems now are replaced with Kinemation versions, and the whole
+    rendering stack works a little bit differently internally as a result,
+    though the end result should still be the same
+-   Skinned mesh and skeleton binding requirements have changed to support new
+    deforming mesh types
+
+### Fixed
+
+-   Fixed leftover chunk components existing on entities with removed meshes
+    during incremental baking
+-   Fixed various missing `[TemporaryBakingType]` attributes
+
+### Improved
+
+-   Improved XML documentation coverage
+-   Switched from `ComputeBuffer` to `GraphicsBuffer` for all internal buffers
+-   BRG bounds are now computed when all bounds are updated, which improves main
+    thread performance during rendering
+-   Missing mask components for normal renderers are now added during the single
+    binding reactive system sync point
+-   Light Probes processing now use jobs and Burst
+-   Skeletal animated meshes no longer compute their own world bounds
+
+### Removed
+
+-   Removed `maxNegligibleTranslationDrift` and `maxNegligibleScaleDrift` from
+    `SkeletonClipCompressionSettings` as these are now computed dynamically in
+    ACL
+-   Removed `ParentScaleInverse` data from `OptimizedSkeletonHierarchyBlob` as
+    this behavior is now intrinsic to the QVVS transform system
+
 ## [0.6.6] – 2023-3-13
 
 Officially supports Entities [1.0.0 prerelease 15]

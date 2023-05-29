@@ -123,6 +123,11 @@ property. Note that these bodies will be spatially reordered relative to how
 they were created. Use the `srcIndices` property to get the original creation
 index (`entityInQueryIndex` or `ColliderBody` array index).
 
+*Tip: Store a* `CollisionLayer` *associated with each* `EntityQuery` *you care
+about inside an* `ICollectionComponent` *on the* `sceneBlackboardEntity`*. This
+will allow multiple systems to use the same* `CollisionLayer` *for the same
+query without having to rebuild the* `CollisionLayer`*.*
+
 ## Using FindPairs
 
 `FindPairs` is a broadphase algorithm that lets you immediately process pairs

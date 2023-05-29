@@ -1,4 +1,4 @@
-# Upgrade Guide [0.5.8] [0.6.0]
+# Upgrade Guide [0.6.6] [0.7.0]
 
 Please back up your project in a separate directory before upgrading! You will
 likely need to reference the pre-upgraded project during the upgrade process.
@@ -7,118 +7,103 @@ likely need to reference the pre-upgraded project during the upgrade process.
 
 ### New Bootstrap and Installers
 
-You will likely need to recreate your bootstrap, as the authoring paradigm has
-completely changed.
+You will likely need to adjust your bootstrap to account for Unity’s switch from
+`System.Type` to `SystemTypeHandle`.
 
-### Scene Manager
+### Collection and Managed Struct Components
 
-Scene Manager now forces subscenes to load synchronously, and
-`DontDestroyOnSceneChangeTag` will now protect entities from being destroyed by
-subscene unload.
+`ICollectionComponent` and `IManagedStructComponent` have been redesigned to use
+source generators. You now must declare their structs as `partial`.
+Additionally, instead of an `AssociatedComponentType`, there is a
+source-generated `ExistComponent` defined as a nested `IComponentData` struct
+inside of your `ICollectionComponent` or `IManagedStructComponent`. You can
+reference this type in your own code, including bakers. This switch to source
+generators offers substantial performance and stability improvements.
 
-### Initialization System Order
+### Default Systems
 
-This changed a bit. If you were relying on specific ordering, you might
-encounter a few issues. However, such issues aren’t expected to be common.
+Instead of Latios-prefixed derived classes of the root system groups, the Latios
+Framework now uses `IRateManager` on Unity’s root system groups to achieve the
+same behavior. If you relied on the derived types or the ability to add a custom
+`IRateManager`, you will need to rework your design.
 
-### Smart Blobbers
+### Transforms
 
-With the transition from *conversion* to *baking*, Smart Blobbers had to be
-completely redesigned. The new design has a steeper learning curve, but is much
-more flexible. In 0.5.x, there was a 1-1-1-1 correspondence between the blob
-type, the input type, the converter type, and the conversion system. In 0.6.x,
-no such correspondence exists. You can define multiple inputs for a single blob
-type, and have multiple baking systems work with a blob type, or make a single
-baking system work with multiple blob types. The new paradigm uses bakers to add
-input components to special baking-only entities, and then uses baking systems
-to compute blob assets for those entities by writing to a special component.
-Blob asset allocation, deduplication, and incremental tracking are handled in
-separate baking systems, rather than a base class.
-
-There is also a `SmartBaker` type, which serves to functionally replace
-`IRequestBlobAssets`.
-
-### Scripting Defines
-
-Make sure to add `ENABLE_TRANSFORM_V1` to your scripting defines.
-
-### IManagedComponent -\> IManagedStructComponent
-
-Not only is there a rename, but `AssociatedComponentType` expects a
-`ComponentType` now.
-
-### ICollectionComponent
-
-These have been redesigned to be fully Burst-compatible in `ISystem`. While the
-general concept remains the same, expect breakages in many of the methods and
-interfaces. In particular, it is now up to the user to track whether a
-collection component is initialized.
+The old Transforms V1 code has been completely removed. You must now use the
+QVVS Transforms module.
 
 ## Psyshock Physics
 
-### IFindPairsProcessor
+### Collision Layer Source Indices
 
-`Execute()` now receives its argument as an `in` parameter.
+Source indices are now included inside the `CollisionLayer`, and all API to
+generate them separately has been removed. Other properties were renamed as a
+result.
 
-### Collider Baking
+### Baking Bootstrap
 
-Multiple colliders on a single Game Object are supported (excluding convex
-meshes) and will be combined into a compound collider. The enabled checkbox will
-exclude the component from being baked.
+`InstallLegacyColliderBakers` was renamed to `InstallUnityColliderBakers` and
+Latios Collider now shows up as *Custom Collider* in the Editor, as the built-in
+Unity colliders will be the intended collider authoring workflow for the
+foreseeable future.
 
-## Myri Audio
+### Renames
 
-### ListenerProfileBuilder
-
-This type now uses a context object passed by `ref` rather than protected member
-methods. There is a new alternative way to specify a builder using
-`IListenerProfileBuilder` if you need to construct a profile on the fly.
+There were many small renames with properties, fields, and methods regarding
+scaling, body indices, and casing. Check the Psyshock changelog for more
+details.
 
 ## Kinemation
 
-### Skeleton and Skinned Mesh Authoring
+### Optimized Skeletons
 
-Several options for defining your own custom skeleton have been removed. Some
-features may be added back later. Also, the skeleton definitions have been
-tweaked to remove unwanted bones more aggressively. A skeleton parented to a
-bone in another skeleton should now be possible.
+The Optimized Skeleton runtime API has been completely reworked to make use of
+`IAspect`. All code using the old API will need to switch to the new API. The
+new API has the capability to modify individual bones in local, root, and world
+space while keeping the hierarchy in sync.
 
-### ParameterClipSetBlob
+### Revamped Archetypes
 
-There is no longer a Smart Blobber for this blob type. If you need this, please
-reach out to me, as I am trying to better understand use cases to design a new
-effective API.
+Some archetype details used for the binding processes have been reworked to
+accommodate other types of deform meshes besides skeletal skinning. Any code
+that didn’t just let baking handle everything will likely need to adjust for
+these changes.
+
+### Culling
+
+The culling pipeline was reworked to improve job scheduling and sync point total
+latency using a round-robin scheduling strategy. Custom culling code may need to
+be reworked.
+
+### AclUnity
+
+AclUnity has been upgraded to the QVVS model, and consequently the APIs have
+been updated accordingly. Clips now store a metadata header internally that is
+parsed by the C\# methods to make the correct native calls.
 
 ## New Things to Try!
 
-### Core
+### QVVS Transforms
 
-Collection Components and `SyncPointPlaybackSystem` and a whole bunch of other
-goodies are Burst-compatible thanks to the new `LatiosWorldUnmanaged` type.
-
-Also, try out the new `ICustomBakingBootstrap` and `ICustomEditorBootstrap`.
+A new transform system might seem scary. But the new transform system is fast,
+lean, and expressive. It features smaller archetypes, more features such as
+stretch (non-uniform scale with less problems), and enables a whole bunch of
+cool things across the other modules. Use `WorldTransform` for reading
+transforms, and use `TransformAspect` when writing in local or world space. Give
+it a fair shot before you judge it!
 
 ### Psyshock Physics
 
-There’s a new FindObjects algorithm which works like FindPairs, but for a single
-AABB query against a layer. It runs faster than O(n) time.
-
-There are now new shortcut APIs for raycasting, collider-casting, and
-distance-testing a layer. They all make use of the new FindObjects algorithm
-under-the-hood.
-
-`FindPairsResult` has been overhauled to provide shorter syntax for distance
-queries, and expose the layers for additional FindObjects queries.
-
-### Myri
-
-Myri has a new API for procedurally generating audio at bake time for an
-`AudioClipBlob` without the use of an `AudioClip` asset. The new API lets you
-generate the samples in parallel Burst-compiled jobs.
+Thanks to the QVVS Transforms, colliders now react to transform scale and
+stretch automatically. You can still manually scale and stretch colliders, but
+you shouldn’t need to do so do to animated transforms.
 
 ### Kinemation
 
-You can bake a Skinned Mesh Renderer with dynamic skeleton binding info without
-baking its parent skeleton. To do this, inside a baker, call
-`GetComponentsInChildren<SkinnedMeshRenderer>()` and then call `GetEntity()` on
-one of the results. I want to see someone do character customization with this!
+Large skeletons, blend shapes, meshes you can animate in Burst jobs, a brand new
+optimized skeleton API with a synchronized hierarchy in local, root, and world
+space all at the same time, render enable bits, motion history rendering
+control, inertial blending, Kinemation has so many new features to try!
+
+And that’s not considering the performance improvements across the rendering
+stack thanks to QVVS Transforms!

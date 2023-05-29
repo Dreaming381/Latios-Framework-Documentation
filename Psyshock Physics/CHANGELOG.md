@@ -6,6 +6,81 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic
 Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [0.7.0] – 2023-5-29
+
+Officially supports Entities [1.0.10]
+
+### Added
+
+-   Added `StretchMode` to sphere, capsule, and compound colliders for
+    specifying how to cope with non-uniform scale, though the defaults usually
+    exhibit the desired behavior
+-   Added `PhysicsDebug.LogDistanceBetween()` for submitting distance query bug
+    reports
+-   `CollisionLayer` now stores `sourceIndices`, replacing the `remapSrcIndices`
+    APIs
+-   Added `Physics.TransformAabb()` overload which accepts a `TransformQvvs`
+    transform
+-   Added source index properties to `FindPairsResult` and `FindObjectsResult`
+    for accessing the original index of the body in question relative to the
+    layer’s source `EntityQuery` or `ColliderBody` array
+-   Added `CollisionLayer.GetAabb()` for getting the `Aabb` of a specific
+    collider
+-   Added `IsEnabled` and `SetEnabled` to `PhysicsComponentLookup` and
+    `PhysicsBufferLookup` for working with `IEnableableComponent`
+-   Added `sourceIndex` to `layerBodyInfo` which corresponds to the
+    `sourceIndex` property of the underlying `FindObjects` operation
+
+### Changed
+
+-   **Breaking:** Psyshock now use QVVS Transforms
+-   **Breaking:** Psyshock now uses `TransformQvvs` instead of `RigidTransform`
+    for all APIs, which means colliders scale automatically with transforms and
+    are no longer baked
+-   **Breaking:** Renamed `InstallLegacyColliderBakers` to
+    `InstallUnityColliderBakers` in `PsyshockBakingBootstrap` as Unity Engine
+    authoring components are here to stay
+-   **Breaking:** Replaced `Physics.ScaleCollider()` with
+    `Physics.ScaleStretchCollider()`, although you will rarely need to call this
+    anymore
+-   **Breaking:** Renamed `FindPairsResult` `indexA` and `indexB` to
+    `bodyIndexA` and `bodyIndexB`
+-   **Breaking:** Renamed `CollisionLayer` `Count` and `BucketCount` to `count`
+    and `bucketCount`
+-   **Breaking:** Merged `ColliderCastResult` `hitpointOnCaster` and
+    `hitpointOnTarget` to just a single `hitpoint`
+-   Renamed all bakers to no longer have the “Legacy” prefix
+-   `BuildCollisionLayer` now requires the presence of `WorldTransform` when
+    building from Entity Queries
+
+### Fixed
+
+-   Fixed smart baker types not being marked `[TemporaryBakingType]`
+-   Fixed `NullReferenceException` being thrown when baking a convex blob and
+    the shared mesh does not have a name
+
+### Improved
+
+-   Improved XML documentation coverage
+-   Refactored the internal query source code to be classified by query type and
+    collider types rather than API accessibility layers
+-   `FindPairs` and `FindObjects` can now schedule jobs from Burst-compiled
+    `ISystem`
+-   Improved the performance and code size of `FindObjects` and layer queries on
+    small Collision Layers
+-   `FindObjects` `RunImmediate()` now returns a copy of the processor object
+    that was dispatched to, such that results can be stored without pointers or
+    other containers
+
+### Removed
+
+-   Removed `PhysicsScale` as scaling can now be extracted from QVVS Transforms
+    automatically
+-   Removed most `Physics` APIs which take specialized collider types as
+    arguments, as these cluttered the public API
+-   Removed `WithSourceIndices()` and related APIs from `BuildCollisionLayer()`
+    as they are now always included inside the `CollisionLayer` directly
+
 ## [0.6.5] – 2023-2-18
 
 Officially supports Entities [1.0.0 prerelease 15]

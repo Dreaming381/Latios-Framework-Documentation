@@ -6,6 +6,29 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic
 Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [0.7.0] – 2023-5-29
+
+Officially supports Entities [1.0.10]
+
+### Added
+
+-   Added `Myri.Audio.DSP.SampleUtilities` methods for converting to and from
+    decibel representation
+
+### Changed
+
+-   Myri uses QVVS Transforms for spatial audio
+
+### Fixed
+
+-   Fixed memory leaks on shutdown
+-   Fixed warning message about DSP Graph leaked nodes which were caused by
+    listeners not being cleaned up correctly on world destruction
+
+### Improved
+
+-   Improved XML documentation coverage
+
 ## [0.6.5] – 2023-2-18
 
 Officially supports Entities [1.0.0 prerelease 15]

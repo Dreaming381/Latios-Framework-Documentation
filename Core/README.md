@@ -354,6 +354,8 @@ foot.
 -   IL2CPP requires the IL2CPP Code Generation to use the “Faster (smaller)
     builds” option.
 -   Blackboard Entities do not retain blob asset reference counts.
+-   Blackboard Entities and `EntityDataCopyKit` do not handle enable bits
+    correctly.
 
 ## Near-Term Roadmap
 

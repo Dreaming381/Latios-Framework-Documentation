@@ -82,6 +82,8 @@ hardware.
 -   Compatibility with many other packages outside of the Latios Framework is
     currently broken. Support is planned, but requires discussion and
     participation from the community.
+-   The Entities Hierarchy does not show hierarchy relationships for closed
+    subscenes.
 
 ## Near-Term Roadmap
 
