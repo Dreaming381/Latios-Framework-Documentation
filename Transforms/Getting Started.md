@@ -23,6 +23,19 @@ require installation in the Latios Bootstrap.
 Create a new Unity Project and install the Latios Framework. Add a *Latios
 Bootstrap* using the *Standard – Injection Workflow*.
 
+Next, add the following code to the bootstrap or a custom script. This code will
+preserve hierarchies so that we can play with them.
+
+```csharp
+class PreserveHierarchyBaker : Baker<UnityEngine.Transform>
+{
+    public override void Bake(UnityEngine.Transform authoring)
+    {
+        GetEntity(TransformUsageFlags.Dynamic);
+    }
+}
+```
+
 Create a new subscene. Add a cube inside it at the origin. Then create a child
 sphere. Set the sphere’s Y position to 0.5 and switch over to the game view.
 Press play. If you did everything right, you should be able to do this:
