@@ -5,6 +5,9 @@
 In *Project Settings*, under the *Player* tab, in *Other Settings* and under the
 *Configuration* header, set the *API Compatibility Level* to *.NET Standard*.
 
+Also, add the Scripting Define Symbol:
+UNITY_BURST_EXPERIMENTAL_ATOMIC_INTRINSICS
+
 ### Mono
 
 No additional settings required.

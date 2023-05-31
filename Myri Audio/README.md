@@ -111,6 +111,8 @@ Unity!
 -   The Unity Editor sometimes emits an exception from a Bursted job. This is a
     DSPGraph and job system bug related to scheduling, and does not appear to
     have any adverse effects currently.
+-   Sometimes DSPGraph will hang editor shutdown if Myri was installed but never
+    used.
 
 ## Near-Term Roadmap
 

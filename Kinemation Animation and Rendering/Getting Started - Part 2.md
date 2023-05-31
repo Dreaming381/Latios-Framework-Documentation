@@ -41,6 +41,9 @@ like using *Latios Vertex Skinning*:
 
 ![](media/eedd8e6559dc35bc7dedda9dc55c9317.png)
 
+**Important: Note the use of Object Space!** By default, those nodes will be set
+to World Space.
+
 And here’s what it looks like using *Latios Deform*:
 
 ![](media/1ccddd38ca9b0f7bc01002d59f428565.png)
