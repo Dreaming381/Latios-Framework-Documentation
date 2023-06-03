@@ -6,6 +6,21 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic
 Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [0.7.1] – 2023-6-3
+
+Officially supports Entities [1.0.10]
+
+### Added
+
+-   Added `LatiosWorldUnmanaged.UpdateCollectionComponentMainThreadAccess() `and
+    equivalents for `BlackboardEntity` and `EntityManager` for declaring that
+    there were no jobs scheduled for a collection component
+
+### Improved
+
+-   Added referral to documentation for automatic dependency management error
+    messages
+
 ## [0.7.0] – 2023-5-29
 
 Officially supports Entities [1.0.10]

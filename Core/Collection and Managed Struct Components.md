@@ -221,14 +221,15 @@ If for some reason, you wish to have more fine-grained control over the
 dependency management, the following table shows which functions modify which
 `JobHandle` values:
 
-| Method                                        | Modifies Dependency | Queues internal update from Dependency | Removes internal update from queue |
-|-----------------------------------------------|---------------------|----------------------------------------|------------------------------------|
-| AddOrSetCollectionComponentAndDisposeOld\<T\> |                     | x                                      |                                    |
-| RemoveCollectionComponentAndDispose\<T\>      | x                   | x                                      |                                    |
-| GetCollectionComponent\<T\>                   | x                   | x                                      |                                    |
-| GetCollectionComponent\<T\> out JobHandle     |                     | x                                      |                                    |
-| SetCollectionComponentAndDisposeOld\<T\>      |                     | x                                      |                                    |
-| UpdateCollectionComponentDependency\<T\>      |                     |                                        | x                                  |
+| Method                                         | Modifies Dependency | Queues internal update from Dependency | Removes internal update from queue |
+|------------------------------------------------|---------------------|----------------------------------------|------------------------------------|
+| AddOrSetCollectionComponentAndDisposeOld\<T\>  |                     | x                                      |                                    |
+| RemoveCollectionComponentAndDispose\<T\>       | x                   | x                                      |                                    |
+| GetCollectionComponent\<T\>                    | x                   | x                                      |                                    |
+| GetCollectionComponent\<T\> out JobHandle      |                     | x                                      |                                    |
+| SetCollectionComponentAndDisposeOld\<T\>       |                     | x                                      |                                    |
+| UpdateCollectionComponentDependency\<T\>       |                     |                                        | x                                  |
+| UpdateCollectionComponentMainThreadAccess\<T\> |                     |                                        | x                                  |
 
 One reason why you may wish to manually control dependencies is to allow jobs to
 run during a sync point. By scheduling a job which only interacts with
