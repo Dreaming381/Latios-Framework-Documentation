@@ -25,6 +25,8 @@ These special systems are called automatically by the following:
     -   SuperSystem
     -   RootSuperSystem
     -   FixedSimulationSystemGroup
+    -   LatiosWorldSyncGroup
+    -   PreSyncPointGroup
 -   Via Custom IRateManagers
     -   InitializationSystemGroup
     -   SimulationSystemGroup
