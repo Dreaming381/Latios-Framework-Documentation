@@ -6,6 +6,18 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic
 Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [0.7.3] – 2023-6-10
+
+Officially supports Entities [1.0.10]
+
+### Added
+
+-   Added `Physics.Substep()` which should be used in a foreach statement to
+    perform multiple substep iterations for a subdivided `deltaTime`
+-   Added `GetRW()` to `PhysicsComponentLookup` to improve performance of
+    read-modify-write operations inside FindPairs
+-   Added `PhysicsTransformAspectLookup` to modify transforms inside FindPairs
+
 ## [0.7.1] – 2023-6-3
 
 Officially supports Entities [1.0.10]

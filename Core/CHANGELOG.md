@@ -6,6 +6,18 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic
 Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [0.7.3] – 2023-6-10
+
+Officially supports Entities [1.0.10]
+
+### Fixed
+
+-   Fixed several issues regarding memory management when playing back custom
+    command buffers without Burst by switching from jobs to Burst-compiled
+    methods
+-   Fixed a missing folder warning by deleting an empty folder in
+    EntitiesExposed
+
 ## [0.7.2] – 2023-6-4
 
 Officially supports Entities [1.0.10]
