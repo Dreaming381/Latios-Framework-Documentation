@@ -6,6 +6,21 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic
 Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [0.7.4] – 2023-6-18
+
+Officially supports Entities [1.0.10]
+
+### Fixed
+
+-   Fixed initialization flag not clearing in `OptimizeSkeletonAspect`
+-   Fixed `ArgumentOutOfRangeException` in skinning for large quantities of
+    skinned meshes
+-   Fixed exposed bones ignoring mesh bounds offsets from blend shapes or
+    shaders
+-   Fixed optimized skeletons not receiving mesh bounds offsets
+-   Fixed issue where a corrupted optimized skeleton buffer could grow
+    infinitely
+
 ## [0.7.1] – 2023-6-3
 
 Officially supports Entities [1.0.10]

@@ -30,7 +30,7 @@ namespace Dragons.Authoring
         public AnimationClip clip;
     }
 
-    [TemproaryBakingType] struct SingleClipSmartBakeItem : ISmartBakeItem<SingleClipAuthoring>
+    [TemporaryBakingType] struct SingleClipSmartBakeItem : ISmartBakeItem<SingleClipAuthoring>
     {
         SmartBlobberHandle<SkeletonClipSetBlob> blob;
 
