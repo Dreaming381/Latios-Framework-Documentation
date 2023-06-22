@@ -73,3 +73,37 @@ These advanced methods are as follows:
     list unless it is excluded using `Without<T>()`
 -   WithAnyNotExcludedWeak\<T\>() – Applies both effects of `WithAnyWeak<T>()`
     and `WithAnyNotExcluded<T>(false)`
+
+## Fluent Queries vs Unity Query Builders
+
+Fluent Queries were created before the modern implementation of
+`EntityQueryBuilder` and `SystemAPI.QueryBuilder`. At the time of writing,
+Entity Queries don’t have full combination coverage within the API. As such,
+work has not been done yet to rectify differences in the APIs. The following
+table outlines the differences and discrepancies. The “Any” flavor APIs are
+equivalent to “All” flavors for the purpose of this comparison unless explicitly
+tabulated.
+
+| EntityQueryBuilder                       | Fluent                    |
+|------------------------------------------|---------------------------|
+| WithAll                                  | WithAll(true)             |
+| WithAllRW                                | WithAll()                 |
+| WithAllChunkComponent                    | WithAll(true, true)       |
+| WithAllChunkComponentRW                  | WithAll(false, true)      |
+| WithAll(listOfTypes)                     | X                         |
+| X                                        | WithAllWeak               |
+| X                                        | WithAny/NotExcluded/Weak/ |
+| WithNone                                 | Without                   |
+| WithNoneChunkComponent                   | Without(true)             |
+| WithNone(listOfTypes)                    | X                         |
+| WithDisabled/RW                          | X                         |
+| WithAbsent/ChunkComponent                | X                         |
+| WithAspect                               | X                         |
+| X                                        | WithDelegate              |
+| WithOptions(IncludePrefab)               | IncludePrefab             |
+| WithOptions(IncludedisabledEntities)     | IncludeDisabledEntities   |
+| WithOptions(FilterWriteGroup)            | UseWriteGroups            |
+| WithOptions(IgnoreComponentEnabledState) | IgnoreEnableableBits      |
+| WithOptions(IncludeSystems)              | X                         |
+| WithOptions(IncludeMetaChunks)           | X                         |
+| AddAdditionalQuery                       | X                         |
