@@ -60,7 +60,8 @@ struct TestDynamicMeshBakeItem : ISmartBakeItem<TestDynamicMeshAuthoring>
 
     public bool Bake(TestDynamicMeshAuthoring authoring, IBaker baker)
     {
-        baker.AddComponent(new TestDynamicMeshData
+        var entity = baker.GetEntity(TransformUsageFlags.Dynamic);
+        baker.AddComponent(entity, new TestDynamicMeshData
         {
             meshRelativeCenter = authoring.meshRelativeCenter,
             frequency          = authoring.frequency,
@@ -77,9 +78,9 @@ struct TestDynamicMeshBakeItem : ISmartBakeItem<TestDynamicMeshAuthoring>
         baker.BakeDeformMeshAndMaterial(renderer, mesh, materials);
 
         meshBlobRequest = baker.RequestCreateBlobAsset(mesh);
-        baker.AddComponent<MeshDeformDataBlobReference>();
-        baker.AddComponent<DynamicMeshMaxVertexDisplacement>();
-        baker.AddComponent(DynamicMeshAspect.RequiredComponentTypeSet);
+        baker.AddComponent<MeshDeformDataBlobReference>(     entity);
+        baker.AddComponent<DynamicMeshMaxVertexDisplacement>(entity);
+        baker.AddComponent(                                  entity, DynamicMeshAspect.RequiredComponentTypeSet);
 
         return true;
     }
