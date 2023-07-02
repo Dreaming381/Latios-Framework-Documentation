@@ -6,6 +6,36 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic
 Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [0.7.5] – 2023-7-2
+
+Officially supports Entities [1.0.11]
+
+### Added
+
+Added `RenderVisibilityFeedbackFlag` which is an enableable component whose
+enabled status represents whether the entity was rendered by any view in the
+previous frame
+
+### Fixed
+
+-   Fixed async GPU readback exception when baking blend shapes
+-   Fixed blend shape weights being baked 100 times larger than they should be
+-   Added a workaround for an issue where Unity would bind blend shape deltas as
+    a `ByteAddressBuffer` instead of a `StructuredBuffer`
+-   Fixed blend shapes initializing GPU buffers for meshes that aren’t dynamic
+    meshes
+-   Fixed blend shapes initializing GPU buffers when all weights are zero
+-   Fixed blend shapes uploading the wrong data at the wrong offsets
+-   Fixed blend shape meshes that are not skinned but are parented to a bone of
+    a skeleton attempting to bind to the skeleton
+-   Fixed incremental baking of optimized skeletons, blend shapes, and dynamic
+    meshes producing buffer size mismatch errors in the Editor
+
+### Improved
+
+-   Added a warning when baking a normal Mesh Renderer using a shader with
+    deformation properties, as this will lead to incorrect rendering results
+
 ## [0.7.4] – 2023-6-18
 
 Officially supports Entities [1.0.10]
