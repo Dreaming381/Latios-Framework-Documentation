@@ -6,6 +6,14 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic
 Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [0.7.6] – 2023-7-9
+
+Officially supports Entities [1.0.11]
+
+### Fixed
+
+-   Fixed a memory leak in `SyncPointPlaybackSystem`
+
 ## [0.7.4] – 2023-6-18
 
 Officially supports Entities [1.0.10]
