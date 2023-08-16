@@ -6,6 +6,34 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic
 Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [0.7.7] – 2023-8-15
+
+Officially supports Entities [1.0.14]
+
+### Added
+
+-   Added default interface methods `BeginBucket()` and `EndBucket()` to
+    `IFindPairProcessor` which each run once for every job index
+-   Added `Physics.FindPairsJobIndexCount()` methods which return the number of
+    job indices used by a FindPairs operation and whose value is always one
+    greater than the largest `jobIndex` provided
+-   Added `Ray.TransformRay()` overload which accepts a `TransformQvvs`
+    transform
+
+### Fixed
+
+-   Fixed casting of `TriangleCollider` to `Collider` retyping the collider as a
+    `BoxCollider`
+-   Fixed `Physics.BuildCollisionLayer.RunImmediate()` attempting to use
+    override AABBs when none were provided
+-   Fixed `FindObjectsResult` providing the wrong `bodyIndex`
+
+### Improved
+
+-   Convex collider meshes no longer require being marked as Read/Write in the
+    import settings in order to bake properly
+-   `Ray.TransformRay()` now uses `in` parameters
+
 ## [0.7.3] – 2023-6-10
 
 Officially supports Entities [1.0.10]

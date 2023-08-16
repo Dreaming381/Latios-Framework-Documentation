@@ -6,6 +6,15 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic
 Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [0.7.7] – 2023-8-15
+
+Officially supports Entities [1.0.14]
+
+### Improved
+
+-   Improved shadow map cascade culling to be more precise, resulting in fewer
+    draws of near objects into the shadow maps
+
 ## [0.7.5] – 2023-7-2
 
 Officially supports Entities [1.0.11]

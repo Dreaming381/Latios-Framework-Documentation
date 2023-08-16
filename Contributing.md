@@ -9,6 +9,17 @@ or you are paying someone to, your contributions will not go unnoticed!
 
 Here’s how to contribute.
 
+## Consider Free Parking
+
+[Free Parking](https://github.com/Dreaming381/Free-Parking) is an open project
+designed as an experimental playground for framework developers, users,
+teachers, learners, experimenters, prototypers, tech demoers, open-source
+enthusiasts, and much more! There, you’ll be able to collaborate quickly with
+other developers to help land the features you desire as fast as possible.
+
+However, if you’d prefer to work in your own projects, please continue reading
+this guide.
+
 ## Picking a Feature
 
 If you are just looking to contribute some bug fixes, skip this step.

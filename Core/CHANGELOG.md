@@ -6,6 +6,28 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic
 Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [0.7.7] – 2023-8-15
+
+Officially supports Entities [1.0.14]
+
+### Added
+
+-   Added `isCreated` property to `UnsafeParallelBlockList`
+-   Added `GetSharedComponentDataManaged()` and
+    `SetSharedComponentDataManaged()` to `BlackboardEntity`
+-   Added support for merging managed components onto blackboard entities
+
+### Fixed
+
+-   Worked around a Unity regression with `TypeManager.GetAllSystems()` that
+    caused extra interface methods to not work correctly when the system was
+    decorated with `[DisableAutoCreation]`
+
+### Improved
+
+-   Latios Framework source generators now only run on assemblies referencing
+    the Latios Framework
+
 ## [0.7.6] – 2023-7-9
 
 Officially supports Entities [1.0.11]
