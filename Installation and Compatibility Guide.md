@@ -6,11 +6,12 @@ framework.
 
 ## Installation
 
-Latios Framework 0.7 uses a custom transform system rather than Unity’s
-Transforms. This system will bake `GameObject` `Transform`s fine, but may pose
-compatibility issues with other ECS packages. If compatibility is a larger
-concern to you than the performance and feature advantages of this custom
-transform system, please get involved in the conversation in the community.
+Latios Framework 0.8 uses a custom transform system rather than Unity’s
+Transforms by default. This system will bake `GameObject` `Transform`s fine, but
+may pose compatibility issues with other ECS packages. If compatibility is a
+larger concern to you than the performance and feature advantages of this custom
+transform system, you can enable a compatibility mode for Unity Transforms via
+the LATIOS_TRANSFORMS_UNITY scripting define.
 
 Nearly all Latios Framework functionality requires that the World instance be a
 subclass instance called `LatiosWorld`. If your project currently uses default
@@ -18,6 +19,10 @@ world initialization, you simply have to go to your project window, *right
 click-\>Create-\>Latios-\>Standard Bootstrap – Injection Workflow*. This will
 create an instance of an `ICustomBootstrap` which sets up a variation of the
 default world, but with Latios Framework components installed.
+
+For new projects, you should spend some time reviewing the various bootstrap
+options before continuing. You can learn more about bootstraps in [Core: Getting
+Started](Core/Getting%20Started.md).
 
 ### Installing with Existing ICustomBootstrap
 
@@ -41,7 +46,10 @@ often avoids this problem but otherwise produces the same results.
 ## Managing Features
 
 Features are controlled through the use of *installers*. You can see these
-installers in action by looking through the bootstrap templates.
+installers in action by looking through the bootstrap templates. Every bootstrap
+is found in a static class named `<moduleName>Bootstrap` or
+`<moduleName>AuthoringBootstrap`. Check the documentation of each method to
+learn which bootstraps it needs to be called within.
 
 ## Platform Support
 
@@ -52,7 +60,8 @@ plugin and how you can help extend it to work on more platforms
 [here](https://github.com/Dreaming381/AclUnity).
 
 In addition, code stripping must be set to *Minimal* or *None*, and if building
-for IL2CPP, you must set the code generation mode to *Faster (Smaller) Builds*.
+for IL2CPP, you may need to set the code generation mode to *Faster (Smaller)
+Builds*. Suggestions for improving build support are welcome!
 
 If there is some other unexpected behavior, that is likely a bug. Please report
 the issue!

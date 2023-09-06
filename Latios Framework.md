@@ -1,6 +1,6 @@
 # Latios Framework Documentation
 
-Welcome! This is the documentation repository for Latios Framework 0.7.x
+Welcome! This is the documentation repository for Latios Framework 0.8.x
 releases.
 
 It would be awesome if this was an actual GitHub pages site with generated API
