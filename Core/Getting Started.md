@@ -14,8 +14,8 @@ No additional settings required.
 
 ### Il2Cpp
 
-In the *Build Settings*, set the *IL2CPP Code Generation* to *Faster (smaller)
-builds*
+In the *Build Settings*, you may need to set the *IL2CPP Code Generation* to
+*Faster (smaller) builds*
 
 ## Bootstrap
 
@@ -126,3 +126,9 @@ conflicts and editor performance and all that. But with subscenes, there’s no
 need for that anymore. You can have as many subscenes as you like, but you
 should keep scenes separate so that when you swap scenes, the slate can be wiped
 clean.
+
+### Keep Systems in Separate Assemblies from Components
+
+This isn’t a hard-and-fast rule, but some of the Latios Framework custom
+component types rely on source generators, and this can confuse `SystemAPI` if
+they are in the same assembly as the systems that use them.

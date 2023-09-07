@@ -65,14 +65,16 @@ Blob Assets is currently very unsafe.
 With that said, when applied to the right applications, Blob Assets are very
 powerful. The Latios Framework utilizes them for several applications and hides
 all the baking intricacies so you don’t have to worry about them. These
-applications are (including unreleased tech): convex and compound colliders in
-Psyshock, Myri’s audio clips with all the audio samples, Myri’s listener profile
-which describes spatial regions and the audio filters to apply to them,
-Kinemation’s mesh skinning weights and bone bounds, Kinemation’s optimized bone
-hierarchy and bindposes, and MachAxle’s axes and action maps.
+applications are: convex, tri-mesh, and compound colliders in Psyshock, Myri’s
+audio clips with all the audio samples, Myri’s listener profile which describes
+spatial regions and the audio filters to apply to them, Kinemation’s mesh
+skinning weights and bone bounds, Kinemation’s optimized bone hierarchy and
+bindposes, Kinemation’s animation clips, Kinemation’s Mecanim controller, and
+Calligraphic’s fonts.
 
-If you need help generating your own blob assets, definitely check out the Smart
-Blobber documentation! This is a powerful feature of the Latios Framework.
+If you need help generating your own blob assets, definitely check out the
+[Smart Blobber](Smart%20Blobbers.md) documentation! This is a powerful feature
+of the Latios Framework.
 
 ## ICleanup {ComponentData / SharedComponentData / BufferElementData}
 
@@ -106,10 +108,11 @@ them.
 
 `IManagedStructComponent` allows aggregating multiple references into a struct
 with normal ECS struct-like rules for getting and setting the references
-(although mutating the referenced objects is a different matter). In addition,
-these structs are not boxed and are instead stored in strongly-typed managed
-storage, drastically reducing GC pressure. Access is still slow and managed, so
-avoid them if you don’t need the Hybrid functionality.
+(although mutating the referenced objects is a different matter). This makes
+them great for `GameObjectEntity` entities. In addition, these structs are not
+boxed and are instead stored in strongly-typed managed storage, drastically
+reducing GC pressure. Access is still slow and managed, so avoid them if you
+don’t need the Hybrid functionality.
 
 ## Struct ICollectionComponent – Latios Framework
 

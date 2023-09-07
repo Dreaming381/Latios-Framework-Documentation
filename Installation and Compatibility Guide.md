@@ -2,7 +2,9 @@
 
 This guide will walk you through installing Latios Framework into your DOTS
 project. It will also show you how to enable or disable features of the
-framework.
+framework. This guide is specifically designed to address custom project needs.
+For the basics of Latios Framework setup, it is recommended you review [Core:
+Getting Started](Core/Getting%20Started.md) first.
 
 ## Installation
 
@@ -19,10 +21,6 @@ world initialization, you simply have to go to your project window, *right
 click-\>Create-\>Latios-\>Standard Bootstrap – Injection Workflow*. This will
 create an instance of an `ICustomBootstrap` which sets up a variation of the
 default world, but with Latios Framework components installed.
-
-For new projects, you should spend some time reviewing the various bootstrap
-options before continuing. You can learn more about bootstraps in [Core: Getting
-Started](Core/Getting%20Started.md).
 
 ### Installing with Existing ICustomBootstrap
 

@@ -18,10 +18,10 @@ public class ExampleSuperSystem : SuperSystem
     {
         GetOrCreateAndAddManagedSystem<YourSubSystem1>();
         GetOrCreateAndAddUnmanagedSystem<YourISystem2>();
-        GetOrCreateAndAddSystem<AnotherSuperSystem>();
+        GetOrCreateAndAddManagedSystem<AnotherSuperSystem>();
 
         //Automatically reuses the existing TransformSystemGroup to prevent ChangeFilter fighting.
-        GetOrCreateAndAddSystem<TransformSystemGroup>();
+        GetOrCreateAndAddManagedSystem<TransformSystemGroup>();
 
         //You can dynamically generate your systems here too!
         var assemblies = AppDomain.CurrentDomain.GetAssemblies();
@@ -31,7 +31,7 @@ public class ExampleSuperSystem : SuperSystem
             {
                 if (typeof(ICustomInterface).IsAssignableFrom(type))
                 {
-                    GetOrCreateAndAddSystem(typeof(YourGenericSystem<>).MakeGenericType(type));
+                    GetOrCreateAndAddManagedSystem(typeof(YourGenericSystem<>).MakeGenericType(type));
                 }
             }
         }
@@ -71,9 +71,9 @@ public class BeastSuperSystem : SuperSystem
         
     protected override void CreateSystems()
     {
-        GetOrCreateAndAddSystem<BeastHuntSystem>();
-        GetOrCreateAndAddSystem<BeastEatSystem>();
-        GetOrCreateAndAddSystem<BeastSleepSystem>();
+        GetOrCreateAndAddUnmanagedSystem<BeastHuntSystem>();
+        GetOrCreateAndAddUnmanagedSystem<BeastEatSystem>();
+        GetOrCreateAndAddUnmanagedSystem<BeastSleepSystem>();
 
         m_query = Fluent.WithAll<BeastTag>(true).Build();
     }
@@ -88,7 +88,7 @@ public class BeastSuperSystem : SuperSystem
 
 Note: You can use hierarchical update culling while also using the system
 injection workflow. When doing so, simply do not call
-`GetOrCreateAndAddSystem<T>()`.
+`GetOrCreateAndAdd***System<T>()`.
 
 ## Root Super Systems
 

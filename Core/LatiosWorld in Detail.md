@@ -46,7 +46,8 @@ The following systems are created by the `LatiosWorld`:
     the Editor.
 -   [MergeBlackboardsSystem](Blackboard%20Entities.md) – Merges
     `BlackboardEntityData` entities into the `sceneBlackboardEntity` and
-    `worldBlackboardEntity`
+    `worldBlackboardEntity` and is also responsible for creating the
+    `sceneBlackboardEntity` and performing `OnNewScene()` callbacks
 -   [ICollectionComponentsReactiveSystem and
     ManagedStructComponentsReactiveSystem](Collection%20and%20Managed%20Struct%20Components.md)
     – These are `RootSuperSystem`s that synchronize `ICollectionComponent` and
@@ -76,13 +77,13 @@ Currently, the `LatiosInitializationSystemGroup` orders itself as follows:
 -   SceneManagerSystem (if installed)
 -   [End OrderFirst region]
 -   …
--   [Unity SceneSystemGroup or ConvertToEntitySystem, whichever is latter]
+-   [Unity SceneSystemGroup]
 -   LatiosWorldSyncGroup
     -   MergeBlackboardsSystem
     -   ManagedStructComponentReactiveSystem
     -   CollectionComponentReactiveSystem
     -   [End OrderFirst region]
--   [Remaining Injected Systems]
+-   …
 -   EndInitializationEntityCommandBufferSystem
 
 ## LatiosWorld Creation in Detail
@@ -117,8 +118,7 @@ The `LatiosWorld` contains a couple of flags used for stopping and restarting
 simulations of systems on scene changes. The `SimulationSystemGroup` and
 `PresentationSystemGroup` rate managers check one of these flags and
 conditionally execute the `ComponentSystemGroup`. This behavior is only used
-when the Scene Manager is installed. Otherwise, the `sceneBlackboardEntity` is
-created on the first run of `LatiosInitializeSystemGroup`.
+when the Scene Manager is installed.
 
 The `LatiosWorld` also contains the public `useExplicitSystemOrdering` flag
 which tells `SuperSystem`s if they should enable system sorting by default. This

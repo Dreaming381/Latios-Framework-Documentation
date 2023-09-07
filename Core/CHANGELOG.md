@@ -6,6 +6,43 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic
 Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [0.8.0] – 2023-9-?
+
+Officially supports Entities [1.0.14]
+
+### Added
+
+-   Added `ISmartPostProcessItem` and `IBaker` extension `AddPostProcessItem()`
+    where each item will receive a callback after Smart Blobbers have been
+    processed, similar to the second step of `ISmartBakeItem`
+-   Added `UnsafeParallelBlockList.CopyElementsRaw()` which can copy all
+    elements into a contiguous memory region
+-   Added `DynamicHashMap`, a hash map wrapper around a `DynamicBuffer` that
+    serializes properly with Entity and blob asset references
+-   Added `ShuffleElements()` to all `Rng` flavors for reordering a list of
+    elements randomly
+
+### Changed
+
+-   The `sceneBlackboardEntity` creation now happens at a fixed point in the
+    frame right before blackboard entity merging
+-   The `OnNewScene()` callbacks in `SubSystem` and `ISystemNewScene` now happen
+    at a fixed point in the frame right after blackboard entity merging
+
+### Fixed
+
+-   Added `[MonoPInvokeCallback]` attributes to source generated Burst function
+    pointer methods for IL2CPP builds
+
+### Improved
+
+-   Updated parameter names of `Rng` methods to specify inclusivity and
+    exclusivity
+
+### Removed
+
+-   Removed `SmartBaker` virtual method `RunPostProcessInBurst()`
+
 ## [0.7.7] – 2023-8-15
 
 Officially supports Entities [1.0.14]

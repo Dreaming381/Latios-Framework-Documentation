@@ -41,13 +41,19 @@ associated methods is called from within a system updated by a `SuperSystem`
 method (which is true for root-level `ComponentSystemGroup`s as well as all
 Latios Framework-defined `ComponentSystemGroup` types), automatic dependency
 management is performed using the `Dependency` property of `SystemState`. All
-collection component operations are fully Burst-compatibile.
+collection component operations are fully Burst-compatible.
+
+The `ExistComponent` is supported by `SystemAPI` methods only if the
+`ICollectionComponent` is defined in a separate assembly from the system.
 
 ## Managed Struct Components
 
-Managed struct components can also be accessed from LatiosWorldUnmanaged.
+Managed struct components can also be accessed from `LatiosWorldUnmanaged`.
 However, these are not Burst-compatible. Still, they can be useful if only plan
-to Burst-compile parts of an ISystem.
+to Burst-compile parts of an `ISystem`.
+
+The `ExistComponent` is supported by `SystemAPI` methods only if the
+`IManagedStructComponent` is defined in a separate assembly from the system.
 
 ## Sync Point
 

@@ -132,17 +132,17 @@ its authoring equivalent:
 
 In the `LatiosInitializationSystemGroup`, the `MergeBlackboardsSystem` will
 iterate through each entity with the `BlackboardEntityData` component and copy
-the entity’s other components to one of the global entities based on the
+the entity’s other components to one of the blackboard entities based on the
 following settings:
 
 -   Blackboard Scope – The target entity to copy the components to
     -   Scene – Copy the components to the `sceneBlackboardEntity`
     -   World – Copy the components to the `worldBlackboardEntity`
 -   Merge Method – The logic to apply for each component shared by both the
-    source and target global entity
-    -   Overwrite – The source entity’s component value will replace the global
-        entity’s component value
-    -   Keep Existing – The global entity’s component value will be left
+    source entity and target blackboard entity
+    -   Overwrite – The source entity’s component value will replace the
+        blackboard entity’s component value
+    -   Keep Existing – The blackboard entity’s component value will be left
         unchanged
     -   Error On Conflict – If a component is shared by both entities, an
         exception will be thrown

@@ -27,6 +27,7 @@ Installers can be found in the following static classes:
     -   Latios.Transforms.TransformsBootstrap
     -   Latios.Myri.MyriBootstrap
     -   Latios.Kinemation.KinemationBootstrap
+    -   Latios.Calligraphics.CalligraphicsBootstrap
 -   Baking World
     -   Latios.Transforms.Authoring.TransformsBakingBootstrap
     -   Latios.Psyshock.Authoring.PsyshockBakingBootstrap

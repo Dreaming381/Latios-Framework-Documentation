@@ -44,10 +44,11 @@ touch `Dependency` nor any other `JobHandle`.
 
 ## New Scene Callback
 
-When using the scene management system, a Subsystem can receive a callback when
-a new scene is created by overriding `OnNewScene()`. The order these functions
-are called do not reflect the system order. This callback happens during the
-scene switching frame.
+When using the scene management system, a `SubSystem` can receive a callback
+when a new scene is created by overriding `OnNewScene()`. The order these
+functions are called do not reflect the system order. This callback happens
+after the subscenes have been loaded and the blackboard entities have been
+merged.
 
 ## Custom Update Criteria
 

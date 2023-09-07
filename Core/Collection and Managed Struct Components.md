@@ -139,6 +139,16 @@ The following are API methods exposed for manipulating these components:
     -   HasCollectionComponent\<T\> - Checks if a stored collection component
         exists on the entity and is not pending removal
 
+## Using ExistComponent in Systems
+
+If you try to use `ExistComponent` inside a `SystemAPI` method, you might
+encounter some cryptic error messages. This happens because the `ExistComponent`
+is created by a source generator that Unity’s source generators can’t see. The
+solution for this is to define your `IManagedStructComponent` and
+`ICollectionComponent` structs in a separate assembly definition from your
+systems. This orders the compilation so that Unity’s source generators can see
+the full `ExistComponent` definitions, thus solving the issue.
+
 ## Collection Component Dependency Management
 
 Collection components have an intrinsic understanding of the `Dependency`

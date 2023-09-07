@@ -119,6 +119,13 @@ If you would rather use a custom baking system instead of a Smart Baker, you can
 do that too. Simply store the `SmartBlobberHandle` in a custom-defined
 `[TemproaryBakingType]` component type and resolve it in your baking system.
 
+### Post-Process Items
+
+`ISmartPostProcessItem` is similar to `ISmartBakeItem`, except you create
+instances of these inside bakers and explicitly add them for post-processing.
+These can be useful for when you need to make a dynamic number of Smart Blobber
+requests.
+
 ## Creating a Simple Smart Blobber
 
 If you have your own custom blob asset types, you may want to create a Smart

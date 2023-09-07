@@ -345,13 +345,19 @@ do those workarounds anymore.
 Just be warned. It really truly is a gun eager to put a bullet through your
 foot.
 
+### DynamicHashMap
+
+This is a wrapper around a DynamicBuffer that provides hashmap-like
+functionality. Unlike other implementations, this implementation can correctly
+handle serialization of Entity and blob asset references.
+
 ## Known Issues
 
 -   `IManagedComponent` and `ICollectionComponent` are not true components. They
     instead rely on a source-generated `ExistComponent` to signify presence with
     a specific entity.
 -   Compile errors are generated when using .Net Framework. Use .Net Standard.
--   IL2CPP requires the IL2CPP Code Generation to use the “Faster (smaller)
+-   IL2CPP may require the IL2CPP Code Generation to use the “Faster (smaller)
     builds” option.
 -   Blackboard Entities do not retain blob asset reference counts.
 -   Blackboard Entities and `EntityDataCopyKit` do not handle enable bits
