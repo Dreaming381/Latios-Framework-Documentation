@@ -1,6 +1,6 @@
 # Getting Started with Myri Audio
 
-This is the fifth preview version released publicly. It currently supports
+This is the sixth preview version released publicly. It currently supports
 simple use cases appropriate for game jams, experiments, and maybe even some
 commercial projects. However, it likely lacks the necessary control features
 required to deliver a final product. I unfortunately lack the expertise to
@@ -11,7 +11,39 @@ With that said, I do believe that at the time of writing, Myri is the closest to
 a production-ready ECS audio solution for Unity Engine proper. So I hope you
 enjoy trying it out and feel free to send feedback!
 
-## Authoring
+## Playing Your First Sound
+
+Create a new Unity Project with the Latios Framework installed. Then add the
+*Latios Bootstrap* using the *Standard – Injection Workflow*.
+
+Create a subscene, and add two empty Game Objects to it with their positions set
+to the world origin (0, 0, 0). On one of the Game Objects, in the *Add
+Component* *Menu*, select *Latios -\> Audio (Myri) -\> Audio Listener*. Leave
+all the settings at default.
+
+Next, import an audio source with the *Load Type* set to *Decompress On Load*
+and *Preload Audio Data* checked. Then, on the non-listener Game Object, add a
+*Latios -\> Audio (Myri) -\> Audio Source* component. Drag your clip into the
+*Clip* field. Now enter play mode. You should hear your clip playing.
+
+**Important:** *If Unity crashes during this process, please report the bug to
+Unity.*
+
+Now that you’ve heard your clip, the next thing to do is to start playing around
+with the position of the audio source. If you move your audio source to -1 on
+the x-axis, the clip should sound like it is playing primarily through your left
+ear. If you move the source more than 5 units away, it will start to get
+quieter.
+
+What you also may have realized, is that the clip always starts playing right
+away, and there’s no setting to change that. At runtime, if you wanted to play a
+sound when a specific event happens, you would do so by instantiating an audio
+prefab entity at the location you want the sound to play.
+
+## Authoring Options
+
+Now that you understand the absolute basics of getting audio to play, let’s go
+through the available options:
 
 Myri provides three components for authoring audio. They can all be found in
 *Latios-\>Audio (Myri)* in the *Add Component Menu*.
@@ -49,7 +81,7 @@ able to receive and spatially process sounds before sending them to the mixed
 output. The *Interaural Time Difference Resolution* (ITD resolution) specifies
 the resolution for computing the time it takes for sound to reach one ear versus
 the other assuming the speed of sound in Earth’s atmosphere. A higher resolution
-may increase the amount of sampling performed when audio sources are merged.
+may increase the amount of sampling performed when voices are combined.
 
 The *Listener Response Profile* allows for providing a custom spatial profile
 which describes the filters applied to the audio sources. Such profiles can be

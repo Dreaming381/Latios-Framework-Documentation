@@ -6,6 +6,21 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic
 Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [0.8.0] – 2023-9-?
+
+Officially supports Entities [1.0.14]
+
+### Added
+
+-   *New Feature*: Added Unity Transforms (Entities 1.0) support
+
+### Improved
+
+-   Myri no longer builds the DSPGraph or starts executing its runtime systems
+    every frame right away, but instead waits until the first frame it detects
+    any audio source or listener, as this seems to circumvent a Unity issue that
+    would cause Unity to get stuck on domain reloads
+
 ## [0.7.0] – 2023-5-29
 
 Officially supports Entities [1.0.10]

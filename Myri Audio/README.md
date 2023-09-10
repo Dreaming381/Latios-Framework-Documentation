@@ -112,7 +112,7 @@ Unity!
     DSPGraph and job system bug related to scheduling, and does not appear to
     have any adverse effects currently.
 -   Sometimes DSPGraph will hang editor shutdown if Myri was installed but never
-    used.
+    used. A workaround was introduced in 0.8 to combat this.
 
 ## Near-Term Roadmap
 
