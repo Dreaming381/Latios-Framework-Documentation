@@ -6,6 +6,49 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic
 Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [0.8.0] – 2023-9-?
+
+Officially supports Entities [1.0.14]
+
+### Added
+
+-   *New Feature*: Added TriMesh collider type with baking support by a
+    non-convex Mesh Collider component
+-   *New Feature*: Added Unity Transforms (Entities 1.0) support
+-   Added `UnitySim` namespace with struct `ContactsBetweenResult`, although
+    this currently serves no purpose
+-   Added `Physics.DistanceBetweenAll()` which is able to dispatch a result to a
+    processor for each sub-collider pair
+-   Added an enumerable version of `Physics.FindObjects()` which can be used in
+    a `foreach` expression, bypassing the need for a dedicated
+    `IFindObjectsProcessor`
+-   Added `TransformAabb()` overload which takes a
+    `WorldTransformReadOnlyAspect`
+
+### Changed
+
+-   **Breaking:** Renamed `IBaker.RequestCreateBlobAsset(Mesh mesh)` to
+    `RequestCreateConvexBlobAsset` to help differentiate it from the new TriMesh
+    equivalent that takes the same argument
+-   Renamed `ConvexColliderBaker` to `MeshColliderBaker` which will bake both
+    Convex and TriMesh colliders given an authoring Mesh Collider component
+-   The sizes of some query result types have increased to accommodate future
+    simulation efforts
+
+### Fixed
+
+-   Fixed baking multiple colliders on the same authoring Game Object as a
+    compound having the wrong child collider transforms
+-   Fixed reported hitpoint and normal when a sphere or capsule center perfectly
+    touches the closest feature of the other non-sphere collider in a
+    `DistanceBetween()` operation
+-   Fixed returned normals in queries involving convex colliders
+
+### Improved
+
+-   `FindObjectsResult.layer` now returns by `ref readonly` for improved
+    performance
+
 ## [0.7.7] – 2023-8-15
 
 Officially supports Entities [1.0.14]

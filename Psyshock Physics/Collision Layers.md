@@ -417,7 +417,8 @@ This method returns a `JobHandle `which represents the final state of the
 
 If you only need to query a single `Aabb` against a `CollisionLayer`, you can
 use the `FindObjects` API. It works very similarly to `FindPairs`, but with
-fewer options.
+fewer options. Though it also has a zero-option overload for receiving each
+result in a `foreach` expression, which can be very convenient.
 
 ## Debugging Collision Layers
 

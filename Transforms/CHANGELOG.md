@@ -25,6 +25,12 @@ Officially supports Entities [1.0.14]
 -   Added `HybridTransformsSyncPointSuperSystem` which is when GameObjectEntity
     bindings occur
 
+### Changed
+
+-   `TransformBakeUtils.GetQvvsRelativeTo()` now returns
+    `TransformQvvs.identity` if both `Transform` arguments are actually the same
+    `Transform`
+
 ### Improved
 
 -   Made the `TransformQvs` argument in `qvvs.mul()` an `in` parameter

@@ -1,7 +1,7 @@
 # Colliders
 
-In version 0.7.0 of Psyshock, only a small subset of colliders are supported,
-and authoring for these are not complete.
+In version 0.8.0 of Psyshock, most essential collider types are supported, but
+authoring for these are not fully complete.
 
 -   Sphere Collider
     -   center and radius
@@ -11,6 +11,8 @@ and authoring for these are not complete.
     -   center and halfwidth
 -   Convex Collider
     -   local-space blob and non-uniform scale factor
+-   TriMesh Collider
+    -   Local-space blob and non-uniform scale factor
 -   Compound Collider
     -   local-space blob and uniform scale factor
 
@@ -38,9 +40,10 @@ Use the PhysX *Box Collider*.
 
 ![](media/87073ef01be44817f3ceed69d82cfdeb.png)
 
-### Convex Collider
+### Convex or TriMesh Collider
 
-Use the PhysX *Mesh Collider* and ensure *Convex* is checked.
+Use the PhysX *Mesh Collider*. If you want a Convex Collider ensure *Convex* is
+checked. Otherwise, a TriMesh Collider will be baked instead.
 
 ![](media/de907201d91649d712e91c0b54d2f7d3.png)
 
@@ -144,8 +147,8 @@ stretched transforms exactly.
 
 ### Convex Collider
 
-A ConvexCollider is a struct which defines an immutable convex hull of up to 255
-vertices.
+A `ConvexCollider` is a struct which defines an immutable convex hull of up to
+255 vertices.
 
 The core of a `ConvexCollider` is its `public
 BlobAssetReference<ConvexColliderBlob> convexColliderBlob `field. It is
@@ -155,6 +158,23 @@ baking a *Mesh Collider* component or via a Smart Blobber.
 
 A `ConvexCollider` exposes a `public float3 scale` which can apply a non-uniform
 scale to the collider. And it reacts to stretched transforms exactly.
+
+### TriMesh Collider
+
+A `TriMeshCollider` is a struct which defines an immutable collection of
+spatially-mapped triangles.
+
+The core of a `TriMeshCollider` is its `public
+BlobAssetReference<TriMeshColliderBlob> triMeshColliderBlob` field. Currently,
+it uses the same spatial mapping structure as `CollisionLayer`, but this is
+subject to change in the future. It can be created via baking a *Mesh Collider*
+component or via a Smart Blobber.
+
+A `TriMeshCollider` exposes a public float3 scale which can apply a non-uniform
+scale to the collider. And it reacts to stretched transforms exactly.
+
+A TriMesh Collider is a composite collider type and contains multiple
+sub-colliders (in this case, all Triangles).
 
 ### Compound Collider
 
@@ -182,9 +202,12 @@ contains a `public float3 stretch` which supports transform stretching. By
 default, the `stretch` vector will be rotated into each sub-collider’s local
 space and then applied to that sub-collider.
 
+A Compound Collider is a composite collider type and contains several
+sub-colliders.
+
 ### Triangle Collider (Experimental)
 
-There is a `TriangleCollider` type in code which has a complete API but is
-currently mostly untested. It does not have a dedicated authoring workflow.
-Though it is trivial to construct in code as it is basically three vertices. If
-you choose to use it and discover any issues, please report a bug.
+There is a `TriangleCollider` type in code which has a complete API but does not
+have a dedicated authoring workflow. Though it is trivial to construct in code
+as it is basically three vertices. It is used as a sub-collider type in TriMesh
+Colliders.

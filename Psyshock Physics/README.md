@@ -54,9 +54,9 @@ makes them a lot more pleasant to work with.
 
 The physics algorithms apply a local to world space conversion when capturing
 data from entities. They will also support world to local space conversion on
-simulation write back when simulation is supported.
+simulation write back once simulation is supported.
 
-Other transform features like scale and stretch are also supported and work
+QVVS Transform features like scale and stretch are also supported and work
 automatically. For shapes which don’t have well-defined stretch algorithms, you
 can choose from one of several approximation methods.
 
@@ -203,11 +203,12 @@ with Psyshock, this can be achieved with little effort.
 
 ## Known Issues
 
--   This release is missing quite a few collider shapes, queries, and simulation
-    features.
+-   This release is missing quite a few queries and simulation features.
 -   Compound Colliders use linear brute force algorithms and lack an underlying
     acceleration structure. Try to keep the count of primitive colliders down to
     a reasonable amount.
+-   Compound Colliders do not support embedded Traingle, Convex, or TriMesh
+    Colliders
 -   Authoring is weak right now. That stuff takes me a while to get working.
 -   This Readme has too many words and not enough pictures.
 
@@ -219,7 +220,6 @@ with Psyshock, this can be achieved with little effort.
     -   Pair filter caching
     -   Mismatched layers support
     -   CollisionLayers fully deferrable
-    -   Bucket begin/end callbacks
     -   Distance inflation
     -   Optimizations
 -   FindObjects improvements
@@ -227,9 +227,10 @@ with Psyshock, this can be achieved with little effort.
     -   Optimizations
 -   More Collider Shapes
     -   Quad, RoundedBox, Cone, Cylinder
-    -   Terrain, Static Mesh, Convex Compound (V-HCAD)
+    -   Terrain, Convex Compound (V-HCAD)
+    -   Layer embedded?
 -   Simplified Overlap Queries
--   Manifold Generation
+-   Contact Manifold Generation
 -   More Force Equations
 -   Authoring Improvements
     -   Autofitting
@@ -240,5 +241,5 @@ with Psyshock, this can be achieved with little effort.
 
 ## Not-So-Near-Term
 
--   Simulations (The first piece of this is Manifold Generation)
+-   Simulations (The first piece of this is Contact Manifold Generation)
 -   Spatial hash broadphase

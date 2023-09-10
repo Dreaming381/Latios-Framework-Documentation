@@ -1,15 +1,14 @@
 # Getting Started with Psyshock Physics
 
-This is the seventh preview version I am releasing out to the public. It
-currently only supports a small number of use cases. The number of supported use
+This is the eighth preview version I am releasing out to the public. It
+currently only supports spatial query use cases. The number of supported use
 cases will grow with each release.
 
 ## Authoring
 
 Currently Psyshock uses the classical Physx components for authoring
 [colliders](Colliders.md). Attach a Sphere Collider, Capsule Collider, Box
-Collider, or Mesh Collider to the GameObject you wish to convert. Mesh Colliders
-must have their convex checkbox checked.
+Collider, or Mesh Collider to the GameObject you wish to convert.
 
 There’s one exception. I added support for Compound Colliders and this uses the
 new Collider Authoring component. But you can also create them by attaching more
@@ -46,13 +45,13 @@ if (collider.type == ColliderType.Sphere)
 ## Simple Queries
 
 -   Current
-    -   Physics. AabbOf
+    -   Physics. AabbFrom
     -   Physics.Raycast
     -   Physics.DistanceBetween
     -   Physics.ColliderCast
 -   Future
     -   Physics.AreIntersecting
-    -   Physics.ComputeContacts
+    -   UnitySim.ContactsBetween
     -   Physics.QuadraticCast
     -   Physics.QuadraticColliderCast
 
@@ -116,12 +115,14 @@ PatchQueryForBuildingCollisionLayer?*
 
 ## Using Collision Layers
 
-Collision Layers can be passed into jobs as `[ReadOnly]` and queried. You can
-fire raycasts at them, or colliders, or perform distance queries. You can also
-iterate through the colliders and all their data via the `colliderBodies`
-property. Note that these bodies will be spatially reordered relative to how
-they were created. Use the `srcIndices` property to get the original creation
-index (`entityInQueryIndex` or `ColliderBody` array index).
+Collision Layers can be passed into jobs as `[ReadOnly]` and queried. Many of
+the Physics query operations have overloads which take a `CollisionLayer` as an
+argument. There’s additionally a `FindObjects()` method that allows you to scan
+for all colliders within an AABB. You can also iterate through all the colliders
+and all their data via the `colliderBodies` property. Note that these bodies
+will be spatially reordered relative to how they were created. Use the
+`srcIndices` property to get the original creation index (`entityInQueryIndex`
+or `ColliderBody` array index).
 
 *Tip: Store a* `CollisionLayer` *associated with each* `EntityQuery` *you care
 about inside an* `ICollectionComponent` *on the* `sceneBlackboardEntity`*. This
