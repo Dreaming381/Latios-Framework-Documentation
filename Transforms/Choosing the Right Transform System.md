@@ -13,7 +13,7 @@ Picking the correct one is important.
     -   Extreme Transforms Augmentation
 -   Non-cached QVVS (Not yet implemented)
     -   Extreme Transforms Augmentation (Not yet implemented)
--   Unity Transforms (Not yet implemented)
+-   Unity Transforms
     -   Stretch Compatibility Augmentation (Not yet implemented)
     -   Deterministic Parallel Hierarchy Augmentation (Not yet implemented)
     -   Hierarchy Optimizations? (Requires research)
@@ -38,6 +38,10 @@ When working with Cached QVVS, the general philosophy is if you want to read the
 `WorldTransform`, just read the component directly. And if you want to write
 transforms or read local space, use `TransformAspect` which abstracts hierarchy
 details.
+
+Cached QVVS is the default Transform System in the Latios Framework. It supports
+all features, including Motion History, Hierarchy Update Modes, and
+GameObjectEntity.
 
 ### Extreme Transforms Augmentation
 
@@ -71,6 +75,8 @@ entities, `WorldTransform` may be stale and should never be written to directly.
 Write to `LocalTransform` instead. `WorldTransform` will be updated by the
 `TransformSuperSystem`.
 
+Non-cached QVVS is not yet implemented.
+
 ### Extreme Transforms Augmentation
 
 This augmentation is identical to the Cached QVVS augmentation of the same name.
@@ -81,9 +87,9 @@ Unity Transforms is the solution provided by default ECS. It uses a non-cached
 matrix-centric workflow. There is a `LocalTransform` component and a
 `LocalToWorld` component present on every moving entity.
 
-The `DynamicBuffer<Child>` has an in-chunk capacity of 16, requiring 144 bytes
-of chunk space. `LocalToWorld` is also 16 bytes larger than a QVVS because it
-uses a `float4x4` instead of a `float3x4`. The systems may be plagued with
+The `DynamicBuffer<Child>` has an in-chunk capacity of 8, requiring 80 bytes of
+chunk space. `LocalToWorld` is also 16 bytes larger than a QVVS because it uses
+a `float4x4` instead of a `float3x4`. The systems may be plagued with
 determinism flaws with regards to its hierarchy. Entity in chunk order and
 change filters are not deterministic. In addition, because it is matrix-based,
 additional computation is required for accessing world-space transform data for

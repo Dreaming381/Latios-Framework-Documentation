@@ -21,21 +21,42 @@ which you can use in any of your own types regardless of which flavor of
 transform system you use. For math operations using these transform types, look
 no further than the static `qvvs` class.
 
+### Motion History
+
+Motion History allows for tracking world transforms of previous frames. This can
+be used for various things, such as position-based dynamics, kinematic
+platforms, or motion vectors.
+
+### Hierarchy Update Modes
+
+Hierarchy Update Modes allow for specifying the various properties of a child
+transform that should be “locked” to world-space values. This brings ECS
+transforms much closer to the single-threaded expressiveness of classic
+`GameObject` transforms.
+
+### GameObjectEntity
+
+The `GameObjectEntity` mechanism allows for specifying non-subscene
+`GameObject`s as entities with automatic transform syncing. They can even be
+assigned a subscene “host” entity to combine baked entity data and runtime
+`GameObject` data all into a single entity. It is especially useful for things
+like the main camera.
+
 ### Chunk Efficiency
 
-All flavors of transform systems try to be as efficient as possible when it
-comes to chunk storage. Dynamic buffers are stored outside the chunk. Entities
-that purely copy their parent world transform replace their local transform
-component with a tag component. And entities without parents or children can
-function with a single world transform component as small as 48 bytes that is
-sufficient for physics and rendering.
+QVVS Transform systems try to be as efficient as possible when it comes to chunk
+storage. Dynamic buffers are stored outside the chunk. Entities that purely copy
+their parent world transform replace their local transform component with a tag
+component. And entities without parents or children can function with a single
+world transform component as small as 48 bytes that is sufficient for physics
+and rendering.
 
 ### Deterministic and High Performance
 
-Unity’s Transform Systems suffer from little bugs which break determinism of
+Unity’s Transform systems suffer from little bugs which break determinism of
 change filters, chunk ordering, and child buffer ordering when dealing with
-complex dynamically-changing hierarchies. Not only does this module fix these
-issues, but it does so using special optimization techniques to outperform
+complex dynamically-changing hierarchies. Not only do QVVS transform systems fix
+these issues, but they do so using special optimization techniques to outperform
 Unity’s systems as well.
 
 But if the baseline performance isn’t enough, there are multiple algorithms
@@ -52,18 +73,12 @@ system updates, and the entity won’t even teleport. If you add a `Parent`
 component but no `LocalTransform`, the `LocalTransform` will be set to identity.
 But if the `LocalTransform` is already there, it will be left untouched.
 
-### Motion History
-
-Motion History allows for tracking world transforms of previous frames. This can
-be used for various things, such as position-based dynamics, kinematic
-platforms, or motion vectors.
-
 ### Baking Ready
 
-All transform system flavors supply baking systems that work out-of-the-box and
-respect `TransformUsageFlags`. In addition, special features can be controlled
-via [special baking components workflow](QVVS%20Transforms%20Baking.md) that
-even works when multiple bakers try to add the same feature.
+QVVS Transforms supplies baking systems that work out-of-the-box and respect
+`TransformUsageFlags`. In addition, special features can be controlled via
+[special baking components workflow](QVVS%20Transforms%20Baking.md) that even
+works when multiple bakers try to add the same feature.
 
 ### Optimizations Everywhere
 
@@ -77,16 +92,21 @@ is memory-bound, the conversion to matrix is effectively “free”. The CPU nev
 has to compute a matrix. In addition, the upload makes better use of SIMD
 hardware.
 
+### Unity Transforms Compatibility Mode via Abstract Aspects
+
+The QVVS Transforms module provides an Abstract namespace which the other
+modules use for compatibility with both QVVS and Unity Transforms. While not all
+features are supported with Unity Transforms, the mode offers a solution for
+those who need better compatibility with other offerings.
+
 ## Known Issues
 
--   Compatibility with many other packages outside of the Latios Framework is
-    currently broken. Support is planned, but requires discussion and
-    participation from the community.
 -   The Entities Hierarchy does not show hierarchy relationships for closed
     subscenes.
+-   Some representations of Unity Transforms don’t map to QVVS cleanly in
+    abstract APIs, and information may be discarded in both directions.
 
 ## Near-Term Roadmap
 
 -   Uncached Transforms
--   Unity Compatibility Transforms
 -   IJobEntityHierarchy

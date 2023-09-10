@@ -8,11 +8,10 @@ processes *flags*.
 ## Tags
 
 There are three optional transform components that can be added to an entity:
-`TickStartingTransform`, `PreviousTickStartingTransform`, and
-`CopyParentWorldTransformTag`. All three components can be added using the
-[Request Any Reactive
+`PreviousTransform`, `TwoAgoTransform`, and `CopyParentWorldTransformTag`. All
+three components can be added using the [Request Any Reactive
 Pattern](../Level%20Up%20Your%20ECS/Baking%20Systems%20Recipes/Part%202%20-%20Request%20Any%20Reactive%20Pattern.md)
-inside a baker. Adding a `CopyParentWorldTransformTag` inside a baker could be
+inside a baker. Adding a `CopyParentWorldTransformTag` inside a baker may be
 done as follows:
 
 ```csharp
@@ -30,11 +29,10 @@ class MyBaker : Baker<MyCopyParentTransformAuthoring>
 }
 ```
 
-For `TickStartingTransform`, your component needs to implement the
-`IRequestTickStartingTransform` interface. And consequently for
-`PreviousTickStartingTransform`, your component must implement the
-`IRequestPreviousTickStartingTransform` interface. These motion history
-components will be initialized at runtime in the
+For `PreviousTransform`, your component needs to implement the
+`IRequestPreviousTransform` interface. And consequently for `TwoAgoTransform`,
+your component must implement the `IRequestTwoAgoTransform` interface. These
+motion history components will be initialized at runtime in the
 `MotionHistoryUpdateSuperSystem` which runs early in the
 `SimulationSystemGroup`.
 
@@ -87,6 +85,14 @@ comes with one side-effect, in that it will also fail to remove non-requested
 components, which may result in incorrect results during incremental baking.
 Such results will be resolved upon closing the subscene. A workaround for this
 issue is planned for a future release.
+
+## HierarchyUpdateMode
+
+`HierarchyUpdateMode` uses a flag system similar to `TransformUsageFlags`, and
+can be added to any entity in a baker, including entities obtained via
+`GetEntity()`. To do so, simply call the `IBaker.AddHierarchyModeFlags()`
+extension method and pass in the desired world-space lock flags. All requests
+targeting a specific entity will be combined with bitwise-OR logic.
 
 ## Systems
 
