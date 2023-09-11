@@ -11,6 +11,32 @@ exists.
 
 Check out the [Getting Started](Getting%20Started%20-%20Part%201.md) page!
 
+## Quick Answers
+
+*Do culling and LODs work?*
+
+Yes. They work the way they are supposed to.
+
+*Is it faster than Game Objects?*
+
+Way faster!
+
+*Will I run out of memory and cause Unity to crash?*
+
+It is far less likely.
+
+*Does this work with Unity Transforms?*
+
+Yes. Unity Transforms are slower than QVVS, but don’t affect the **big**
+optimizations. You’ll still see significant gains and retain the ability to tune
+your LODs for stable performance at all zoom levels.
+
+*How did you do this?*
+
+I’ve spent a lot of time on this over the last two years. This is my third
+iteration of the design. If you really want to know the details, I encourage you
+to reach out to me directly. There’s too much to explain here.
+
 ## Features
 
 ### Out-of-the-Box Deformations
@@ -69,7 +95,7 @@ dispatcher will only allocate skinning buffers for the visible entities,
 drastically reducing VRAM usage. Compute deform skinning now benefits from LODs.
 
 Both classical Unity and the unaltered Entities Graphics perform skinning
-mesh-by-mesh (the Hybrid Renderer at least processes all instances of a mesh at
+mesh-by-mesh (Entities Graphics at least processes all instances of a mesh at
 once). Kinemation handles all meshes for all skeletons at once using a special
 compute shader. This removes resource stalls and allows the GPU to use all
 available cores to perform skinning as fast as possible and move on to
@@ -78,7 +104,8 @@ rendering.
 Because of this, Kinemation handles modular characters composed of multiple
 meshes and materials incredibly well. Combining meshes is no longer much of an
 optimization. Instead, focus on sharing the same base materials and shaders to
-improve batching, and check that your skinned mesh chunk occupancy is good.
+improve batching, and check that your skinned mesh chunk occupancy is good. Use
+LODs to their full advantage.
 
 A rewritten Entities Graphics might sound really scary, but Kinemation takes
 great care to preserve existing workflows and behaviors where they make sense.
@@ -184,6 +211,13 @@ that the scaling causes rotated child transforms to shear in undesirable ways.
 Non-shearing stretch is built into many features of the Latios Framework, and
 Kinemation takes full advantage of it to deliver the juiciest of animations.
 
+### Mecanim Layer to Get Started
+
+Kinemation has a Mecanim Animator Controller runtime so that you can continue
+using the tools you know. The runtime supports all parameter types, all blend
+tree types, transitions, interrupts, root motion, and more. The `MecanimAspect`
+provides the API for interacting with the controller at runtime.
+
 ### Lots of Features
 
 While the above features might be the most impactful, Kinemation has plenty more
@@ -213,11 +247,12 @@ a bug!
 
 ## Near-Term Roadmap
 
--   Dual Quaternion Skinning (already implemented, but currently disabled
-    because it is bugged)
+-   IK Utilities
+    -   Pending Characters in Free Parking
+-   Deformed Mesh Normals and Tangents Recalculation
+-   Animation Override Layers
+-   Dual Quaternion Skinning
+    -   (already implemented, but currently disabled because it is bugged)
 -   Forced Optimized Skeleton Baking from Exposed Game Objects
 -   Stats and Troubleshooting Diagnostics
--   IK Utilities
 -   Cycle-Matching Utilities
--   Animation Override Layers
--   Skinning Normal Correction

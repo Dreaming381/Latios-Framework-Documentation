@@ -1,8 +1,8 @@
 # Getting Started with Kinemation – Part 1
 
-This is the third preview version released publicly. As such, it only provides
-foundational features. For simple use cases, it is easy to get started. But for
-advanced production workflows, that burden may fall on the user.
+This is the fourth preview version released publicly. As such, there’s still
+more to come. For simple use cases, it is easy to get started. But for advanced
+production workflows, some of that burden may fall on the user.
 
 It will be up to you, a member of the community, to help guide Kinemation’s
 continual development to meet the needs of real-world productions. Please be
@@ -59,7 +59,7 @@ By default, Kinemation treats anything with an `Animator` as a skeleton. That
 `GameObject` and all descendants become bones (except Skinned Meshes and child
 Animator hierarchies). This means the “skeleton” is usually also a “bone”. For
 optimized hierarchies, Kinemation creates a de-optimized shadow hierarchy and
-analyzes that instead.
+analyzes that during baking instead.
 
 However, Kinemation also allows skeletons to be built procedurally from code.
 
@@ -150,8 +150,8 @@ time Kinemation sees the skeleton. It can happen again by adding the
 `BoneReferenceIsDirtyFlag` component around will cause a fairly heavy Kinemation
 system to run every frame. Avoid using it unless you need it.
 
-If an entity in a `BoneReference` does not have the `LocalToWorld` component,
-bad things will happen.
+If an entity in a `BoneReference` does not have the
+`WorldTransform`(QVVS)/`LocalToWorld`(Unity) component, bad things will happen.
 
 The *exposed skeleton* entity is typically also an *exposed bone* entity.
 
@@ -168,13 +168,13 @@ Kinemation nomenclature.**
 An *exposed bone* is an entity whose transform components dictate its state of
 animation. It has the following components:
 
--   WorldTransform
+-   WorldTransform(QVVS)/LocalToWorld(Unity)
     -   Required
     -   Added during baking
--   PreviousTransform
+-   PreviousTransform (QVVS only)
     -   Required
     -   Added during baking
--   TwoAgoTransform
+-   TwoAgoTransform (QVVS only)
     -   Required
     -   Added during baking
 -   ExposedBoneInertialBlendState
@@ -255,17 +255,18 @@ runtime:
 
 An *exported bone* is an entity that copies the root-space
 `OptimizedBoneTransform` QVVS of an *optimized skeleton* bone and assigns it to
-its own `LocalTransform` and `WorldTransform` (the latter for stretch). When
-parented directly to the *optimized skeleton* entity, it effectively mimics the
-transform of the optimized bone along with all the optimized bone’s animations.
-This is often used for rigid character accessories like weapons or hats.
+its own `LocalTransform` and `WorldTransform` (the latter for stretch, QVVS
+only). When parented directly to the *optimized skeleton* entity, it effectively
+mimics the transform of the optimized bone along with all the optimized bone’s
+animations. This is often used for rigid character accessories like weapons or
+hats.
 
 An *exported bone* has the following components:
 
--   WorldTransform
+-   WorldTransform(QVVS)/LocalToWorld(Unity)
     -   Required
     -   Added during baking
--   LocalTransform
+-   LocalTransform (either QVVS or Unity flavor)
     -   Required
     -   Added during baking
 -   BoneOwningSkeletonReference
@@ -300,10 +301,10 @@ type at once.
 
 A *deformed mesh* has the following components:
 
--   WorldTransform
+-   WorldTransform(QVVS)/LocalToWorld(Unity)
     -   Required
     -   Added during baking
--   LocalTransform
+-   LocalTransform (either QVVS or Unity flavor)
     -   Required
     -   Added during baking
 -   MeshDeformDataBlobReference

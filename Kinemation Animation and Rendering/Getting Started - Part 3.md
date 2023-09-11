@@ -1,7 +1,10 @@
 # Getting Started with Kinemation – Part 3
 
 In this part, we’ll cover baking an animation clip, and playing it on our
-character in a system.
+character in a system. This guide assumes usage of QVVS Transforms. If you are
+using Unity Transforms, you may need to make some corrections in order to get
+the animations to work. This will not be an issue in Part 4 using optimized
+skeletons.
 
 ## Defining our Clip Player Component
 

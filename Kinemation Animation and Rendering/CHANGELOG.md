@@ -6,6 +6,38 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic
 Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [0.8.0] – 2023-9-?
+
+Officially supports Entities [1.0.14]
+
+### Added
+
+-   *New Feature*: Added Unity Transforms (Entities 1.0) support
+-   *New Feature*: Added Mecanim Animator Controller runtime which can bake an
+    Animator Controller and provides `MecanimAspect` API for runtime
+    manipulation
+-   *New Feature*: Added `TextBackend` namespace and functionality for baking
+    and rendering text
+-   Added `RootMotionOverrideMode` to `SkeletonClipCompressionSettings` which
+    can be used to specify whether root motion should be baked into bone index 0
+
+### Changed
+
+-   **Breaking:** `OptimizedSkeletonAspect.skeletonWorldTransform` no longer
+    returns by `ref readonly` as a backing value can no longer be guaranteed in
+    Unity Transforms mode
+-   By default, animation clips bake with root motion enabled such that motion
+    of the root is baked into bone index 0’s animation
+
+### Improved
+
+-   Several systems now Burst-compile their `OnCreate()` method
+
+### Removed
+
+-   Removed `ExposedBoneInertialBlendState` as implementations for exposed
+    skeletons may want to store this in a different way
+
 ## [0.7.7] – 2023-8-15
 
 Officially supports Entities [1.0.14]

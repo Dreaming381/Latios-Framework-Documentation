@@ -16,10 +16,10 @@ highlighted in this image:
 The *Animation Type* can be set to whatever type your animation clips work with.
 The *Avatar Definition* must be set to *Create From This Model* (for this
 example only). *Skin Weights* is dependent on which skinning algorithm you plan
-to use. If you use *Linear Blend Skinning*, you must set it to *Standard (4
-Bones)* as shown above. For *Compute Deform*, you can change it to custom with a
-max weights set up to 256. Leave *Optimize Game Objects* unchecked (for this
-example only).
+to use. If you use *Vertex Skinning* (Vertex Shader), you must set it to
+*Standard (4 Bones)* as shown above. For *Deform Skinning* (Compute Shader), you
+can change it to custom with a max weights set up to 256. Leave *Optimize Game
+Objects* unchecked (for this example only).
 
 Lastly, turn **off** compression of animation clips.
 
@@ -83,3 +83,7 @@ some code to play some animation. If you aren’t familiar with writing DOTS cod
 you may want to stop here.
 
 [Continue to Part 3](Getting%20Started%20-%20Part%203.md)
+
+Or…
+
+[Explore Mecanim](Mecanim%20Runtime.md)
