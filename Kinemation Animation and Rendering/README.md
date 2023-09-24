@@ -13,6 +13,10 @@ Check out the [Getting Started](Getting%20Started%20-%20Part%201.md) page!
 
 ## Quick Answers
 
+*Can I use Mecanim Animator Controllers?*
+
+Yes. Though some bugs will not be fixed in any 0.8.x patch.
+
 *Do culling and LODs work?*
 
 Yes. They work the way they are supposed to.
@@ -218,6 +222,10 @@ using the tools you know. The runtime supports all parameter types, all blend
 tree types, transitions, interrupts, root motion, and more. The `MecanimAspect`
 provides the API for interacting with the controller at runtime.
 
+Note: Mecanim functionality is **Experimental** in the 0.8 release. A design
+flaw was discovered late in the 0.8 development cycle and this flaw may prevent
+bugs from being fixed until a new feature release.
+
 ### Lots of Features
 
 While the above features might be the most impactful, Kinemation has plenty more
@@ -244,12 +252,15 @@ a bug!
     release.
 -   Entities Graphics stats don’t work. Kinemation will provide its own solution
     for this in a future release which will be more extensible and customizable.
+-   The Mecanim runtime contains a design flaw which may result in some
+    unresolvable bugs within the current feature release.
 
 ## Near-Term Roadmap
 
 -   IK Utilities
     -   Pending Characters in Free Parking
 -   Deformed Mesh Normals and Tangents Recalculation
+-   Mecanim Runtime V2
 -   Animation Override Layers
 -   Dual Quaternion Skinning
     -   (already implemented, but currently disabled because it is bugged)

@@ -131,6 +131,15 @@ section of the README. If you don’t have a preference, I will typically defaul
 to your Unity forums username. If you have a webpage you would like to be linked
 to your name, let me know that as well.
 
+## Large Features Notice
+
+Design integrity is crucial to the success of the Latios Framework. It is
+important that all data considerations are taken into an account when designing.
+However, most developers operate via a Trial-and-Error “Make it work” workflow.
+Because of this, if you choose to develop a large feature in the Latios
+Framework, that feature will be considered “experimental” until a full
+line-by-line review is conducted.
+
 ## My Own Workflow
 
 I manually synchronize development of the Latios Framework across several
@@ -157,3 +166,8 @@ be featured in demos, examples, and tutorials.
 Also, a huge help for future users is writing devlogs about your adventures with
 the Latios Framework. You can even showcase your progress in the Discord! We
 love it!
+
+If there is a particular feature that you want, build a sample project where the
+feature could easily be leveraged and share it with me. This gives me a concrete
+use case to develop the new feature against and ensure it works. Doing this cuts
+development time of the feature in half or more!
