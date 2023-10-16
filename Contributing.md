@@ -4,10 +4,12 @@ Oh hi! Awesome of you to stop by!
 
 No. I don’t want your money. And no, I don’t drink coffee.
 
-Writing code is where it’s at! Whether you want to, your boss is telling you to,
-or you are paying someone to, your contributions will not go unnoticed!
+If you are an artist or someone who is dead-set on using disposable income to
+make the Latios Framework better, jump to here.
 
-Here’s how to contribute.
+Otherwise, I’m assuming you are here because you are a programmer and want to
+contribute to an open source project the way programmers do. Keep reading to get
+some ideas.
 
 ## Consider Free Parking
 
@@ -117,12 +119,12 @@ I have my own tool for formatting which I use for personal development called
 “Alina”. It is not perfect, so if you are interested in helping it be better and
 usable by more people, let me know!
 
-## Tests
+## Unit Tests
 
 If you want them, write them. But in general, my philosophy has always been to
 test things with real projects. That way, I not only test the code itself, but
-also the practicality of such APIs. If you don’t like testing things, don’t
-worry about it.
+also the practicality of such APIs. If you don’t like unit tests, don’t worry
+about it.
 
 ## The Final Step
 
@@ -136,9 +138,9 @@ to your name, let me know that as well.
 Design integrity is crucial to the success of the Latios Framework. It is
 important that all data considerations are taken into an account when designing.
 However, most developers operate via a Trial-and-Error “Make it work” workflow.
-Because of this, if you choose to develop a large feature in the Latios
-Framework, that feature will be considered “experimental” until a full
-line-by-line review is conducted.
+(You probably think it is odd that I don’t.) Because of this, if you choose to
+develop a large feature in the Latios Framework, that feature will be considered
+“experimental” until a full line-by-line review is conducted.
 
 ## My Own Workflow
 
@@ -171,3 +173,38 @@ If there is a particular feature that you want, build a sample project where the
 feature could easily be leveraged and share it with me. This gives me a concrete
 use case to develop the new feature against and ensure it works. Doing this cuts
 development time of the feature in half or more!
+
+## Art
+
+If you reached this section because you have disposable income and really,
+really want to put it towards the Latios Framework, the best thing you can do is
+commission an artist to create assets that can be used for future experiments
+and sample projects (yes, this does make feature development go faster because I
+can better test the effectiveness of features in more realistic scenarios).
+There are plenty of sites out there where you can commission an artist. Pick
+whoever you like.
+
+If you are an artist, pretend you were commissioned for whatever amount you like
+(or don’t if that messes with your mojo). Assume whatever art is contributed
+will be released as CC0 within a year of its creation.
+
+While most art will be useful in some capacity at some point (use common sense),
+here’s a living list of ideas that will be especially helpful:
+
+-   Detailed 3D characters
+    -   The more detailed, the better, as detail tends to push the tech harder
+        and sometimes incentivize the development of new features a details
+        character could leverage.
+-   Character concept art for ATAR
+    -   Magical girls, but each character’s magic borrows from different
+        cultural folklore, and some are non-magical but skilled at some random
+        thing that makes them standout.
+-   Hub Worlds for Free Parking
+    -   A place that looks nice for lots of different characters to hang out in,
+        and a good test for character controllers.
+-   Guns
+    -   ATAR has FPS gameplay, so guns are a must. But also, guns that aren’t
+        necessarily weapons make for great tools for symbolizing interactivity
+        in Physics experiments.
+
+If you have further inquiries, PM me on the Unity forums or DM me on Discord.

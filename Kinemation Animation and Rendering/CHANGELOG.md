@@ -6,6 +6,17 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic
 Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [0.8.3] – 2023-10-15
+
+Officially supports Entities [1.0.16]
+
+### Fixed
+
+-   Fixed `TextBackendUpdateSystem` always being installed when using injection
+    workflow, even if Kinemation is not installed
+-   Fixed RenderVisibilityFeedbackFlag not being enabled after it has been
+    disabled if the whole chunk was disabled previously
+
 ## [0.8.2] – 2023-10-8
 
 Officially supports Entities [1.0.16]
