@@ -223,10 +223,10 @@ Alright. I clearly wasn’t understanding the problems going on. It was time to
 get some real numbers. I added a whole bunch of counters that would report
 something like this:
 
->   FindPairs Self Sweep stats for layer Spawn at bucket index 15 and count 1202
+FindPairs Self Sweep stats for layer Spawn at bucket index 15 and count 1202
 
->   Hits: 3958, inner loop enters: 1196, inner loop tests: 48092, inner loop run
->   (min, max): (0, 95)
+Hits: 3958, inner loop enters: 1196, inner loop tests: 48092, inner loop run
+(min, max): (0, 95)
 
 Confession time. These numbers really caught me off guard.
 
@@ -362,21 +362,21 @@ So before investigating any further, we can test right now how much this would
 reduce our inner loop count by. We do that by counting the number of inner loop
 iterations in which the AABBs overlap along the z-axis.
 
-| Count      | Inner loop enters | Inner loop tests | Z overlaps | Full overlaps | Average non-zero interval size | Average z overlaps per non-zero interval  | Possible % Reduction |
-|------------|-------------------|------------------|------------|---------------|--------------------------------|-------------------------------------------|----------------------|
-| 10         | 3                 | 6                | 0          | 0             | 2.0                            | 0.0                                       | 100.0                |
-| 20         | 9                 | 35               | 1          | 1             | 3.9                            | 0.1                                       | 97.1                 |
-| 50         | 25                | 232              | 26         | 3             | 9.3                            | 1.0                                       | 88.8                 |
-| 100        | 68                | 863              | 164        | 21            | 12.7                           | 2.4                                       | 81.0                 |
-| 200        | 160               | 2843             | 404        | 75            | 17.8                           | 2.5                                       | 85.8                 |
-| 500        | 435               | 22788            | 3407       | 568           | 52.4                           | 7.8                                       | 85.0                 |
-| 1000       | 897               | 77627            | 15327      | 3028          | 86.5                           | 17.1                                      | 80.3                 |
-| 2000       | 1870              | 343446           | 61310      | 10435         | 183.7                          | 32.8                                      | 82.1                 |
-| 5000       | 4752              | 2077742          | 336307     | 58505         | 437.2                          | 70.8                                      | 83.8                 |
-| 10000      | 9626              | 8319476          | 1388963    | 226990        | 864.3                          | 144.3                                     | 83.3                 |
-| 20000      | 19522             | 33368891         | 5664376    | 965329        | 1709.3                         | 290.2                                     | 83.0                 |
-| 50000      | 49236             | 207242642        | 34476303   | 5682409       | 4209.2                         | 700.2                                     | 83.4                 |
-| LSSS Cross | 5138              | 627505           | 65569      | 13961         | 122.1                          | 12.8                                      | 89.6                 |
+| Count      | Inner loop enters | Inner loop tests | Z overlaps | Full overlaps | Average non-zero interval size | Average z overlaps per non-zero interval | Possible % Reduction |
+|------------|-------------------|------------------|------------|---------------|--------------------------------|------------------------------------------|----------------------|
+| 10         | 3                 | 6                | 0          | 0             | 2.0                            | 0.0                                      | 100.0                |
+| 20         | 9                 | 35               | 1          | 1             | 3.9                            | 0.1                                      | 97.1                 |
+| 50         | 25                | 232              | 26         | 3             | 9.3                            | 1.0                                      | 88.8                 |
+| 100        | 68                | 863              | 164        | 21            | 12.7                           | 2.4                                      | 81.0                 |
+| 200        | 160               | 2843             | 404        | 75            | 17.8                           | 2.5                                      | 85.8                 |
+| 500        | 435               | 22788            | 3407       | 568           | 52.4                           | 7.8                                      | 85.0                 |
+| 1000       | 897               | 77627            | 15327      | 3028          | 86.5                           | 17.1                                     | 80.3                 |
+| 2000       | 1870              | 343446           | 61310      | 10435         | 183.7                          | 32.8                                     | 82.1                 |
+| 5000       | 4752              | 2077742          | 336307     | 58505         | 437.2                          | 70.8                                     | 83.8                 |
+| 10000      | 9626              | 8319476          | 1388963    | 226990        | 864.3                          | 144.3                                    | 83.3                 |
+| 20000      | 19522             | 33368891         | 5664376    | 965329        | 1709.3                         | 290.2                                    | 83.0                 |
+| 50000      | 49236             | 207242642        | 34476303   | 5682409       | 4209.2                         | 700.2                                    | 83.4                 |
+| LSSS Cross | 5138              | 627505           | 65569      | 13961         | 122.1                          | 12.8                                     | 89.6                 |
 
 That’s a minimum 80% reduction, and nearly 90% for our real-world LSSS test
 case!
@@ -1294,54 +1294,463 @@ Obviously, something went wrong that caused this to be slower than Optimal
 Order, but we haven’t had a performance table in a while. So here’s where we are
 at:
 
-|   |   |   |   |   |   |   |   |   |
-|---|---|---|---|---|---|---|---|---|
-|   |   |   |   |   |   |   |   |   |
-|   |   |   |   |   |   |   |   |   |
-|   |   |   |   |   |   |   |   |   |
-|   |   |   |   |   |   |   |   |   |
-|   |   |   |   |   |   |   |   |   |
-|   |   |   |   |   |   |   |   |   |
-|   |   |   |   |   |   |   |   |   |
-|   |   |   |   |   |   |   |   |   |
-|   |   |   |   |   |   |   |   |   |
-|   |   |   |   |   |   |   |   |   |
-|   |   |   |   |   |   |   |   |   |
-|   |   |   |   |   |   |   |   |   |
+| Element Count (time units) | Naïve | Optimal Order | Dual Axis | Dual Axis Optimized | Sign Flipped | Sentinel | Unrolled Poor | Total Speedup |
+|----------------------------|-------|---------------|-----------|---------------------|--------------|----------|---------------|---------------|
+| 10 (µs)                    | 3.4   | 4.5           | 5.0       | 4.6                 | 2.8          | 3.2      | 3.7           | 1.1           |
+| 20 (µs)                    | 4.4   | 4.5           | 6.1       | 5.3                 | 3.4          | 3.4      | 4.5           | 1.3           |
+| 50 (µs)                    | 8.3   | 4.6           | 7.3       | 7.3                 | 3.7          | 3.8      | 5.6           | 2.2           |
+| 100 (µs)                   | 10.3  | 6.8           | 10.7      | 11.6                | 5.4          | 6.1      | 7.8           | 1.7           |
+| 200 (µs)                   | 24.2  | 10.1          | 18.7      | 21.1                | 9.0          | 9.6      | 13.3          | 2.5           |
+| 500 (µs)                   | 131.4 | 40.3          | 67.4      | 67.2                | 35.0         | 32.2     | 45.4          | 4.1           |
+| 1000 (µs)                  | 450   | 140           | 259       | 218                 | 122          | 107      | 132           | 4.2           |
+| 2000 (µs)                  | 1843  | 512           | 833       | 793                 | 450          | 416      | 505           | 4.4           |
+| 5000 (ms)                  | 11.2  | 3.18          | 4.97      | 4.75                | 2.84         | 2.65     | 3.23          | 4.2           |
+| 10000 (ms)                 | 58.3  | 12.9          | 19.93     | 19.0                | 11.2         | 10.8     | 12.6          | 5.4           |
+| 20000 (ms)                 | 186   | 49.8          | 83.2      | 78.5                | 43.7         | 48.0     | 50.6          | 3.9           |
+| 50000 (ms)                 | 1082  | 329           | 554       | 558                 | 273          | 257      | 298           | 4.2           |
 
-## 
+The *Total Speedup* column compares *Sentinel* to *Naïve*. If you compared to a
+table in a previous adventure, you would find that the speedups are smaller than
+before. But that’s because newer Burst is getting better at optimizing the naïve
+baseline, so you really have to compare timings.
 
+Another thing this table shows is that newer Burst really helped out the
+unoptimized *Dual Axis* implementation. I have not investigated what changed,
+but those times used to be consistently twice as long as Optimal Order, but now
+are only mildly slower than the optimized variant for a select number of test
+cases.
+
+Anyways, it is time we explore what is going wrong with unrolling.
+
+## Point the Way
+
+As always, the first thing to do is check the Burst inspector and see what it
+spat out. And in this case, the problem made itself obvious fairly quick:
+
+```asm
+=== FindPairsSimplified.cs(1450, 1)                    if (math.bitmask(current < minYZmaxYZsFlipped[j]) == 0)
+        mov               edx, r8d
+        mov               qword ptr [rdi + 8*rdx], r13
+.Ltmp99:
+        mov               rdx, r15
+        shl               rdx, 4
+.Ltmp100:
+        vcmpltps          xmm0, xmm7, xmmword ptr [rax + rdx]
+        vmovmskps         edx, xmm0
+        cmp               edx, 1
+        adc               r8d, 0
+.Ltmp101:
+        lea               rdx, [r13 + 1]
+        mov               qword ptr [rdi + 8*r8], rdx
+.Ltmp102:
+        mov               rdx, r15
+        shl               rdx, 32
+        lea               rbx, [rdx + r9]
+        sar               rbx, 28
+.Ltmp103:
+=== FindPairsSimplified.cs(1455, 1)                    if (math.bitmask(current < minYZmaxYZsFlipped[j + 1]) == 0)
+        vcmpltps          xmm0, xmm7, xmmword ptr [rax + rbx]
+        vmovmskps         ebx, xmm0
+        cmp               ebx, 1
+        adc               r8d, 0
+.Ltmp104:
+        lea               rbx, [r13 + 2]
+        mov               qword ptr [rdi + 8*r8], rbx
+.Ltmp105:
+        add               rdx, r10
+        sar               rdx, 28
+.Ltmp106:
+=== FindPairsSimplified.cs(1460, 1)                    if (math.bitmask(current < minYZmaxYZsFlipped[j + 2]) == 0)
+        vcmpltps          xmm0, xmm7, xmmword ptr [rax + rdx]
+        vmovmskps         edx, xmm0
+        cmp               edx, 1
+        adc               r8d, 0
+.Ltmp107:
+        lea               rbx, [r13 + 3]
+        mov               qword ptr [rdi + 8*r8], rbx
+.Ltmp108:
+        movsxd            rcx, ecx
+        shl               rcx, 4
+.Ltmp109:
+=== FindPairsSimplified.cs(1465, 1)                    if (math.bitmask(current < minYZmaxYZsFlipped[j + 3]) == 0)
+        vcmpltps          xmm0, xmm7, xmmword ptr [rax + rcx]
+        vmovmskps         eax, xmm0
+        cmp               eax, 1
+        adc               r8d, 0
+=== FindPairsSimplified.cs(1470, 1)                    if (Hint.Unlikely(nextHitIndex >= 1020))
+        cmp               r8d, 1019
+        ja                .LBB7_10
+=== FindPairsSimplified.cs(1440, 1)                while (pair + 3 < final)
+        lea               esi, [r15 + 4]
+        add               rbx, 4
+        cmp               rbx, r12
+        jae               .LBB7_11
+.LBB7_8: ...
+.Ltmp110:
+=== FindPairsSimplified.cs(1446, 1)                    if (Hint.Unlikely(math.any(nextMins >= currentX)))
+        mov               rcx, qword ptr [r14]
+        mov               edx, esi
+.Ltmp111:
+        vcmpleps          xmm0, xmm6, xmmword ptr [rcx + 4*rdx]
+        vmovmskps         ecx, xmm0
+        test              ecx, ecx
+        jne               .LBB7_11
 ```
 
+Ugh. What is with all the instructions between each of the tests?
+
+There’s some shift instructions, and even a sign extension with `movsxd`. And
+notice how it can’t keep consistent with which registers it uses to index
+`minYZmaxYZsFlipped`? It uses `rdx` twice, but uses `rcx` and `rbx` the other
+times.
+
+The sign extension is the biggest hint that Burst is having trouble making a
+signed 32-bit indexer conform into x86 addressing modes. But that’s the API for
+`NativeArray`. If we want to do something else, we have to bypass
+`NativeArray`’s API. Fortunately, there is a way to do that with pointers.
+
+Instead of using a signed 32-bit index, let’s use unsigned 64-bit indices. That
+means both `j` and `nextHitIndex` will use the `ulong` type. The job now looks
+like this:
+
+```csharp
+[BurstCompile(OptimizeFor = OptimizeFor.Performance)]
+public struct UnrolledSweep : IJob
+{
+    [ReadOnly] public NativeArray<float>  xmins;
+    [ReadOnly] public NativeArray<float>  xmaxs;
+    [ReadOnly] public NativeArray<float4> minYZmaxYZsFlipped;
+    [ReadOnly] public NativeArray<Entity> entities;
+    public NativeList<EntityPair>         overlaps;
+
+    public unsafe void Execute()
+    {
+        Hint.Assume(xmins.Length == xmaxs.Length);
+        Hint.Assume(xmins.Length == minYZmaxYZsFlipped.Length);
+
+        var   hitCache     = new NativeArray<ulong>(1024, Allocator.Temp, NativeArrayOptions.UninitializedMemory);
+        ulong nextHitIndex = 0;
+        var   hitCachePtr  = (ulong*)hitCache.GetUnsafePtr();
+        var   minMaxPtr    = (float4*)minYZmaxYZsFlipped.GetUnsafeReadOnlyPtr();
+
+        for (int i = 0; i < xmins.Length - 1; i++)
+        {
+            float4 current = -minYZmaxYZsFlipped[i].zwxy;
+
+            float4 currentX = xmaxs[i];
+
+            ulong j = (ulong)i + 1;
+
+            ulong pair  = (((ulong)i) << 32) | j;
+            ulong final = (((ulong)i) << 32) | ((uint)xmins.Length);
+
+            while (pair + 3 < final)
+            {
+                var nextMins = xmins.ReinterpretLoad<float4>((int)j);
+                if (Hint.Unlikely(math.any(nextMins >= currentX)))
+                    break;
+
+                hitCachePtr[nextHitIndex] = pair;
+                if (math.bitmask(current < minMaxPtr[j]) == 0)
+                    nextHitIndex++;
+                pair++;
+
+                hitCachePtr[nextHitIndex] = pair;
+                if (math.bitmask(current < minMaxPtr[j + 1]) == 0)
+                    nextHitIndex++;
+                pair++;
+
+                hitCachePtr[nextHitIndex] = pair;
+                if (math.bitmask(current < minMaxPtr[j + 2]) == 0)
+                    nextHitIndex++;
+                pair++;
+
+                hitCachePtr[nextHitIndex] = pair;
+                if (math.bitmask(current < minMaxPtr[j + 3]) == 0)
+                    nextHitIndex++;
+                pair++;
+                j += 4;
+
+                if (Hint.Unlikely(nextHitIndex >= 1020))
+                {
+                    Drain(hitCache, nextHitIndex);
+                    nextHitIndex = 0;
+                }
+            }
+
+            while (pair < final && xmins[(int)j] < currentX.x)
+            {
+                hitCachePtr[nextHitIndex] = pair;
+                if (math.bitmask(current < minMaxPtr[j]) == 0)
+                    nextHitIndex++;
+                pair++;
+                j++;
+            }
+
+            if (nextHitIndex >= 1020)
+            {
+                Drain(hitCache, nextHitIndex);
+                nextHitIndex = 0;
+            }
+        }
+
+        Drain(hitCache, nextHitIndex);
+    }
+
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
+    void Drain(NativeArray<ulong> cache, ulong cacheCount)
+    {
+        for (int i = 0; i < (int)cacheCount; i++)
+        {
+            ulong pair   = cache[i];
+            int   first  = (int)(pair >> 32);
+            int   second = (int)(pair & 0xffffffff);
+
+            overlaps.Add(new EntityPair(entities[first], entities[second]));
+        }
+    }
+}
 ```
 
-s
+And here’s the assembly:
 
+```asm
+.LBB7_23:
+=== FindPairsSimplified.cs(1252, 1)                    if (Hint.Unlikely(math.any(nextMins >= currentX)))
+        lea               rax, [r13 + r14]
+.Ltmp95:
+        mov               rbx, qword ptr [rcx]
+        mov               rdx, r12
+        and               rdx, rsi
+.Ltmp96:
+        vcmpleps          xmm0, xmm6, xmmword ptr [rbx + rdx]
+        vmovmskps         edx, xmm0
+        test              edx, edx
+        jne               .LBB7_6
+=== FindPairsSimplified.cs(1255, 1)                    hitCachePtr[nextHitIndex] = pair;
+        lea               rdx, [r13 + r14 + 3]
+        mov               qword ptr [rdi + 8*r8], rax
+=== FindPairsSimplified.cs(1256, 1)                    if (math.bitmask(current < minMaxPtr[j]) == 0)
+        vcmpltps          xmm0, xmm7, xmmword ptr [r15 + 4*r12]
+        vmovmskps         eax, xmm0
+        cmp               eax, 1
+        adc               r8, 0
+=== FindPairsSimplified.cs(1260, 1)                    hitCachePtr[nextHitIndex] = pair;
+        lea               rax, [r13 + r14 + 1]
+        mov               qword ptr [rdi + 8*r8], rax
+=== FindPairsSimplified.cs(1261, 1)                    if (math.bitmask(current < minMaxPtr[j + 1]) == 0)
+        vcmpltps          xmm0, xmm7, xmmword ptr [r15 + 4*r12 + 16]
+        vmovmskps         eax, xmm0
+        cmp               eax, 1
+        adc               r8, 0
+=== FindPairsSimplified.cs(1265, 1)                    hitCachePtr[nextHitIndex] = pair;
+        lea               rax, [r13 + r14 + 2]
+        mov               qword ptr [rdi + 8*r8], rax
+=== FindPairsSimplified.cs(1266, 1)                    if (math.bitmask(current < minMaxPtr[j + 2]) == 0)
+        vcmpltps          xmm0, xmm7, xmmword ptr [r15 + 4*r12 + 32]
+        vmovmskps         eax, xmm0
+        cmp               eax, 1
+        adc               r8, 0
+=== FindPairsSimplified.cs(1270, 1)                    hitCachePtr[nextHitIndex] = pair;
+        mov               qword ptr [rdi + 8*r8], rdx
+=== FindPairsSimplified.cs(1271, 1)                    if (math.bitmask(current < minMaxPtr[j + 3]) == 0)
+        vcmpltps          xmm0, xmm7, xmmword ptr [r15 + 4*r12 + 48]
+        vmovmskps         eax, xmm0
+        cmp               eax, 1
+        adc               r8, 0
+=== FindPairsSimplified.cs(1276, 1)                    if (Hint.Unlikely(nextHitIndex >= 1020))
+        cmp               r8, 1019
+        ja                .LBB7_17
 ```
 
+Yes. That is looking much better! Our store is now only handled by two
+instructions each iteration. And on the last iteration, Burst recycles a
+calculation from our loop control. Our indexing of `minMaxPtr` is also
+consistent. In fact all of our registers are consistent throughout the loop.
+This code much more clearly represents what we desired. And the performance is
+there to back it up.
+
+Sentinel: 2.64 ms
+
+Unrolled: 2.46 ms
+
+A new record!
+
+## Rolling Out the Wins
+
+I could investigate adding a sentinel to our loop to reduce our loop control,
+but that imposes tricky setup costs I’m still not ready to explore yet.
+Fortunately, there’s some other low-hanging fruit.
+
+We’re using a 4-wide SIMD compare to check if any of the min x values are
+greater or equal to the current max x. But we know those values are sorted, so
+really whatever the highest index compares is all that matters.
+
+So change this:
+
+```csharp
+var nextMins = xmins.ReinterpretLoad<float4>((int)j);
+if (Hint.Unlikely(math.any(nextMins >= currentX)))
+    break;
 ```
 
+To this:
+
+```csharp
+if (Hint.Unlikely(xmins[(int)(j + 3)] >= currentX))
+    break;
 ```
 
+Unrolled: 2.46 ms
+
+Unrolled2: 2.35 ms
+
+Easy!
+
+Another thing I noticed is that there are 6 instructions at the end of the loop
+adding to all the variables for the next loop plus another 6 for testing the x
+axis. That’s as many instructions as a single test, each. With the most recent
+change, we can much more easily change how many unrolled tests we perform in a
+loop iteration. So let’s double the tests and see if that helps further.
+
+Unrolled3: 2.12 ms
+
+Burst switched up the addressing mode to use subtractive constants when indexing
+`minMaxPtr`. What happens if we double it again?
+
+Unrolled4: 2.00 ms
+
+How far can my CPU go? Well, I will tell you in another adventure, but only if
+you tell me how far yours can go. So be sure to try it out. And keep in mind
+that while I’ve been using powers of 2, you don’t have to.
+
+But there’s something else going on that has drawn my interest. Have a look at
+this VTune capture:
+
+![](media/e1c98bd38e46c82cc4eb534e6a5b8eb1.png)
+
+70% retire rate! This thing is screaming!
+
+And look why. Our bottleneck is exclusively in the core, because we use such a
+small subset of instructions that our CPU can’t keep all the ports busy. See our
+front-end and bad speculation? They are tiny. That’s because of our pair writing
+trick. We don’t have any dedicated branching logic to jump around to in our
+inner loop. And it is my theory that because of that, we have freed up the
+instruction cache to get away with an aggressive unroll. If you read Pierre
+Terdiman’s box pruning series, you’ll know he was operating in the range of 3-5
+tests per loop iteration before it stopped being advantageous. Yet here we are
+with 16 tests, and that’s not even the limit!
+
+Being branchless using aggressive stores really helps with speculation, which
+was our biggest problem with the Dual Axis algorithm. And using pointers can get
+rid of a lot of unnecessary shifts and sign extensions, which we also saw in our
+optimized Dual Axis algorithm.
+
+I think it is time we go back and revisit the Dual Axis algorithm.
+
+## A Lesson in Complexity
+
+The strategy I took when revisiting the Dual Axis algorithm was to perform a
+pre-pass through the range of bitfields and copy the bitfield values, filtering
+out bitfields that had zero bits set, and storing prefix sums and offsets
+alongside the copied bitfields. This could all be done mostly branchless with
+very few instructions.
+
+Then for the main loop, I performed a full read-modify-write operation when
+extracting `tzcnt`. Then I used an iteration counter and the prefix sums to do
+the `adc` trick on the index into the copied bitfields and helper arrays. The
+rest was just being really clever with how I represented values in order to take
+advantage of x86 addressing modes and avoid shift operations. That meant
+encoding the `zToX` values multiplied by 16 as x86 addressing can only scale an
+offset register by 8 and float4 is 16 bytes in stride.
+
+With all this effort, I managed to get the loop down to these 21 instructions:
+
+```asm
+.LBB5_8:
+=== FindPairsSimplified.cs(2010, 1)                bitCacheBitfieldArrayPtr[bitCacheIndex].Value &= ~(1ul << (int)tzcnt);
+        btr               rcx, r13
+        mov               qword ptr [rbx + 8*r12], rcx
+        mov               ecx, dword ptr [r14 + 8*r12]
+=== FindPairsSimplified.cs(2011, 1)                uint otherZ                                    = tzcnt + bitCacheCountersArrayPtr[bitCacheIndex].zIndexOffset;
+        add               ecx, r13d
+=== FindPairsSimplified.cs(2012, 1)                if (bitCacheCountersArrayPtr[bitCacheIndex].nextBitfieldThreshold < setBit)
+        cmp               dword ptr [r14 + 8*r12 + 4], r15d
+        adc               r12, 0
+.Ltmp26:
+        .cv_inline_site_id 13 within 8 inlined_at 1 2014 0
+=== BitField.cs(780, 1)            return math.tzcnt(Value);
+        tzcnt             r13, qword ptr [rbx + 8*r12]
+.Ltmp27:
+=== FindPairsSimplified.cs(2016, 1)                uint otherIndex = zToXsArrayPtr[otherZ];
+        mov               ecx, dword ptr [r8 + 4*rcx]
+=== FindPairsSimplified.cs(2018, 1)                hitCacheArrayPtr[nextHitIndex] = pairBase + otherIndex;
+        lea               rsi, [rcx + r9]
+        mov               qword ptr [rdx + 8*rax], rsi
+=== FindPairsSimplified.cs(2020, 1)                if (math.bitmask(currentYZ < minYZmaxYZsArrayPtr[otherIndex / 16]) == 0)
+        vcmpltps          xmm0, xmm6, xmmword ptr [rdi + rcx]
+        vmovmskps         ecx, xmm0
+        cmp               ecx, 1
+        adc               rax, 0
+=== FindPairsSimplified.cs(2023, 1)                if (Hint.Unlikely(nextHitIndex >= 1024))
+        cmp               rax, 1023
+        ja                .LBB5_9
+=== FindPairsSimplified.cs(2005, 1)            for (; setBit <= bitCount;)
+        cmp               r15d, r11d
+        ja                .LBB5_10
+.LBB5_7:
+=== FindPairsSimplified.cs(2010, 1)                bitCacheBitfieldArrayPtr[bitCacheIndex].Value &= ~(1ul << (int)tzcnt);
+        mov               rcx, qword ptr [rbx + 8*r12]
+=== FindPairsSimplified.cs(2005, 1)            for (; setBit <= bitCount;)
+        inc               r15d
+        jmp               .LBB5_8
 ```
 
-## 
+And this is what I got from VTune:
 
-I
+![](media/2a161cb76002a2ea9690d5c2968378da.png)
 
-```
+From this, we can see our branchless strategy worked! And our throughput is 15%
+higher now. But suddenly there are a whole bunch of port utilization issues.
 
-```
+We could dig into the port utilization issues and try to improve them, but there
+is another glaring problem with these results I should tell you about. Even
+though this performs only half the number of tests as our unrolled single-axis
+sweeper, it is processing twice the number of instructions! Our unrolled sweeper
+can handle four tests in the instructions required for the dual axis algorithm
+to perform one. The dual axis algorithm still can’t break that 4 ms threshold
+for 5000 elements, while the unrolled sweeper on a good run can do it under 2
+ms.
 
-```
+That’s the problem with more complex algorithms. The number of things that have
+to happen each test sometimes don’t scale as well, even if they perform less
+tests total. It is for this same reason that I have avoided the
+industry-standard BVH solution. Having a simple algorithm as the backbone allows
+for highly aggressive low-level optimizations. And such optimizations become
+less obtainable as the complexity of the algorithm increases.
 
-```
+But that’s not to say that Dual Axis is a total bust. Look closely at the
+assembly. You’ll notice inside those 21 instructions are a particular sequence
+of 6 that we’ve been using in our unrolled sweep. The first is the `lea`
+instruction. Now notice the `mov` instruction before it. That single instruction
+is all it takes to remap a z-ordered index into an x-ordered index. In other
+words, with one single instruction, we can transform our algorithm from a direct
+iteration algorithm into an indirect iteration algorithm. So is there any
+mechanism that could allow us to iterate over the z-ordered bits indirectly
+instead of using `tzcnt`?
 
-## 
+Linked lists.
 
-```
+Yeah. Who would have thought I would bring those up as a solution? But when we
+look at what is happening at the low-level, having a good linked list would
+eliminate many of our instructions. We could still use the bitfields to help us
+find entry and exit points in the linked list, and maybe even to get a bit count
+so that we know the number of iterations in advance and can maybe even do some
+unrolling.
 
-```
+It is really promising, but it will have to wait for another adventure. Right
+now, we have some pretty considerable gains in our unrolled sweep, so it is time
+to plug that new algorithm into LSSS proper and see what impact it has.
 
 ## The Battle of Bipartite
 
@@ -1611,4 +2020,5 @@ To be continued…
 ## Try It Yourself
 
 All the new FindPairs performance tests are included in the Optimization
-Adventures package sample included with the Latios Framework.
+Adventures package sample included with Latios Framework 0.6. The tests along
+with future adventure additions can also be found in LSSS.
