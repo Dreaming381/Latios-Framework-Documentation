@@ -6,6 +6,16 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic
 Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [0.8.4] – 2023-11-10
+
+Officially supports Entities [1.0.16]
+
+### Fixed
+
+-   Fixed baking stereo clips with an odd number of samples per channel
+-   Beginning with Unity 2022.3.13f1, editor crashes when baking audio clip
+    assets in a subscene no longer occur
+
 ## [0.8.2] – 2023-10-8
 
 Officially supports Entities [1.0.16]
