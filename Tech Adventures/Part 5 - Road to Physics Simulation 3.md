@@ -655,5 +655,457 @@ same strategies we have identified up to this point. There are still some
 gotchas we’ll explore, but there won’t be anything radically different from here
 on out!
 
+## Sphere vs Triangle
+
+One of these says “sphere”, which means we get to do this:
+
+```csharp
+public static UnitySim.ContactsBetweenResult UnityContactsBetween(in TriangleCollider triangle,
+                                                                    in RigidTransform triangleTransform,
+                                                                    in SphereCollider sphere,
+                                                                    in RigidTransform sphereTransform,
+                                                                    in ColliderDistanceResult distanceResult)
+{
+    UnitySim.ContactsBetweenResult result = default;
+    result.contactNormal                  = distanceResult.normalB;
+    result.Add(distanceResult.hitpointB, distanceResult.distance);
+    return result;
+}
+```
+
+These easy solutions are starting to become rare, so let’s enjoy them when we
+get them.
+
+## Capsule vs Triangle
+
+The first difference between this and Capsule vs Box is how we compute the face
+and edge planes to clip the capsule segment. There’s only three vertices, and
+two possible plane directions to worry about.
+
+```csharp
+internal static void BestFacePlanesAndVertices(in TriangleCollider triangle,
+                                                float3 localDirectionToAlign,
+                                                out simdFloat3 edgePlaneOutwardNormals,
+                                                out float4 edgePlaneDistances,
+                                                out Plane plane,
+                                                out simdFloat3 vertices)
+{
+    vertices = triangle.AsSimdFloat3();
+    plane    = mathex.PlaneFrom(triangle.pointA, triangle.pointB - triangle.pointA, triangle.pointC - triangle.pointA);
+    if (math.dot(plane.normal, localDirectionToAlign) < 0f)
+        plane = mathex.Flip(plane);
+
+    edgePlaneOutwardNormals = simd.cross(vertices.bcab - vertices, localDirectionToAlign);  // These normals are perpendicular to the contact normal, not the plane.
+    if (math.dot(edgePlaneOutwardNormals.a, vertices.c - vertices.a) > 0f)
+        edgePlaneOutwardNormals = -edgePlaneOutwardNormals;
+    edgePlaneDistances          = simd.dot(edgePlaneOutwardNormals, vertices.bcab);
+}
+```
+
+That’s a lot less code. And the edge planes are set up such that we don’t need
+to worry about the extra instance, as it matches the first edge plane.
+
+The other gotcha with triangles is that we run the risk of our contact normal
+being near parallel to the triangle’s surface. Unity detects this by comparing
+the dot product between the contact normal and the triangle’s normal against the
+constant of 0.05f. This is less than 3 degrees from parallel to the triangle’s
+surface.
+
+```csharp
+bool needsClosestPoint = math.abs(math.dot(boxLocalContactNormal, plane.normal)) < 0.05f;
+```
+
+Otherwise, the implementation is just a copy-and-paste. Not too bad!
+
+On a side note, Unity Physics does a really weird thing where it does collision
+detection by converting the triangle to capsule space (which requires 50% more
+space conversion operations) and then flip the other way to do contact
+generation, and then flip the results back again such that the triangle is B.
+
+Why? I have no idea. It seems like it is throwing away performance here.
+
+## Box vs Triangle
+
+Once again, we run into a situation where Unity chooses to use a specialized SAT
+algorithm for contacts and fall back on GJK under certain circumstances. And
+consequently, we are going to use the same strategy we used for box vs box for
+conditionally recovering the SAT contact axis.
+
+The actual catch this time around is that not only do we have to watch out for
+the contact normal being parallel to the triangle’s surface. And this is where
+Unity Physics does something really weird again. It sets things up to project
+the box edges against the triangle, and then if the triangle’s surface and
+contact normal are problematic, it switches to going the other way around. What
+is weird about this is that there’s never problems with this if the triangle
+edges are always projected on the box face to start with. This saves some space
+conversions as well as having to flip the contact manifold result. Again, free
+performance.
+
+With our schema, the box is always B in this scenario, so we’re already primed
+to use the smarter projection direction. The only thing we need to do is guard
+against projecting the box points against the triangle when the dot product of
+the contact normal and the triangle plane is less than our magic threshold.
+
+That just leaves computing the contact normal from the feature codes. We have to
+swap the box A features with the triangle features. And well, an optimization
+opportunity presents itself. We can skip quite a few space transforms by working
+in box space rather than triangle space, as the triangle can be perfectly
+transformed into an arbitrary space with equivalent representation.
+
+Here's what some of that looks like:
+
+```csharp
+case 5:  // A edge and B edge
+{
+    var edgeDirectionIndexA = (distanceResult.featureCodeA >> 2) & 0xff;
+    var edgeDirectionA      = edgeDirectionIndexA switch
+    {
+        0 => math.normalize(triangleInB.pointB - triangleInB.pointA),
+        1 => math.normalize(triangleInB.pointC - triangleInB.pointB),
+        2 => math.normalize(triangleInB.pointA - triangleInB.pointC),
+        _ => default
+    };
+    var edgeDirectionIndexB = (distanceResult.featureCodeB >> 2) & 0xff;
+    var edgeDirectionB      = edgeDirectionIndexB switch
+    {
+        0 => new float3(1f, 0f, 0f),
+        1 => new float3(0f, 1f, 0f),
+        2 => new float3(0f, 0f, 1f),
+        _ => default
+    };
+    edgeDirectionA      = math.rotate(aInBTransform.rot, edgeDirectionA);
+    aLocalContactNormal = math.normalize(math.cross(edgeDirectionA, edgeDirectionB));
+    aLocalContactNormal = math.select(aLocalContactNormal, -aLocalContactNormal, math.dot(aLocalContactNormal, distanceResult.normalB) > 0f);
+    break;
+}
+
+case 8:  // A face and B point
+case 9:  // A face and B edge
+{
+    // For B edge, this can only happen due to some bizarre precision issues.
+    // But we'll handle it anyways by just using the face normal of A.
+    aLocalContactNormal = math.normalize(math.cross(triangleInB.pointB - triangleInB.pointA, triangleInB.pointC - triangleInB.pointA));
+    aLocalContactNormal = math.select(aLocalContactNormal, -aLocalContactNormal, math.dot(aLocalContactNormal, distanceResult.normalA) < 0f);
+    break;
+}
+```
+
+## Triangle vs Triangle
+
+There’s good news and bad news with this one.
+
+The good news is that Unity uses GJK for this, so we don’t have to do some crazy
+SAT axis recovery shenanigans. However, we’ll still use the feature codes to
+identify point-face pairs as that’s a common case and more robust for figuring
+out contact normals.
+
+The bad news is that we have to worry about having to reverse roles when
+projecting the edges of one triangle against the face of the other due to
+contact normal alignment issues.
+
+Fortunately, role reversal is actually fairly straightforward if we just copy
+our original code and swap which triangle vertices and planes we use for each
+piece. We also only need to do the edge clipping part, because if we decide to
+perform a reverse, we already know that projecting onto triangle B is not worth
+it. No space conversions necessary.
+
+Oh, and what if both triangles have bad face normals relative to the contact
+normal? Then we fail and fall back to a single point contact.
+
+## Sphere vs Convex
+
+We are two-thirds through. Time for a breather.
+
+## Capsule vs Convex
+
+This is our first time really dealing with clipping with convex colliders. And
+immediately we encounter our first major challenge, which is the non-uniform
+scale factor. This is something that Psyshock has but Unity Physics doesn’t, so
+we’ll have to think up our own strategies for these special cases. First, let’s
+identify what case we’re dealing with.
+
+```csharp
+float3 invScale = math.rcp(convex.scale);
+var dimensions = math.countbits(math.bitmask(new bool4(math.isfinite(invScale), false)));
+```
+
+0 dimensions is easy. Our convex mesh collapsed down to a single point, which
+means we only have a single contact point.
+
+```csharp
+else if (dimensions == 0) // Code is written so 3 dim is checked first as that is way more likely
+{
+    result.Add(distanceResult.hitpointB, distanceResult.distance);
+    return result;
+}
+```
+
+For one dimension, our convex hull becomes a line along an axis. We can convert
+this line into a `0f` radius capsule and send it off to Capsule vs Capsule to
+deal with. The nice part about this is that `DistanceBetween()` already
+generated the correct feature code, so we just need to create the capsule
+endpoints which we can gather from the `Aabb`.
+
+```csharp
+else if (dimensions == 1)
+{
+    var convexCapsule = new CapsuleCollider(blob.localAabb.min * convex.scale, blob.localAabb.max * convex.scale, 0f);
+    return CapsuleCapsule.UnityContactsBetween(in convexCapsule, in convexTransform, in capsule, in capsuleTransform, in distanceResult);
+}
+```
+
+For 2D, we go from having a convex structure to a point cloud soup. Fortunately,
+Psyshock already has some algorithms to deal with this. Then we can raycast each
+capsule endpoint against the convex collider to determine if the endpoint
+requires clipping.
+
+```csharp
+var bInATransform = math.mul(math.inverse(convexTransform), capsuleTransform);
+var capA = math.transform(bInATransform, capsule.pointA);
+var capB = math.transform(bInATransform, capsule.pointB);
+var convexLocalContactNormal = math.rotate(bInATransform.rot, -result.contactNormal);
+
+var mask = math.select(0f, 1f, math.isfinite(invScale));
+var invMask = 1f - mask;
+var rayDisplacement = 2f * math.length(math.max(math.abs(capA), math.abs(capB)));
+var inflateConvex = convex;
+inflateConvex.scale = math.select(1f, convex.scale, math.isfinite(invScale));
+                
+var hitA = PointRayConvex.RaycastConvex(new Ray(capA, capA - convexLocalContactNormal * rayDisplacement), in inflateConvex, out _, out _);
+var hitB = PointRayConvex.RaycastConvex(new Ray(capA, capA - convexLocalContactNormal * rayDisplacement), in inflateConvex, out _, out _);
+```
+
+What happens if we do require clipping?
+
+In that case, we need to perform a raycast in 2D against our 2D point cloud
+mess. We can use a collider cast against a capsule perpendicular to the plane.
+Granted, it isn’t an amazingly fast algorithm relatively speaking, but we aren’t
+too concerned about performance for such a rare case right now.
+
+```csharp
+var clippedA = capA;
+var clippedB = capB;
+if (!hitA)
+{
+    var castCapsule = new CapsuleCollider(-invMask, invMask, 0f);
+    var castStart = new RigidTransform(quaternion.identity, capA * mask);
+    if (ColliderCast(in castCapsule, in castStart, capB * mask, in convex, RigidTransform.identity, out var hit))
+    {
+        clippedA = hit.hitpoint * mask + capA * invMask;
+        hitA = true;
+    }
+}
+if (!hitB)
+{
+    var castCapsule = new CapsuleCollider(-invMask, invMask, 0f);
+    var castStart = new RigidTransform(quaternion.identity, capB * mask);
+    if (ColliderCast(in castCapsule, in castStart, capA * mask, in convex, RigidTransform.identity, out var hit))
+    {
+        clippedB = hit.hitpoint * mask + capB * invMask;
+        hitB = true;
+    }
+}
+
+bool needsClosestPoint = true;
+if ((hitA || hitB) && math.dot(clippedB - clippedA, capB - capA) >= 0f)
+{
+    // Add the two contacts from the possibly clipped segment
+    //...
+```
+
+That’s all the weird dimensions down. Now we can get on to the common case where
+we will actually try to not make a computational mess.
+
+Our first step in 3D is to find the best face on the convex collider to use.
+However, a face in a convex collider could have well over 4 edges. We can’t
+return the edge planes in our SIMD format anymore. Instead, we’ll return the
+face index and the edge count to iterate in a loop. We’ll also use feature codes
+to hone in on our plane quicker. If the feature code is a face, then our result
+is that face.
+
+```csharp
+internal static void BestFacePlane(ref ConvexColliderBlob blob, float3 localDirectionToAlign, ushort featureCode, out Plane facePlane, out int faceIndex, out int edgeCount)
+{
+    var featureType = featureCode >> 14;
+    if (featureType == 2)
+    {
+        // Feature is face. Grab the face.
+        faceIndex = featureCode & 0x3fff;
+        facePlane = new Plane(new float3(blob.facePlaneX[faceIndex], blob.facePlaneY[faceIndex], blob.facePlaneZ[faceIndex]), blob.facePlaneDist[faceIndex]);
+        edgeCount = blob.edgeIndicesInFacesStartsAndCounts[faceIndex].y;
+    }
+```
+
+If our closest feature is an edge, we know the closest face is one of the two
+faces connected to that edge. But how do we know which faces are connected to an
+edge?
+
+Prior to writing these algorithms, you would have had to search through all the
+faces looking for ones which referenced the edge in question. However, I added
+new index lookups into the convex collider blob for both vertices and edges to
+look up attached faces. Now we just have to load up each face and determine
+which is the best.
+
+```csharp
+else if (featureType == 1)
+{
+    // Feature is edge. One of two faces is best.
+    var edgeIndex   = featureCode & 0x3fff;
+    var faceIndices = blob.faceIndicesByEdge[edgeIndex];
+    var facePlaneA  =
+        new Plane(new float3(blob.facePlaneX[faceIndices.x], blob.facePlaneY[faceIndices.x], blob.facePlaneZ[faceIndices.x]), blob.facePlaneDist[faceIndices.x]);
+    var facePlaneB =
+        new Plane(new float3(blob.facePlaneX[faceIndices.y], blob.facePlaneY[faceIndices.y], blob.facePlaneZ[faceIndices.y]), blob.facePlaneDist[faceIndices.y]);
+    if (math.dot(localDirectionToAlign, facePlaneA.normal) >= math.dot(localDirectionToAlign, facePlaneB.normal))
+    {
+        faceIndex = faceIndices.x;
+        facePlane = facePlaneA;
+        edgeCount = blob.edgeIndicesInFacesStartsAndCounts[faceIndex].y;
+    }
+    else
+    {
+        faceIndex = faceIndices.y;
+        facePlane = facePlaneB;
+        edgeCount = blob.edgeIndicesInFacesStartsAndCounts[faceIndex].y;
+    }
+}
+```
+
+Lastly, if the closest point is a vertex, then we have to loop through several
+faces to find the best.
+
+```csharp
+else
+{
+    // Feature is vertex. One of adjacent faces is best.
+    var vertexIndex        = featureCode & 0x3fff;
+    var facesStartAndCount = blob.faceIndicesByVertexStartsAndCounts[vertexIndex];
+    faceIndex              = blob.faceIndicesByVertex[facesStartAndCount.x];
+    facePlane              = new Plane(new float3(blob.facePlaneX[faceIndex], blob.facePlaneY[faceIndex], blob.facePlaneZ[faceIndex]), blob.facePlaneDist[faceIndex]);
+    float bestDot          = math.dot(localDirectionToAlign, facePlane.normal);
+    for (int i = 1; i < facesStartAndCount.y; i++)
+    {
+        var otherFaceIndex = blob.faceIndicesByVertex[facesStartAndCount.x + i];
+        var otherPlane     = new Plane(new float3(blob.facePlaneX[otherFaceIndex], blob.facePlaneY[otherFaceIndex], blob.facePlaneZ[otherFaceIndex]),
+                                        blob.facePlaneDist[otherFaceIndex]);
+        var otherDot = math.dot(localDirectionToAlign, otherPlane.normal);
+        if (otherDot > bestDot)
+        {
+            bestDot   = otherDot;
+            faceIndex = otherFaceIndex;
+            facePlane = otherPlane;
+        }
+    }
+    edgeCount = blob.edgeIndicesInFacesStartsAndCounts[faceIndex].y;
+}
+```
+
+I’ll admit, the data structure here is not the friendliest in terms of random
+memory accesses. But we aren’t looping through all the faces like we had to when
+finding the closest points. It is better that our data structure is friendly to
+those more expensive algorithms.
+
+Convex colliders could be “sharp” like an axe head. Therefore, we need to guard
+against faces nearly parallel to the contact normal like we do for triangles. We
+end up with this setup piece:
+
+```csharp
+var convexLocalContactNormal = math.InverseRotateFast(convexTransform.rot, -distanceResult.normalB);
+PointRayConvex.BestFacePlane(ref convex.convexColliderBlob.Value, convexLocalContactNormal * invScale, distanceResult.featureCodeA, out var plane, out int faceIndex, out int edgeCount);
+
+bool needsClosestPoint = math.abs(math.dot(convexLocalContactNormal, plane.normal)) < 0.05f;
+
+if (!needsClosestPoint)
+{
+    var bInATransform = math.mul(math.inverse(convexTransform), capsuleTransform);
+    var rayStart = math.transform(bInATransform, capsule.pointA);
+    var rayDisplacement = math.transform(bInATransform, capsule.pointB) - rayStart;
+```
+
+The very last step is to perform our edge plane raycasts so that we can get the
+two fractions to clip our capsule’s segment. If we want to preserve our SIMD
+raycasting, we’ll need to process four edges at a time, potentially with
+wraparound (processing an edge twice is harmless). Another concern is ensuring
+the edge planes all face outward. This is further complicated by edge directions
+in a face being arbitrarily ordered. Fortunately, because a face is a convex
+polygon, the average point of all the midpoints of any set of edges (including
+repeats) should always lie in the interior of the face. We can then use a dot
+product test to correct the signs.
+
+```csharp
+var    edgeIndicesBase = blob.edgeIndicesInFacesStartsAndCounts[faceIndex].x;
+float4 enterFractions  = float4.zero;
+float4 exitFractions   = 1f;
+bool4  projectsOnFace  = true;
+for (int i = 0; i < edgeCount; i += 4)
+{
+    int4 indices       = i + new int4(0, 1, 2, 3);
+    indices            = math.select(indices, indices - edgeCount, indices >= edgeCount);
+    indices           += edgeIndicesBase;
+    var segmentA       = blob.vertexIndicesInEdges[indices.x];
+    var segmentB       = blob.vertexIndicesInEdges[indices.y];
+    var segmentC       = blob.vertexIndicesInEdges[indices.z];
+    var segmentD       = blob.vertexIndicesInEdges[indices.w];
+    var edgeVerticesA  = new simdFloat3(new float4(blob.verticesX[segmentA.x], blob.verticesX[segmentB.x], blob.verticesX[segmentC.x],
+                                                    blob.verticesX[segmentD.x]),
+                                        new float4(blob.verticesY[segmentA.x], blob.verticesY[segmentB.x], blob.verticesY[segmentC.x],
+                                                    blob.verticesY[segmentD.x]),
+                                        new float4(blob.verticesZ[segmentA.x], blob.verticesZ[segmentB.x], blob.verticesZ[segmentC.x],
+                                                    blob.verticesZ[segmentD.x]));
+    var edgeVerticesB = new simdFloat3(new float4(blob.verticesX[segmentA.y], blob.verticesX[segmentB.y], blob.verticesX[segmentC.y],
+                                                    blob.verticesX[segmentD.y]),
+                                        new float4(blob.verticesY[segmentA.y], blob.verticesY[segmentB.y], blob.verticesY[segmentC.y],
+                                                    blob.verticesY[segmentD.y]),
+                                        new float4(blob.verticesZ[segmentA.y], blob.verticesZ[segmentB.y], blob.verticesZ[segmentC.y],
+                                                    blob.verticesZ[segmentD.y]));
+    edgeVerticesA *= convex.scale;
+    edgeVerticesB *= convex.scale;
+
+    // The average of all 8 vertices is the average of all the edge midpoints, which should be a point inside the face
+    // to help get the correct outward edge planes.
+    var midpoint           = simd.csumabcd(edgeVerticesA + edgeVerticesB) / 8f;
+    var edgeDisplacements  = edgeVerticesB - edgeVerticesA;
+    var edgePlaneNormals   = simd.cross(edgeDisplacements, convexLocalContactNormal);
+    edgePlaneNormals       = simd.select(-edgePlaneNormals, edgePlaneNormals, simd.dot(edgePlaneNormals, midpoint - edgeVerticesA) > 0f);
+    var edgePlaneDistances = simd.dot(edgePlaneNormals, edgeVerticesB);
+
+    var rayRelativeStarts  = simd.dot(rayStart, edgePlaneNormals) - edgePlaneDistances;
+    var relativeDiffs      = simd.dot(rayDisplacement, edgePlaneNormals);
+    var rayRelativeEnds    = rayRelativeStarts + relativeDiffs;
+    var rayFractions       = math.select(-rayRelativeStarts / relativeDiffs, float4.zero, relativeDiffs == float4.zero);
+    var startsInside       = rayRelativeStarts <= 0f;
+    var endsInside         = rayRelativeEnds <= 0f;
+    projectsOnFace        &= startsInside | endsInside;
+    enterFractions         = math.select(float4.zero, rayFractions, !startsInside & rayFractions > enterFractions);
+    exitFractions          = math.select(1f, rayFractions, !endsInside & rayFractions < exitFractions);
+}
+
+var fractionA     = math.cmax(enterFractions);
+var fractionB     = math.cmin(exitFractions);
+needsClosestPoint = true;
+if (math.all(projectsOnFace) && fractionA < fractionB)
+{
+    // Add the two contacts from the possibly clipped segment
+    var distanceScalarAlongContactNormal = math.rcp(math.dot(convexLocalContactNormal, plane.normal));
+    var clippedSegmentA                  = rayStart + fractionA * rayDisplacement;
+    var clippedSegmentB                  = rayStart + fractionB * rayDisplacement;
+    var aDistance                        = mathex.SignedDistance(plane, clippedSegmentA) * distanceScalarAlongContactNormal;
+    var bDistance                        = mathex.SignedDistance(plane, clippedSegmentB) * distanceScalarAlongContactNormal;
+    result.Add(math.transform(convexTransform, clippedSegmentA), aDistance - capsule.radius);
+    result.Add(math.transform(convexTransform, clippedSegmentB), bDistance - capsule.radius);
+    needsClosestPoint = math.min(aDistance, bDistance) > distanceResult.distance + 1e-4f;  // Magic constant comes from Unity Physics
+}
+```
+
+Is it a lot of code?
+
+Yes.
+
+Can it be improved with a smarter convex hull representation?
+
+Probably.
+
+There’s still 3 more pairs to go. They don’t get any easier.
+
 Todo: This is where I am going to cut things off for now. But don’t worry, I’m
 not giving up on this. Just need to take things in stride.
