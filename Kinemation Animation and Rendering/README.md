@@ -222,9 +222,8 @@ using the tools you know. The runtime supports all parameter types, all blend
 tree types, transitions, interrupts, root motion, and more. The `MecanimAspect`
 provides the API for interacting with the controller at runtime.
 
-Note: Mecanim functionality is **Experimental** in the 0.8 release. A design
-flaw was discovered late in the 0.8 development cycle and this flaw may prevent
-bugs from being fixed until a new feature release.
+Note: Mecanim functionality is **Experimental** and is a community-contributed
+feature. Bugfixes cannot be guaranteed. Sovogal is the primary contributor.
 
 ### Lots of Features
 

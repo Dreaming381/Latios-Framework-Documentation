@@ -6,6 +6,25 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic
 Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [0.8.5] – 2023-12-3
+
+Officially supports Entities [1.0.16]
+
+### Added
+
+-   Added Android support
+
+### Fixed
+
+-   Fixed AclUnity plugin failing to load in linux builds
+-   Fixed Latios Deform crashing when there were more than one large skeleton
+    entities
+-   Fixed Mecanim root motion rotation rotating the opposite way
+-   Fixed Mecanim accuracy issue with small clip weights
+-   Fixed Mecanim ComponentType conflict with optimized skeletons and QVVS
+    transforms
+-   Fixed root motion accuracy issues with exit times
+
 ## [0.8.3] – 2023-10-15
 
 Officially supports Entities [1.0.16]

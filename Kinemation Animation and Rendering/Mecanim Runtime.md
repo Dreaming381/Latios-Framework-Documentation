@@ -3,9 +3,8 @@
 Kinemation includes a Mecanim runtime, so that you can use the old familiar
 tools in your Latios Framework project.
 
-Note: Mecanim functionality is **Experimental** in the 0.8 release. A design
-flaw was discovered late in the 0.8 development cycle and this flaw may prevent
-bugs from being fixed until a new feature release.
+Note: Mecanim functionality is **Experimental** and is a community-contributed
+feature. Bugfixes cannot be guaranteed. Sovogal is the primary contributor.
 
 ## Setup
 

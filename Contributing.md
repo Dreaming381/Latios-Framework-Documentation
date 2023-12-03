@@ -5,7 +5,7 @@ Oh hi! Awesome of you to stop by!
 No. I don’t want your money. And no, I don’t drink coffee.
 
 If you are an artist or someone who is dead-set on using disposable income to
-make the Latios Framework better, jump to here.
+make the Latios Framework better, jump to [here](#_Art).
 
 Otherwise, I’m assuming you are here because you are a programmer and want to
 contribute to an open source project the way programmers do. Keep reading to get
@@ -135,12 +135,15 @@ to your name, let me know that as well.
 
 ## Large Features Notice
 
-Design integrity is crucial to the success of the Latios Framework. It is
-important that all data considerations are taken into an account when designing.
-However, most developers operate via a Trial-and-Error “Make it work” workflow.
-(You probably think it is odd that I don’t.) Because of this, if you choose to
-develop a large feature in the Latios Framework, that feature will be considered
-“experimental” until a full line-by-line review is conducted.
+When a member of the community contributes a large feature, it may not always be
+possible or practical for someone else to fix any bugs related to that feature.
+For this reason, large features contributed by the community are often marked as
+experimental. Bugs in experimental features may not be fixed in a patch release.
+
+With that said, very seldom do people get designs right the first time. Much of
+the Latios Framework comes from analyzing previous designs and finding ways to
+do things better. Even if your big feature is experimental, it is still valuable
+and will help the community learn and grow and eventually do something amazing!
 
 ## My Own Workflow
 
