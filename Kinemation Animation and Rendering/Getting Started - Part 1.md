@@ -20,10 +20,11 @@ entity.
     -   Windows
     -   Mac OS
     -   Linux
+    -   Android
 -   GPU Minimum Requirements
     -   Supports Entities Graphics
     -   Supports 8 simultaneous compute buffers in compute shaders
-    -   Has 32 kB of shared memory per thread group
+    -   Has 32 kB of shared memory per thread group (except Android)
     -   Supports thread group dimensions of (512, 1, 1)
 -   Content Requirements
     -   Skeleton size must be 32767 bones or less

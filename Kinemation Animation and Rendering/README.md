@@ -41,6 +41,12 @@ I’ve spent a lot of time on this over the last two years. This is my third
 iteration of the design. If you really want to know the details, I encourage you
 to reach out to me directly. There’s too much to explain here.
 
+*Does this work in VR?*
+
+Yes. While Android tends to be a mixed bag performance-wise, the most common
+headsets have shown preference towards Kinemation’s rendering stack over
+GameObjects.
+
 ## Features
 
 ### Out-of-the-Box Deformations
@@ -241,6 +247,26 @@ Kinemation is **fast**! No other ECS animation solution offers the same level
 flexibility at the scale Kinemation can achieve. If you aren’t satisfied, report
 a bug!
 
+### Android Notes
+
+As for Android, this largely depends on which GPU is in the device. Kinemation’s
+skinned mesh rendering algorithms are based on SSBOs, whereas many Android GPUs
+prefer UBOs. You can typically tell what a GPU prefers based on whether it
+renders a static ECS scene faster with Vulkan (which uses SSBOs for everything)
+or OpenGL ES (which uses UBOs for most things). Nearly all Mali GPUs that have
+been on the market in 2023 and earlier strongly prefer UBOs. Similar for
+Imagination PowerVR GPUs.
+
+Qualcomm Adreno GPUs like the ones in Meta’s VR headsets are a little different.
+Their developer guides suggest using UBOs smaller than 8 kB, and anything larger
+should prefer SSBOs. Unity only supports 64 kB UBOs, which means SSBOs are the
+best option, and performance tests reflect this. Kinemation’s rendering
+outperforms Game Objects on this GPU. However, as vertex count is the main
+bottleneck on these GPUs, and skinned meshes tend to require higher vertex
+counts for good-looking deformations, Kinemation’s scaling advantage is heavily
+offset by the low entity count the hardware can handle. LOD Groups are a
+powerful tool for increasing the number of entities the hardware can handle.
+
 ## Known Issues
 
 -   Kinemation only supports desktop platforms out-of-the-box. While the
@@ -259,7 +285,6 @@ a bug!
 -   IK Utilities
     -   Pending Characters in Free Parking
 -   Deformed Mesh Normals and Tangents Recalculation
--   Mecanim Runtime V2
 -   Animation Override Layers
 -   Dual Quaternion Skinning
     -   (already implemented, but currently disabled because it is bugged)
