@@ -854,67 +854,186 @@ else if (dimensions == 1)
 }
 ```
 
-For 2D, we go from having a convex structure to a point cloud soup. Fortunately,
-Psyshock already has some algorithms to deal with this. Then we can raycast each
-capsule endpoint against the convex collider to determine if the endpoint
-requires clipping.
+For 2D, we go from having a convex structure to a point cloud soup. Originally,
+I wrote an implementation that solved this particular case. But future me
+learned this was going to become a persistent problem, and came up with some new
+data structures in our convex hull to deal with them. We now have three 2D
+convex hulls represented as a sequence of vertex indices from our 3D convex
+hull. The planar convex hull builder algorithm I implemented isn’t necessarily
+the fastest at building 2D hulls, but it will serve another purpose later, so I
+will discuss it now.
+
+The algorithm starts by searching for two points that are on the 2D convex hull
+boundary and are far apart from each other.
 
 ```csharp
-var bInATransform = math.mul(math.inverse(convexTransform), capsuleTransform);
-var capA = math.transform(bInATransform, capsule.pointA);
-var capB = math.transform(bInATransform, capsule.pointB);
-var convexLocalContactNormal = math.rotate(bInATransform.rot, -result.contactNormal);
-
-var mask = math.select(0f, 1f, math.isfinite(invScale));
-var invMask = 1f - mask;
-var rayDisplacement = 2f * math.length(math.max(math.abs(capA), math.abs(capB)));
-var inflateConvex = convex;
-inflateConvex.scale = math.select(1f, convex.scale, math.isfinite(invScale));
-                
-var hitA = PointRayConvex.RaycastConvex(new Ray(capA, capA - convexLocalContactNormal * rayDisplacement), in inflateConvex, out _, out _);
-var hitB = PointRayConvex.RaycastConvex(new Ray(capA, capA - convexLocalContactNormal * rayDisplacement), in inflateConvex, out _, out _);
-```
-
-What happens if we do require clipping?
-
-In that case, we need to perform a raycast in 2D against our 2D point cloud
-mess. We can use a collider cast against a capsule perpendicular to the plane.
-Granted, it isn’t an amazingly fast algorithm relatively speaking, but we aren’t
-too concerned about performance for such a rare case right now.
-
-```csharp
-var clippedA = capA;
-var clippedB = capB;
-if (!hitA)
+public static int Build(ref Span<byte> finalVertexIndices, ReadOnlySpan<float3> projectedVertices, float3 normal)
 {
-    var castCapsule = new CapsuleCollider(-invMask, invMask, 0f);
-    var castStart = new RigidTransform(quaternion.identity, capA * mask);
-    if (ColliderCast(in castCapsule, in castStart, capB * mask, in convex, RigidTransform.identity, out var hit))
-    {
-        clippedA = hit.hitpoint * mask + capA * invMask;
-        hitA = true;
-    }
-}
-if (!hitB)
+Span<UnhomedVertex> unhomed       = stackalloc UnhomedVertex[projectedVertices.Length];
+int                 unhomedCount  = projectedVertices.Length;
+Span<Plane>         edges         = stackalloc Plane[finalVertexIndices.Length];
+int                 foundVertices = 0;
+
+float bestDistance = 0f;
+byte  bestIndex    = 0;
+unhomed[0]         = new UnhomedVertex { vertexIndex = 0 };
+for (byte i = 1; i < projectedVertices.Length; i++)
 {
-    var castCapsule = new CapsuleCollider(-invMask, invMask, 0f);
-    var castStart = new RigidTransform(quaternion.identity, capB * mask);
-    if (ColliderCast(in castCapsule, in castStart, capA * mask, in convex, RigidTransform.identity, out var hit))
+    unhomed[i] = new UnhomedVertex { vertexIndex = i };
+    var newDist                                  = math.distancesq(projectedVertices[0], projectedVertices[i]);
+    if (newDist > bestDistance)
     {
-        clippedB = hit.hitpoint * mask + capB * invMask;
-        hitB = true;
+        bestDistance = newDist;
+        bestIndex    = i;
     }
 }
 
-bool needsClosestPoint = true;
-if ((hitA || hitB) && math.dot(clippedB - clippedA, capB - capA) >= 0f)
+finalVertexIndices[0] = bestIndex;
+foundVertices++;
+unhomedCount--;
+unhomed[bestIndex] = unhomed[unhomedCount];
+
+bestDistance = 0f;
+bestIndex    = 0;
+for (byte i = 0; i < unhomedCount; i++)
 {
-    // Add the two contacts from the possibly clipped segment
-    //...
+    var newDist = math.distancesq(projectedVertices[unhomed[i].vertexIndex], projectedVertices[finalVertexIndices[0]]);
+    if (newDist > bestDistance)
+    {
+        bestDistance = newDist;
+        bestIndex    = i;
+    }
+}
+
+finalVertexIndices[1] = bestIndex;
+foundVertices++;
+unhomedCount--;
+unhomed[bestIndex] = unhomed[unhomedCount];
 ```
 
-That’s all the weird dimensions down. Now we can get on to the common case where
-we will actually try to not make a computational mess.
+At this point, we have a segment, and that segment has two edge planes facing
+opposite from each other. Every remaining planar convex hull vertex is on the
+positive side of one of these two edge planes. We figure out each one and how
+far away each point is from the edge.
+
+```csharp
+edges[0] = mathex.PlaneFrom(projectedVertices[finalVertexIndices[0]], projectedVertices[finalVertexIndices[1]] - projectedVertices[finalVertexIndices[0]], normal);
+edges[1] = mathex.Flip(edges[0]);
+
+for (byte i = 0; i < unhomedCount; i++)
+{
+    ref var u      = ref unhomed[i];
+    var     vertex = projectedVertices[u.vertexIndex];
+    var     dist   = mathex.SignedDistance(edges[0], vertex);
+    if (dist > 0f)
+    {
+        u.distanceToEdge   = dist;
+        u.closestEdgeIndex = 0;
+    }
+    else if (dist < 0f)
+    {
+        u.distanceToEdge   = -dist;
+        u.closestEdgeIndex = 1;
+    }
+    else // Colinear points are removed
+    {
+        unhomedCount--;
+        if (i < unhomedCount)
+        {
+            unhomed[i] = unhomed[unhomedCount];
+            i--;
+        }
+    }
+}
+```
+
+At this point, we are ready to start our loop to build out the rest of the
+convex hull. We start by finding the vertex not in the hull that has the largest
+distance to the hull, and we insert it into the hull.
+
+```csharp
+while (foundVertices < finalVertexIndices.Length && unhomedCount > 0)
+{
+    bestIndex    = 0;
+    bestDistance = unhomed[0].distanceToEdge;
+    for (byte i = 1; i < unhomedCount; i++)
+    {
+        var u = unhomed[i];
+        if (u.distanceToEdge > bestDistance)
+        {
+            bestDistance = u.distanceToEdge;
+            bestIndex    = i;
+        }
+    }
+
+    var bestU       = unhomed[bestIndex];
+    var targetIndex = bestU.closestEdgeIndex + 1;
+    for (int i = foundVertices - 1; i >= targetIndex; i--)
+    {
+        finalVertexIndices[i + 1] = finalVertexIndices[i];
+        edges[i + 1]              = edges[i];
+    }
+
+    finalVertexIndices[targetIndex] = bestU.vertexIndex;
+    float3 before                   = projectedVertices[finalVertexIndices[bestU.closestEdgeIndex]];
+    float3 current                  = projectedVertices[bestU.vertexIndex];
+    float3 after                    = projectedVertices[finalVertexIndices[math.select(targetIndex + 1, 0, targetIndex >= foundVertices)]];
+    edges[targetIndex]              = mathex.PlaneFrom(current, after - current, normal);
+    edges[bestU.closestEdgeIndex]   = mathex.PlaneFrom(before, current - before, normal);
+    foundVertices++;
+    unhomedCount--;
+    unhomed[bestIndex] = unhomed[unhomedCount];
+```
+
+This operation effectively divides one of the edges with two. We then loop
+through all the remaining vertices and update them. Vertices that associated
+with an edge greater than the one we split need to have their edge index
+incremented to account for the insertion. And vertices that were associated with
+the edge need to be reevaluated against the two new edges, potentially being
+discarded if now inside the convex hull.
+
+```csharp
+    for (byte i = 0; i < unhomedCount; i++)
+    {
+        ref var u = ref unhomed[i];
+        if (u.closestEdgeIndex > bestU.closestEdgeIndex)
+            u.closestEdgeIndex++;
+        else if (u.closestEdgeIndex == bestU.closestEdgeIndex)
+        {
+            var distA = mathex.SignedDistance(edges[u.closestEdgeIndex], projectedVertices[u.vertexIndex]);
+            var distB = mathex.SignedDistance(edges[targetIndex], projectedVertices[u.vertexIndex]);
+            if (distA <= 0f && distB <= 0f)
+            {
+                unhomedCount--;
+                if (i < unhomedCount)
+                {
+                    unhomed[i] = unhomed[unhomedCount];
+                    i--;
+                }
+            }
+            else if (distB > distA)
+            {
+                u.distanceToEdge   = distB;
+                u.closestEdgeIndex = (byte)targetIndex;
+            }
+            else
+                u.distanceToEdge = distA;
+        }
+    }
+}
+
+return foundVertices;
+```
+
+And that’s the algorithm. It isn’t amazingly fast at building full convex hulls
+in 2D, but it is plenty good enough for baking. However, where it shines is that
+when we have a limited number of output vertices, this algorithm attempts to
+optimize the area of the polygon it produces while still using the original
+vertices.
+
+Our 2D polygon hull ultimately becomes our convex face that can otherwise be
+processed the same as the 3D case with slightly different vertex indexing. So
+let’s explore how 3D works.
 
 Our first step in 3D is to find the best face on the convex collider to use.
 However, a face in a convex collider could have well over 4 edges. We can’t
