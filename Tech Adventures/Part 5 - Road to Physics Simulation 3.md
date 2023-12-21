@@ -1161,10 +1161,10 @@ for (int i = 0; i < edgeCount; i += 4)
     int4 indices       = i + new int4(0, 1, 2, 3);
     indices            = math.select(indices, indices - edgeCount, indices >= edgeCount);
     indices           += edgeIndicesBase;
-    var segmentA       = blob.vertexIndicesInEdges[indices.x];
-    var segmentB       = blob.vertexIndicesInEdges[indices.y];
-    var segmentC       = blob.vertexIndicesInEdges[indices.z];
-    var segmentD       = blob.vertexIndicesInEdges[indices.w];
+    var segmentA       = blob.vertexIndicesInEdges[blob.edgeIndicesInFaces[indices.x].index];
+    var segmentB       = blob.vertexIndicesInEdges[blob.edgeIndicesInFaces[indices.y].index];
+    var segmentC       = blob.vertexIndicesInEdges[blob.edgeIndicesInFaces[indices.z].index];
+    var segmentD       = blob.vertexIndicesInEdges[blob.edgeIndicesInFaces[indices.w].index];
     var edgeVerticesA  = new simdFloat3(new float4(blob.verticesX[segmentA.x], blob.verticesX[segmentB.x], blob.verticesX[segmentC.x],
                                                     blob.verticesX[segmentD.x]),
                                         new float4(blob.verticesY[segmentA.x], blob.verticesY[segmentB.x], blob.verticesY[segmentC.x],
@@ -1225,6 +1225,188 @@ Can it be improved with a smarter convex hull representation?
 Probably.
 
 There’s still 3 more pairs to go. They don’t get any easier.
+
+## Box vs Convex
+
+We’ve encountered so many scenarios at this point. Which techniques can we apply
+here?
+
+We have a convex collider. This means a few things. On one hand, we have to
+worry about dimensionality. On the other, Unity never uses SAT for convex
+colliders, so we can use our simpler logic for finding the contact normal. We
+also have a box collider, which means we don’t have to worry about failure to
+project convex edges against the box. But unlike Triangle vs Box, convex
+colliders can have potentially many more vertices than the box, so we’ll be
+working in the convex collider space. This also proposes another problem, which
+is that we could have up to 37 contact points in 3D and even more in 2D, but our
+output struct can only hold 32. We can create a wrapper struct that adds
+additional storage to solve this, and then use our polygon expansion algorithm
+to bring our count back down.
+
+It is actually 1-dimensional convex colliders that give us our first surprise.
+In 1D, our convex collider turns into a capsule. This means we have a capsule vs
+box, but our method for handling this requires the arguments to be flipped. If
+we want to leverage such a method, we need to flip our `ColliderDistanceResult`
+and then flip the resulting `ContactsBetweenResult`. The latter can be done with
+this little method:
+
+```csharp
+public void FlipInPlace()
+{
+    for (int i = 0; i < contactCount; i++)
+    {
+        var contact       = this[i];
+        contact.location += contact.distanceToA * contactNormal;
+        this[i]           = contact;
+    }
+    contactNormal = -contactNormal;
+} 
+```
+
+In 2D, we need to project our convex edges against the box face, which is easy
+to do as we can just process each edge one at a time and use SIMD on the box.
+Our previous algorithms already worked this. Where things get tricky however is
+projected the box vertices onto the convex mesh face. In the past, we tested
+each vertex one by one against all the edge planes. That was fine when we could
+cover all the edge planes at once. But convex collider faces can have more than
+four edges. And those edges aren’t the most trivial to assemble from the blob. A
+better approach would be to test all four box vertices against each edge inside
+the same loop where we test the edge against the box plane. For this, we need to
+keep track of whether each box vertex is on the “inside” side of the edge plane.
+But is that the positive side or the negative side?
+
+It actually doesn’t matter. If a point is always on the same side, and are edge
+planes are consistent, then we know that the point must be inside. And to
+simplify the code a little bit, we can use the fact that if the point is always
+on one side when it is inside, then it is never on the other side when it is
+inside. If we tally both sides, and determine that one side never receives a
+hit, then we know it is inside. That code looks like this:
+
+```csharp
+    // Inside for each edge of A
+    if (projectBOnA)
+    {
+        var aEdgePlaneNormal   = math.cross(rayDisplacement, aLocalContactNormal);
+        var edgePlaneDistance  = math.dot(aEdgePlaneNormal, rayStart);
+        var projection         = simd.dot(bVertices, aEdgePlaneNormal) + edgePlaneDistance;
+        positiveSideCounts    += math.select(int4.zero, 1, projection > 0f);
+        negativeSideCounts    += math.select(int4.zero, 1, projection < 0f);
+    }
+}
+if (projectBOnA)
+{
+    var distanceScalarAlongContactNormalA = math.rcp(math.dot(aLocalContactNormal, aPlane.normal));
+    var bProjectsOnA                      = math.min(positiveSideCounts, negativeSideCounts) == 0;
+    for (int i = 0; i < 4; i++)
+    {
+        var vertex = bVertices[i];
+        if (bProjectsOnA[i])
+        {
+            var distance = mathex.SignedDistance(aPlane, vertex) * distanceScalarAlongContactNormalA;
+            result.Add(math.transform(convexTransform, vertex), distance);
+            needsClosestPoint &= distance > distanceResult.distance + 1e-4f;
+        }
+    }
+}
+```
+
+The last step is to handle the possible overflow of contact points. Our wrapper
+struct looks like this:
+
+```csharp
+unsafe struct UnityContactManifoldExtra2D
+{
+    public UnitySim.ContactsBetweenResult baseStorage;
+    public fixed float                    extraContactsData[384];
+
+    public ref UnitySim.ContactsBetweenResult.ContactOnB this[int index]
+    {
+        get
+        {
+            if (index < 32)
+            {
+                fixed (void* ptr = baseStorage.contactsData)
+                return ref ((UnitySim.ContactsBetweenResult.ContactOnB*)ptr)[index];
+            }
+            else
+            {
+                fixed (void* ptr = extraContactsData)
+                return ref ((UnitySim.ContactsBetweenResult.ContactOnB*)ptr)[index - 32];
+            }
+        }
+    }
+
+    public void Add(float3 locationOnB, float distanceToA)
+    {
+        this[baseStorage.contactCount] = new UnitySim.ContactsBetweenResult.ContactOnB { location = locationOnB, distanceToA = distanceToA };
+        baseStorage.contactCount++;
+    }
+}
+```
+
+If we don’t spill contacts into the extra storage, we can just return the
+interior result. Otherwise, we’ll use our ExpandingPolygonBuilder2D to help us
+choose which contacts to keep. Thus, we finish up 2D with this:
+
+```csharp
+var requiredContacts = math.select(32, 31, needsClosestPoint);
+if (result.baseStorage.contactCount <= requiredContacts)
+{
+    if (needsClosestPoint)
+        result.baseStorage.Add(distanceResult.hitpointB, distanceResult.distance);
+    return result.baseStorage;
+}
+
+// Simplification required
+Span<byte> indices = stackalloc byte[requiredContacts];
+Span<float3> projectedContacts = stackalloc float3[result.baseStorage.contactCount];
+for (int i = 0; i < result.baseStorage.contactCount; i++)
+{
+    projectedContacts[i] = result[i].location;
+}
+var finalVertexCount = ExpandingPolygonBuilder2D.Build(ref indices, projectedContacts, bPlane.normal);
+UnitySim.ContactsBetweenResult finalResult = default;
+finalResult.contactNormal = result.baseStorage.contactNormal;
+for (int i = 0; i < finalVertexCount; i++)
+{
+    finalResult.Add(result[indices[i]]);
+}
+if (needsClosestPoint)
+    finalResult.Add(distanceResult.hitpointB, distanceResult.distance);
+return finalResult;
+```
+
+As for 3D, well that is exactly the same as 2D, except that it has to pull the
+edge vertices a little differently. The implementation feels surprisingly clean
+and fast.
+
+## Triangle vs Convex
+
+Triangle vs Convex has six scenarios, four of which are identical to Box vs
+Convex. The other two scenarios come from when the triangle needs to project
+edges against the convex face rather than the other way around. This applies to
+both 2D and 3D scenarios. We’ll start from the Box vs Convex code, insert the
+checks for which direction we should do edge projection, and then work out the
+cases we haven’t handled out.
+
+When we project triangle edges onto the convex face, we don’t have to worry
+about projecting convex vertices back onto the triangle. At this point, the
+situation starts to resemble Capsule vs Convex, except we have three edges
+instead of one, and we have to account for `fractionB` to avoid duplicates. So
+why not just do that? Inside our loop through all the convex edges
+four-at-a-time, instead of testing a single capsule edge, we test all three
+triangle edges? We keep three copies of the enter fractions, the exit fractions,
+and the validity statuses. It becomes a lot of copy-and-paste with a few
+swapped-out variable names, but solves the problem without having to invent
+anything new.
+
+One more pair to go.
+
+## Convex vs Convex
+
+Convex vs Convex is very similar to Triangle vs Convex, except now the triangle
+is also a convex collider. And now instead of 4 dimensions, we have 4x4
+dimensions. This one definitely feels like a boss fight.
 
 Todo: This is where I am going to cut things off for now. But don’t worry, I’m
 not giving up on this. Just need to take things in stride.
