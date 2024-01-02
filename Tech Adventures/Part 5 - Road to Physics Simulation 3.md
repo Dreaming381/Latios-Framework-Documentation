@@ -1408,5 +1408,154 @@ Convex vs Convex is very similar to Triangle vs Convex, except now the triangle
 is also a convex collider. And now instead of 4 dimensions, we have 4x4
 dimensions. This one definitely feels like a boss fight.
 
-Todo: This is where I am going to cut things off for now. But don’t worry, I’m
-not giving up on this. Just need to take things in stride.
+Let’s go for a big opening hit, and count up all the 0-dimensional cases.
+There’s 7 of them, and all of them produce a single contact point, the closest
+points. So one last, here’s our simple solution:
+
+```csharp
+UnitySim.ContactsBetweenResult result = default;
+result.contactNormal = contactNormal;
+result.Add(distanceResult.hitpointB, distanceResult.distance);
+return result;
+```
+
+Our boss is stunned, as that was a bunch of cases with very little code. It is
+time for phase two, which is where one of our convex colliders has degenerated
+into a segment. There are 5 of these cases, and we can defer to the Capsule vs
+Convex algorithm to handle them.
+
+```csharp
+else if (dimensionsB == 1)
+{
+    var bAsCapsule = new CapsuleCollider(blobB.localAabb.min * convexB.scale, blobB.localAabb.max * convexB.scale, 0f);
+    return CapsuleConvex.UnityContactsBetween(in convexA, in aTransform, in bAsCapsule, in bTransform, in distanceResult);
+}
+else if (dimensionsA == 1)
+{
+    var aAsCapsule = new CapsuleCollider(blobA.localAabb.min * convexA.scale,
+                                            blobA.localAabb.max * convexA.scale,
+                                            0f);
+    var flippedDistanceResult                                          = distanceResult;
+    (flippedDistanceResult.hitpointA, flippedDistanceResult.hitpointB) = (flippedDistanceResult.hitpointB, flippedDistanceResult.hitpointA);
+    (flippedDistanceResult.normalA, flippedDistanceResult.normalB)     = (flippedDistanceResult.normalB, flippedDistanceResult.normalA);
+    (flippedDistanceResult.subColliderIndexA,
+        flippedDistanceResult.subColliderIndexB)                                = (flippedDistanceResult.subColliderIndexB, flippedDistanceResult.subColliderIndexA);
+    (flippedDistanceResult.featureCodeA, flippedDistanceResult.featureCodeB) = (flippedDistanceResult.featureCodeB, flippedDistanceResult.featureCodeA);
+    var result                                                               = CapsuleConvex.UnityContactsBetween(in convexB,
+                                                                                                                    in bTransform,
+                                                                                                                    in aAsCapsule,
+                                                                                                                    in aTransform,
+                                                                                                                    in flippedDistanceResult);
+    result.FlipInPlace();
+    return result;
+}
+```
+
+And just like that, our boss is at a quarter health. Only four cases left. But
+everyone knows that the third phase is when the boss actually tries to kill you,
+and this is where things get tough. Let’s be smart about this and see if we
+can’t find a clever way to navigate these last four and deliver a final blow.
+
+Our four remaining cases span across 2D and 3D geometries. The only difference
+between these algorithmically is how we extract our vertices, edge planes, and
+face planes. The rest of the algorithm is identical. In our previous algorithms,
+one of our collider’s data was small enough that we could just pack it into a
+few local variables (CPU registers). Because of that, it made sense to load the
+convex collider data on the fly, as we only ever needed each piece of data once.
+But that is not the case this time around. If we tried the same strategy, we’d
+be potentially loading in convex collider data and recalculating edge planes
+multiple times.
+
+We could instead store all of our transformed vertices and edge planes for both
+colliders in stack memory up front. Once we have this for each of our colliders,
+all four scenarios converge to the same clipping algorithm.
+
+We define our edge planes like this:
+
+```csharp
+struct SimdPlane
+{
+    public simdFloat3 normals;
+    public float4     distancesFromOrigin;
+}
+```
+
+And then we allocate our cached data for our first collider like this:
+
+```csharp
+Plane facePlaneA = default;
+int   faceIndexA = 0;
+int   edgeCountA = 0;
+
+if (dimensionsA == 3)
+{
+    PointRayConvex.BestFacePlane(ref blobA, aLocalContactNormal * invScaleA, distanceResult.featureCodeA, out facePlaneA, out faceIndexA, out edgeCountA);
+}
+else
+{
+    edgeCountA = blobA.yz2DVertexIndices.Length;  // bitmask = 6
+    facePlaneA = new Plane(new float3(1f, 0f, 0f), 0f);
+    if (bitmaskA == 5)
+    {
+        edgeCountA = blobA.xz2DVertexIndices.Length;
+        facePlaneA = new Plane(new float3(0f, 1f, 0f), 0f);
+    }
+    else if (bitmaskA == 3)
+    {
+        edgeCountA = blobA.xy2DVertexIndices.Length;
+        facePlaneA = new Plane(new float3(0f, 0f, 1f), 0f);
+    }
+    if (math.dot(facePlaneA.normal, aLocalContactNormal) < 0f)
+        facePlaneA = mathex.Flip(facePlaneA);
+}
+var              aStackCount = CollectionHelper.Align(edgeCountA, 4) / 4;
+Span<simdFloat3> verticesA   = stackalloc simdFloat3[aStackCount];
+Span<SimdPlane>  edgePlanesA = stackalloc SimdPlane[aStackCount];
+```
+
+I’ll spare the details for populating these arrays here, as the code is mostly
+copied from previous scenarios. But here’s the snippet for projecting points
+from B back into A to give you an idea of how these arrays are used:
+
+```csharp
+if (math.abs(math.dot(facePlaneA.normal, aLocalContactNormal)) < 0.05f)
+{
+    var distanceScalarAlongContactNormalA = math.rcp(math.dot(aLocalContactNormal, facePlaneA.normal));
+    for (int vertexIndex = 0; vertexIndex < edgeCountB; vertexIndex++)
+    {
+        var vertex = verticesB[vertexIndex / 4][vertexIndex % 4];
+        bool4 projectsOnA = true;
+        for (int i = 0; i < bStackCount; i++)
+        {
+            var edgePlane = edgePlanesA[i];
+            projectsOnA &= simd.dot(edgePlane.normals, vertex) + edgePlane.distancesFromOrigin <= 0f;
+        }
+        if (math.all(projectsOnA))
+        {
+            var distance = mathex.SignedDistance(facePlaneA, vertex) * distanceScalarAlongContactNormalA;
+            result.Add(math.transform(aTransform, vertex), distance);
+            needsClosestPoint &= distance > distanceResult.distance + 1e-4f;
+        }
+    }
+}
+```
+
+Beyond this, it is the same code used for handling excess contact points and
+producing the final result that was used for the previous two scenarios.
+
+We’re done.
+
+## What’s Next
+
+The state of the code is a bit ugly, with lots of stuff copied and pasted.
+Ideally, I’d like to DRY this up a little so that bugfixes can be propagated
+more easily throughout the codebase. Such a refactor will probably also speed up
+Burst compilation. Additionally, there are the dispatchers that still need to be
+written, and this code needs some real testing and debugging.
+
+After this, we enter the world of dynamics with rotational integrators and
+constraint solvers. We’ll focus on contact constraints first, but then we’ll
+delve into the world of joint constraints and motors. We’re one step closer to
+simulation!
+
+Thanks for reading!
