@@ -47,8 +47,8 @@ public class TestDynamicMeshAuthoring : OverrideMeshRendererBase
 ```
 
 Next, create a smart baker for your authoring component. Along with any custom
-data you require, this baker must invoke `BakeDeformMeshAndMaterial()`, and
-request a smart blobber to generate the `MeshDeformDataBlob` required by the
+data you require, this baker must invoke `BakeMeshAndMaterial()`, and request a
+smart blobber to generate the `MeshDeformDataBlob` required by the
 `MeshDeformDataBlobReference` component. It must also create the remaining
 required runtime components.
 
@@ -69,13 +69,17 @@ struct TestDynamicMeshBakeItem : ISmartBakeItem<TestDynamicMeshAuthoring>
             amplitude          = authoring.amplitude,
         });
 
-        // Typically, you'd want to cache this in the SmartBaker or a static and reuse it.
-        List<Material> materials = new List<Material>();
-
-        var renderer = baker.GetComponent<MeshRenderer>();
-        var mesh     = baker.GetComponent<MeshFilter>().sharedMesh;
-        renderer.GetSharedMaterials(materials);
-        baker.BakeDeformMeshAndMaterial(renderer, mesh, materials);
+        var renderer         = baker.GetComponent<MeshRenderer>();
+        var mesh             = baker.GetComponent<MeshFilter>().sharedMesh;
+        var material         = renderer.sharedMaterial;
+        var rendererSettings = new MeshRendererBakeSettings
+        {
+            isDeforming           = true,
+            localBounds           = mesh.bounds,
+            renderMeshDescription = new RenderMeshDescription(renderer),
+            targetEntity          = entity,
+        };
+        baker.BakeMeshAndMaterial(rendererSettings, mesh, material);
 
         meshBlobRequest = baker.RequestCreateBlobAsset(mesh);
         baker.AddComponent<MeshDeformDataBlobReference>(     entity);
@@ -158,7 +162,65 @@ non-zero cost, especially if the mesh is skinned or has blend shapes. If an
 upper limit is known, it may be sufficient to set the value once at runtime or
 even during baking to avoid triggering the change filter every frame.
 
+## Using Skinning Algorithms
+
+Kinemation includes a static class called `SkinningAlgorithms` to help deform
+more complex objects. Meshes often have multiple vertices that share the same
+position, but may have different normals or tangents (tangents are derived from
+UVs). If you only care to deform the unique positions of a mesh, you can use
+ExtractUniquePositions() to get the unique positions to modify. Once you are
+done, call ApplyPositionsWithUniqueNormals() followed by NormalizeMesh() to get
+the final mesh with updated normals and tangents. The following job shows an
+example:
+
+```csharp
+[BurstCompile]
+partial struct Job : IJobEntity
+{
+    public float time;
+    public float deltaTime;
+
+    public void Execute(DynamicMeshAspect dynamicMesh,
+                        ref DynamicMeshMaxVertexDisplacement displacement,
+                        in MeshDeformTest testParams,
+                        in MeshDeformDataBlobReference meshBlobRef)
+    {
+        var deformVertices      = dynamicMesh.verticesRW;
+        var uniqueVerticesCount = meshBlobRef.blob.Value.uniqueVertexPositionsCount;
+        var uniqueVertices      = new NativeArray<float3>(uniqueVerticesCount, Allocator.Temp, NativeArrayOptions.UninitializedMemory);
+        SkinningAlgorithms.ExtractUniquePositions(ref uniqueVertices, dynamicMesh.previousVertices, ref meshBlobRef.blob.Value.normalizationData);
+        for (int i = 0; i < uniqueVertices.Length; i++)
+        {
+            var vertex         = uniqueVertices[i];
+            var dist           = math.length(vertex.xz);
+            vertex.y          += math.cos(testParams.frequency * time + dist * testParams.speed) * deltaTime * testParams.magnitude;
+            uniqueVertices[i]  = vertex;
+        }
+        SkinningAlgorithms.ApplyPositionsWithUniqueNormals(ref deformVertices, uniqueVertices.AsReadOnly(), ref meshBlobRef.blob.Value.normalizationData);
+        SkinningAlgorithms.NormalizeMesh(ref deformVertices, ref meshBlobRef.blob.Value.normalizationData, true);
+        displacement.maxDisplacement = SkinningAlgorithms.FindMaxDisplacement(deformVertices.AsReadOnly(), ref meshBlobRef.blob.Value);
+    }
+}
+```
+
+`SkinningAlgorithms` also includes APIs for applying skeletal skinning and blend
+shape deformations on the CPU. One challenge with skeletal skinning is obtaining
+the bone transform bindings to compute the proper skin matrices. Bone transform
+bindings are encoded as a `NativeArray<short>` where each element corresponds to
+a skin matrix’s skeleton bone index. The bindings array can be accessed from the
+`worldBlackboardEntity` via `SkinBoneBindingsCollectionAspect`. If you have the
+mesh and skeleton binding path blobs, you can use those to try and find the
+cached bindings, using `BindingUtilities.TrySolveBindings()` as a fallback. You
+can also use `SkinnedMeshBindingAspect` or `SkeletonSkinBindingsAspect` to get a
+`SkinBoneBindingsIndex` which can be used to index the
+`SkinBoneBindingsCollectionAspect` directly. `SkeletonSkinBindingsAspect` can
+also be used to identify all skinned mesh entities bound to the skeleton entity.
+
 ## Particle Tricks
+
+*Note: This section describes using Dynamic Meshes for CPU particles. A better
+solution for this use case will be provided in LifeFX. Calligraphics RenderGlyph
+types may also provide a better temporary solution.*
 
 When working with Dynamic Meshes as particles, you’ll still need a base mesh to
 work from. While any mesh of sufficient size will do, you must make sure that

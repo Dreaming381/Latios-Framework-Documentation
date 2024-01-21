@@ -149,6 +149,17 @@ solution for this is to define your `IManagedStructComponent` and
 systems. This orders the compilation so that Unity’s source generators can see
 the full `ExistComponent` definitions, thus solving the issue.
 
+## Collection Aspects
+
+Sometimes, you may have a collection component that contains data you want to
+keep internal, but then wish to expose parts of that data with potentially
+different access restrictions. You can define a collection aspect via
+implementing the `ICollectionAspect<T>` interface where `T` is your custom
+collection aspect type.
+
+You can retrieve an Collection Aspect from an entity via
+`LatiosWorldUnmanaged.GetCollectionAspect<T>()`.
+
 ## Collection Component Dependency Management
 
 Collection components have an intrinsic understanding of the `Dependency`

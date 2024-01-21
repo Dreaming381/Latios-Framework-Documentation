@@ -1,107 +1,82 @@
-# Upgrade Guide [0.7.7] [0.8.0]
+# Upgrade Guide [0.8.6] [0.9.0]
 
 Please back up your project in a separate directory before upgrading! You will
 likely need to reference the pre-upgraded project during the upgrade process.
 
+This document only highlights the common things to be aware of when upgrading.
+See the changelogs of each module for a complete list of changes.
+
 ## Core
+
+### New Unity Packages
+
+All Unity ECS Packages have been updated to 1.1.0-pre.3 versions. You will need
+to upgrade these packages, which may introduce some behavioral differences.
 
 ### New Bootstrap and Installers
 
-You may wish to update your bootstrap to include the installers for new features
-and modules.
+Bootstraps have changed. You will likely want to recreate your bootstrap from
+the one of the templates.
 
-### OnNewScene Callbacks
+### Fluent Queries
 
-`OnNewScene` callbacks have been redesigned to occur at a fixed point in the
-frame just after blackboard entities have been merged after a scene change. This
-allows the callbacks to react to per-scene options. You may have to rework
-initialization logic to account for this change.
-
-## Psyshock Physics
-
-### Two Mesh Blob Types
-
-With the addition of TriMesh colliders, instead of calling
-`RequestCreateBlobAsset()` in a baker, you must now call
-`RequestCreateConvexBlobAsset()` or `RequestCreateTriMeshBlobAsset()`.
+Fluent Queries have been completely redesigned to properly account for
+`IEnableableComponent`. In addition, the new design always applies “weak” rules
+from prior releases. Most of the time, you will want to replace `WithAll<>()
+`with `With<>()`. But keep in mind that `With<>()` does not consider enabled
+states.
 
 ## Kinemation
 
-### Mecanim Controllers
+### Mecanim Moved Out
 
-If you recreated a new bootstrap, you will need to verify that all Animator
-components do not have an Animator Controller if you wish to preserve the old
-behavior. You can also disable the Mecanim features in the bootstrap by removing
-the associated lines.
+All Mecanim functionality has been moved out and into the Mimic module as an
+Addon. You will need to adjust namespaces, asmdefs, and bootstrap initialization
+to compensate.
 
-### Root Motion Baking
+### Multiple Materials Per Entity
 
-Clips are always baked with root motion by default, which causes root bone
-motion in the model to always be applied to the root bone of the skeleton (which
-may be an ancestor). There is a setting to override this behavior.
-
-### ExposedBoneInertialBlendState Removed
-
-This component was removed, as some users may prefer to store this data
-differently, such as in a dynamic buffer paired with the `BufferPoseBlender`
-API. You can create a component of the same name and give it an
-`InertialBlendingTransformState` field.
-
-### OptimizedSkeletonAspect Return Changed
-
-The property `skeletonWorldTransform` returns by value instead of by `ref
-readonly`. This change was unfortunately necessary to facilitate Unity
-Transforms compatibility.
+By default, entities are now baked with combined materials onto one or two
+entities (two only if the object has both opaque and transparent materials). You
+will likely need to alter your logic for handling material property overrides
+for meshes with multiple materials. Additionally, if you used the override
+renderer baking features, you will need to rewrite these to work with a new
+unified API.
 
 ## New Things to Try!
 
-### Unity Transforms Support
+### NetCode Support
 
-By setting LATIOS_TRANSFORMS_UNITY in your scripting define symbols, you can
-enable Unity Transforms compatibility mode. Fancy transform features are not
-supported in this mode, so only use this if you only need standard position and
-rotation transform operations that Unity provides.
+NetCode support is back, but only for Unity Transforms for now. Only the Core
+module is remotely aware of the changes. But you can still use the other modules
+for presentation or other purposes.
 
 ### Core
 
-Smart Blobbers have a new `ISmartPostProcessItem` which allows you to create a
-dynamic number of items to be later resolved from inside a `Baker`.
-
-### QVVS
-
-`GameObjectEntity` lets you convert a `GameObject` in the scene to an entity at
-runtime. It does not use baking, but it will create a `WorldTransform` to sync
-with so that entities can reason about the `GameObject’s` position. There’s an
-interface your `MonoBehaviour`s can implement to configure the Entity, including
-setting up `IManagedStructComponent`s. Additionally, you can make a
-`GameObjectEntity` target a `GameObjectEntityHost` inside a subscene, and the
-entities will get merged at runtime, so you can combine baking and runtime
-conversion.
-
-Hierarchy Update Modes let you lock world-space properties on child entities
-before updating the hierarchy, which may cause the local-space properties to get
-updated again. You can mix and match properties at per-axis granularity.
+Core got a lot of improvements. `IAutoDestroyExpirable` presents a new generic
+paradigm for negotiating the destruction time of entities to prevent premature
+destruction. `ICollectionAspect` allows exposing parts of collection components
+in unique ways. Blackboard entities will now merge enabled states. And all
+runtime `ComponentSystemGroups` support updating framework-aware systems.
 
 ### Psyshock Physics
 
-TriMesh colliders are here, for all your concave mesh collider needs. Simply
-bake a normal Mesh Collider with *Convex* unchecked.
-
-You can now use `FindObjects` in a `foreach` statement, which makes for much
-more ergonomic environment scanning.
+Two new namespaces `UnitySim` and `XpbdSim` bring some new experimental
+features. The former allows generating contact points between two colliders,
+while the latter allows evaluating distance and tetrahedral volume constraints.
 
 ### Kinemation
 
-There’s now a Mecanim state machine baking and runtime built right into
-Kinemation. This supports all blend tree types, interrupts, code-driven blends,
-events, and root motion. You can access all of this at runtime using the
-`MecanimAspect`.
+Kinemation received a ton of new features such as the `GraphicsBufferBroker` and
+`SkinningAlgorithms` which open up the rendering pipeline for user
+modifications. Kinemation used to supply a backend surface for Calligraphics.
+But now Calligraphics uses these public APIs instead to perform its own custom
+rendering.
 
-### Calligraphics
+### Mimic
 
 New module!
 
-This module contains a world-space text rendering suite with a built-in tweening
-engine while using the standard ECS rendering workflow. It is great for things
-like overhead character names or damage numbers, but there are plenty of things
-you can do with it!
+Actually, this module is the new home for the Mecanim runtime. Along with lots
+of fixes, this runtime adds experimental support for blend shape animation with
+the LATIOS_MECANIM_EXPERIMENTAL_BLENDSHAPES scripting define.

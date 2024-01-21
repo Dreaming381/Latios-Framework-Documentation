@@ -41,7 +41,7 @@ details.
 
 Cached QVVS is the default Transform System in the Latios Framework. It supports
 all features, including Motion History, Hierarchy Update Modes, and
-GameObjectEntity.
+`GameObjectEntity`.
 
 ### Extreme Transforms Augmentation
 
@@ -106,6 +106,9 @@ When working with Unity Transforms, `LocalToWorld` may be stale even for root
 entities, but is generally the component to read from for world-space
 transforms. When writing to transforms, always write to the `LocalTransform`
 component.
+
+Unity Transforms must be enabled with the LATIOS_TRANSFORMS_UNITY scripting
+define.
 
 ### Stretch Compatibility Augmentation
 

@@ -23,8 +23,8 @@ For NetCode projects, it instead creates the appropriate Client and Server
 variants. This is dictated by the `WorldRole` argument in the `LatiosWorld`
 constructor.
 
-These systems have special `IRateManagers` attached to them which modifies their
-behavior to support additional features.
+Some of these systems have special `IRateManagers` attached to them which
+modifies their behavior to support additional features.
 
 ## System Creation in LatiosWorld
 
@@ -59,9 +59,12 @@ The following systems are created by the `LatiosWorld`:
     points, it is common to place systems that induce structural change sync
     points via batch `EntityManager` calls here and treat
     `InitializationSystemGroup` as a mega sync point.
--   SceneManagerSystem (if installed) – This system changes scenes and updates
-    the `CurrentScene`. It also initiates the pauses all remaining systems in
-    the frame until the scene loads.
+-   [AutoDestroyExpirablesSystem](Auto-Destroy%20Expirables.md) – This system is
+    responsible for detecting expired entities and queueing them up for
+    destruction in `SyncPointPlaybackSystem`.
+-   [SceneManagerSystem](Scene%20Management.md) (if installed) – This system
+    changes scenes and updates the `CurrentScene`. It also initiates the pauses
+    all remaining systems in the frame until the scene loads.
 -   DestroyEntitiesOnSceneChangeSystem (if installed) – This system destroys
     procedural entities whenever the scene changes. It is updated via scene
     change events rather than a typical `ComponentSystemGroup`.
@@ -71,6 +74,7 @@ The following systems are created by the `LatiosWorld`:
 Currently, the `LatiosInitializationSystemGroup` orders itself as follows:
 
 -   PreSyncPointGroup
+-   AutoDestroyExpirablesSystem
 -   SyncPointPlaybackSystemDispatch
     -   SyncPointPlaybackSystem
 -   BeginInitializationEntityCommandBufferSystem
@@ -88,10 +92,14 @@ Currently, the `LatiosInitializationSystemGroup` orders itself as follows:
 
 ## LatiosWorld Creation in Detail
 
-When a `LatiosWorld` is created, it first scans the list of unmanaged systems
-and generates generic classes for `ISystemShouldUpdate` and `ISystemNewScene`.
+When a `LatiosWorld` is created, it first registers a custom
+`ComponentSystemGroup` update delegate which allow all `ComponentSystemGroup`s
+to support Latios Framework features.
 
-Second, it creates a `LatiosWorldUnmanagedSystem`, which is an unmanaged system
+Second, it scans the list of unmanaged systems and generates generic classes for
+`ISystemShouldUpdate` and `ISystemNewScene`.
+
+Third, it creates a `LatiosWorldUnmanagedSystem`, which is an unmanaged system
 that does not update but rather governs the lifecycle of the
 `LatiosWorldUnmanagedImpl`. During the system’s `OnCreate()`, it creates for the
 impl an instance of `CollectionComponentStorage`. As its name implies, this
@@ -102,15 +110,15 @@ component. `CollectionComponentStorage` can be initialized fully within Burst.
 ensure it is initialized in a non-Burst-compiled context, and is not constructed
 during the system `OnCreate()`.
 
-Third, the `LatiosWorldUnmanagedSystem` creates `worldBlackboardEntity`.
+Fourth, the `LatiosWorldUnmanagedSystem` creates `worldBlackboardEntity`.
 
-Fourth, it creates a cache of the collection component dependencies pending
+Fifth, it creates a cache of the collection component dependencies pending
 update of an executing `SystemState.Dependency`’s final value. The cache is
 stored in the impl.
 
 Finally, it creates the `InitializationSystemGroup`, the
-`SimulationSystemGroup`, and the `PresentationSystemGroup` along with their
-`IRateManagers`. The `InitializationSystemGroup` `IRateManager` creates the
+`SimulationSystemGroup`, and the `PresentationSystemGroup`. The
+`InitializationSystemGroup` is given a custom `IRateManager` which creates the
 remaining essential systems and injects them into the
 `InitializationSystemGroup`.
 

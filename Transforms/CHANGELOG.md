@@ -6,6 +6,19 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic
 Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [0.9.0] – 2024-1-20
+
+Officially supports Entities [1.1.0-pre.3]
+
+### Changed
+
+-   **Breaking:** Renamed `FluentQuery` extension
+    `WithWorldTransformReadOnlyWeak()` to `WithWorldTransformReadOnly()`
+-   When using Unity Transforms,
+    `WorldTransformReadOnlyAspect.worldTransformQvvs` now uses the `x` component
+    of the nonlinear scale extracted from the `LocalToWorld` matrix as the QVVS
+    uniform scale
+
 ## [0.8.1] – 2023-10-2
 
 Officially supports Entities [1.0.16]

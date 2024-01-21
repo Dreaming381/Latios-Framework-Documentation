@@ -32,7 +32,7 @@ are provided if you need more control.
 
 ### Entities Graphics Pipeline
 
-Calligraphics leverages Kinemation’s rendering backend, and supports Entities
+Calligraphics leverages Kinemation’s rendering pipeline, and supports Entities
 Graphics material property workflows. It uses batching and instancing for all
 text at once, so you know it's fast!
 

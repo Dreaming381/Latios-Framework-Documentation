@@ -1,8 +1,8 @@
 # Getting Started with Psyshock Physics
 
-This is the eighth preview version I am releasing out to the public. It
-currently only supports spatial query use cases. The number of supported use
-cases will grow with each release.
+This is the ninth preview version I am releasing out to the public. It currently
+only supports spatial query use cases. The number of supported use cases will
+grow with each release.
 
 ## Authoring
 
@@ -49,9 +49,9 @@ if (collider.type == ColliderType.Sphere)
     -   Physics.Raycast
     -   Physics.DistanceBetween
     -   Physics.ColliderCast
+    -   UnitySim.ContactsBetween
 -   Future
     -   Physics.AreIntersecting
-    -   UnitySim.ContactsBetween
     -   Physics.QuadraticCast
     -   Physics.QuadraticColliderCast
 
@@ -64,6 +64,7 @@ the start point to get inside hit info.*
 -   Current
     -   Physics.ScaleStretchCollider
     -   Physics.CombineAabb
+    -   Physics.TransformAabb
 
 ## Scheduling Jobs
 
@@ -86,7 +87,7 @@ a couple of variants based on whether you want to build from an `EntityQuery` or
 `NativeArray`s.
 
 If you build from an `EntityQuery`, the `EntityQuery` must have the `Collider`
-component. If you use `SubSystem.Fluent`, you can use the extension method
+component. If you use `FluentQuery`, you can use the extension method
 `PatchQueryForBuildingCollisionLayer()` when building your `EntityQuery`.
 
 Next in the fluent chain, you have the ability to apply custom settings and

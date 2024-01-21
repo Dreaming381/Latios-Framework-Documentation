@@ -6,6 +6,67 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic
 Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [0.9.0] – 2024-1-20
+
+Officially supports Entities [1.1.0-pre.3]
+
+### Added
+
+-   *New Feature:* Added `IAutoDestroyExpirable` interface which inherits
+    `IEnableableComponent` and allows an entity to be automatically destroyed
+    when all deriving components are disabled
+-   *New Feature:* Added `ICollectionAspect` interface which allows modules to
+    expose abstractions of otherwise internal collection components and can be
+    accessed from `LatiosWorldUnmanaged`
+-   *New Feature:* Re-added NetCode support via `LatiosClientServerBootstrap` as
+    well as additional interfaces `ICustomLocalWorldBootstrap`,
+    `ICustomClientWorldBootstrap`, `ICustomServerWorldBootstrap`, and
+    `ICustomThinClientWorldBootstrap`
+-   Added `IBaker.RequestCreateBlobAsset()` extension that outputs the blob
+    baking entity to simplify scaffolding of user-made smart blobbers
+-   Added `BootstrapTools.InjectUserSystems()` which injects systems not
+    installed by `InjectUnitySystems()`, and allows for user systems to be
+    injected after module installers
+-   Added `ThinClient` as `WorldRole` option when creating a `LatiosWorld`
+-   Added `SuperSystem.DoLatiosFrameworkComponentSystemGroupUpdate()` for
+    updating all systems in a `ComponentSystemGroup` while supporting Latios
+    Framework features
+-   Added `simd` methods `normalize()`, `normalizesafe()`, and `csumabcd()`
+-   Added support for copying enabled states for components and buffers in
+    `EntityManager` extension methods, `EntityDataCopyKit`, and when merging
+    blackboard entities
+-   Added `IBaker` extension `GetAuthoringObjectForDebugDiagnostics()` which
+    does not define any dependency
+
+### Changed
+
+-   **Breaking:** Fluent Queries have been completely redesigned to better
+    account for enabled states and aspects
+-   **Breaking:** Changed `ArchetypeChunk` method `GetChunkPtrAsUlong()` to
+    `GetChunkIndexAsUint()`
+-   **Breaking:** Replaced `SystemSortingTracker` with a new bool property
+    `isSystemListSortDirty` on `ComponentSystemGroup`
+-   The bootstrap templates have been redesigned to better serve Unity
+    Transforms and Injection Workflow use cases
+
+### Fixed
+
+-   Added missing safety check to
+    `LatiosWorldUnmanaged.UpdateCollectionComponentDependency()`
+
+### Improved
+
+-   *New Feature:* All `ComponentSystemGroup` types can properly update systems
+    making use of Latios Framework features such as conditional updates and
+    dependency tracking
+
+### Removed
+
+-   Removed defunct `LatiosClientServerBootstrapBase` and base NetCode system
+    types
+-   Removed `IRateManager` instances on `SimulationSystemGroup` and
+    `PresentationSystemGroup`
+
 ## [0.8.0] – 2023-9-23
 
 Officially supports Entities [1.0.16]

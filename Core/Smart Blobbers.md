@@ -123,8 +123,11 @@ do that too. Simply store the `SmartBlobberHandle` in a custom-defined
 
 `ISmartPostProcessItem` is similar to `ISmartBakeItem`, except you create
 instances of these inside bakers and explicitly add them for post-processing.
-These can be useful for when you need to make a dynamic number of Smart Blobber
-requests.
+These can be useful for when you need to add Smart Blobber requests from utility
+methods.
+
+*Tip: It is safe to store native containers allocated with Allocator.Temp inside
+of ISmartBakeItem and ISmartPostProcessItem.*
 
 ## Creating a Simple Smart Blobber
 

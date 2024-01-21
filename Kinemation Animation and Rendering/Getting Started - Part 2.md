@@ -27,9 +27,9 @@ Lastly, turn **off** compression of animation clips.
 
 *Q: Why did we turn animation compression off?*
 
-*A: Kinemation uses its own high-quality lossy compression algorithm during
-baking. If it reads from Unity’s lossy-compressed clips, quality will be
-significantly reduced without any benefit.*
+*A: Kinemation uses ACL’s state-of-the-art compression algorithm during baking.
+If it reads from Unity’s lossy-compressed clips, quality will be significantly
+reduced without any benefit.*
 
 ## Making the Shader Graph and Materials
 
@@ -86,4 +86,4 @@ you may want to stop here.
 
 Or…
 
-[Explore Mecanim](Mecanim%20Runtime.md)
+[Explore Mecanim](../Mimic/Mecanim%20Runtime.md)

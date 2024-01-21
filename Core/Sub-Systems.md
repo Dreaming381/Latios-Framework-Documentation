@@ -5,7 +5,7 @@ boilerplate reduction mechanisms within the framework. You can use them exactly
 as you would a `SystemBase`, and frequently you will want to do just that.
 However, there are some additional features to take advantage of.
 
-Many `SubSystem` features are [being extended](ISystem%20Support.md) to
+Nearly all `SubSystem` features are [extended](ISystem%20Support.md) to
 `ISystem`.
 
 ## Fluent Queries
@@ -61,5 +61,4 @@ disable those, add `[AlwaysUpdateSystem]` to the `SubSystem`.
 method is invoked. Only EntityManager, EntityQuery, and BlackboardEntity
 operations are recommended.*
 
-*Caution 2: Only SubSystems directly inside a SuperSystem, RootSuperSystem or
-Core-defined ComponentSystemGroup will have ShouldUpdateSystem() invoked.*
+*Caution 2: SubSystems as baking systems are not currently supported.*

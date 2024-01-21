@@ -1,18 +1,18 @@
-# Mecanim Runtime
+# Mecanim Runtime Addon
 
-Kinemation includes a Mecanim runtime, so that you can use the old familiar
-tools in your Latios Framework project.
+Mimic includes a Mecanim runtime as an addod, so that you can use the old
+familiar tools in your Latios Framework project.
 
-Note: Mecanim functionality is **Experimental** and is a community-contributed
+Note: Mecanim functionality is an **Addon** and is a community-contributed
 feature. Bugfixes cannot be guaranteed. Sovogal is the primary contributor.
 
 ## Setup
 
-If you used one of the standard bootstraps, then the Mecanim runtime will
-already be set up and ready to go. Otherwise, the Mecanim runtime uses a
-separate set of installers alongside the Kinemation installers.
+If you used one of the standard bootstraps, you will find the Mecanim installers
+present in the bootstrap but commented out. Uncomment these lines to start using
+Mecanim.
 
-The Mecanim runtime will only take affect when an Animator is baked with a valid
+The Mecanim runtime will only take effect when an Animator is baked with a valid
 *Animator Controller*. If this field is left null, then it is assumed the
 character is a static pose or is being driven by usage of the low-level
 animation APIs.
@@ -25,7 +25,7 @@ masks are not supported, but are planned for a future release.
 
 ## MecanimAspect
 
-The MecanimAspect is an IAspect which allows you to modify the runtime
+The `MecanimAspect` is an `IAspect` which allows you to modify the runtime
 parameters to drive the state machine. The parameter manipulation API mimics the
 classical API, but with a few twists.
 
@@ -85,6 +85,14 @@ The Mecanim runtime does not aim to be a perfect recreation of Unity’s classic
 implementation. In some cases, there may be frame or blending differences. For
 example, when classical Unity interrupts a transition, it saves the pose at the
 point of interruption and blends between that static pose and the target
-interrupting state. In contrast, Kinemation elects to immediately transition to
-the target interrupting state and trigger a new inertial blend to smooth out the
+interrupting state. In contrast, Mimic elects to immediately transition to the
+target interrupting state and trigger a new inertial blend to smooth out the
 motion.
+
+## Blend Shape Animation
+
+Blend shape animation is a highly experimental feature which can be enabled via
+LATIOS_MECANIM_EXPERIMENTAL_BLENDSHAPES scripting define. There are known issues
+with the animations not matching classical GameObjects, though the reasons
+remain unknown at the time of writing this. We would appreciate any help
+investigating the cause of these issues!

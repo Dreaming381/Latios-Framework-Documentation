@@ -46,9 +46,9 @@ instead. This does no syncing whatsoever. And when we are done, we have to call
 
 However, there’s one further optimization we can employ. Sampling all the bones
 in a clip (a pose) is significantly faster than sampling each bone one-by-one.
-We can use the `SamplePose()` method for this. However, this requires a third
-argument which specifies a `weight`. When using pose sampling, weight blending
-is built-in for performance reasons. For a single clip, we can set this to `1f`.
+We can use the `SamplePose()` method for this. This requires a third argument
+which specifies a `weight`. When using pose sampling, weight blending is
+built-in for performance reasons. For a single clip, we can set this to `1f`.
 Afterwards, we have to call `EndSamplingAndSync()`.
 
 ```csharp
@@ -70,7 +70,7 @@ partial struct OptimizedJob : IJobEntity
 
 Yes. It really is that simple! It is also worth noting that unlike exposed
 skeletons, optimized skeletons can safely write to bone index 0. Often, this
-bone contains the root motion state, and is not reflected in rendering.
+bone contains the root motion delta, and is not reflected in rendering.
 
 ## What’s Next
 

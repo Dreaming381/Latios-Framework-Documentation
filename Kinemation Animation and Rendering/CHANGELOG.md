@@ -6,6 +6,100 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic
 Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [0.9.0] – 2024-1-20
+
+Officially supports Entities [1.1.0-pre.3]
+
+### Added
+
+-   *New Feature:* Added `SkinningAlgorithms` which provides a suite of
+    utilities for deforming Dynamic Meshes
+-   *New Feature:* Added `GraphicsBufferBroker` and related APIs for custom user
+    operations involving new or existing graphics buffers within
+    `PresentationSystemGroup` or the culling loop
+-   Added `MeshNormalizationBlob` and added an instance to `MeshDeformDataBlob`
+-   Added `BlobBuilder` extension method `CreateParameterClip()` for creating a
+    parameter animation clip using ACL compression embedded inside a
+    user-defined blob asset
+-   Added `CountLoopCycleTransitions()` method to `SkeletonClip` and
+    `ParameterClip`
+-   Added `SkinnedMeshBindingAspect`, `SkeletonSkinBindingsAspect`, and
+    `SkinBoneBindingsCollectionAspect` for obtaining cached bone bindings
+    between skinned meshes and skeletons for use with `SkinningAlgorithms`
+-   Added `BatchCullingFlags` to `CullingContext`
+-   Added `DisableComputeShaderProcessingTag` for disabling GPU blend shapes and
+    skeletal skinning on dynamic meshes that wish to perform these operations on
+    the CPU instead
+-   Added `OptimizedRootDeltaROAspect` for working around a Unity source
+    generator issue when attempting to use `OptimizedSkeletonAspect` and
+    `TransformAspect` in the same job
+-   Added `CullingRoundRobinEarlyExtensionsSuperSystem` and
+    `CullingRoundRobinLateExtensionsSuperSystem` for injecting custom graphics
+    buffer operations into the culling loop
+
+### Changed
+
+-   **Breaking:** Changed `parameterNames` in `ParameterClipSetBlob` and all
+    associated APIs to use `FixedString128Bytes` instead of `FixedString64Bytes`
+-   **Breaking:** All renderers with multiple materials will now by default bake
+    into only one or two entities each, rather than an entity per material
+-   **Breaking:** Renamed `KinemationBakingBootstrap` method
+    `InstallKinemationBakersAndSystems()` to `InstallKinemation()`
+-   **Breaking:** Redesigned all methods in
+    `OverrideMeshRendererBakerExtensions` to utilize the new multi-material
+    runtime features and new renderer baking backend
+-   The default compression level when compressing animation clips is now
+    “automatic mode”, which is set to a value of 100
+
+### Fixed
+
+-   Fixed baking blend shapes when the GPU buffer size was larger than the size
+    expected from the mesh object
+-   Fixed renderer entities with only blend shapes being baked with
+    `BindSkeletonRoot` if they had an Animator ancestor
+-   Fixed `OptimizedBone` change propagations for individual position, rotation,
+    and scale values
+-   Fixed missing `Systems` namespace on `CullingComputeDispatchSubSystemBase`,
+    `UploadDynamicMeshesSystem`, and `BlendShapesDispatchSystem`
+-   Fixed graphics buffer being too small when lots of blend shape meshes are
+    rendered in a single frame
+-   Fixed live baking losing track of `MeshDeformDataBlobs` due to the binding
+    system not detecting the binding discrepancy
+-   Fixed `RenderBounds` changes not being considered when updating the bounds
+    of deforming meshes that do not use skeletal skinning
+-   Fixed Unity Transforms not resetting `LocalTransform` to `Identity` when a
+    skinned mesh is bound to a skeleton
+-   Fixed skinned meshes having wrong world bounds in the Editor when live
+    baking due to `ChunkBoneWorldBounds` being dropped during baking for some
+    unknown reason
+-   Fixed dynamic meshes and blend shapes failing to render when instantiated in
+    the same frame after `MotionHistorySuperSystem`
+
+### Improved
+
+-   ACL has been updated to version 2.1.0
+-   All renderers use a new baking backend which is hopefully superior in
+    performance, memory usage, and robustness compared to the Entities Graphics
+    backend
+-   Culling systems are now visible in the Systems window
+-   `LatiosEntitiesGraphicsSystem` uses `WorldUpdateAllocator` instead of
+    `TempJob`
+-   A new validator checks for bad rendering archetypes such as Unity Transforms
+    in a QVVS Transform project and reports any offending archetype to the
+    console
+-   `OptimizedSkeletonState` is now automatically added to entities with
+    `OptimizedBoneTransform` if missing during binding
+-   `BindSkeletonRoot` will now search through multiple iterations of entity
+    references to find a valid skeleton during binding
+
+### Removed
+
+-   **Breaking:** Mecanim has been moved out of Kinemation and into Mimic
+-   **Breaking:** The `TextBackend` namespace and associated functionality has
+    been moved out of Kinemation and into Calligraphics
+-   **Breaking:** Removed `RenderQuickToggleEnableFlag` as `MaterialMeshInfo`
+    may now be used for the same purpose
+
 ## [0.8.6] – 2023-12-9
 
 Officially supports Entities [1.0.16]

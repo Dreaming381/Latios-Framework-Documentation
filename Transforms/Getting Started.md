@@ -72,16 +72,16 @@ position in world space. The below table shows how the different local-space
 quantities affect both the transform’s own world-space equivalent and the
 world-space of a child.
 
-|                                        | Self World-Space | Child World-Space   |
-|----------------------------------------|------------------|---------------------|
-| Local Position                         | Position         | Position            |
-| Local Rotation                         | Position         | Rotation Position   |
-| Local Uniform Scale (ECS)              | Size             | Size Position       |
-| Local Non-Uniform Scale (Game Objects) | Size Shape       | Size Shape Position |
-| Stretch (QVVS)                         | Size Shape       | Position            |
+|                                        | Self World-Space | Child World-Space     |
+|----------------------------------------|------------------|-----------------------|
+| Local Position                         | Position         | Position              |
+| Local Rotation                         | Rotation         | Rotation, Position    |
+| Local Uniform Scale (ECS)              | Size             | Size, Position        |
+| Local Non-Uniform Scale (Game Objects) | Size, Shape      | Size, Shape, Position |
+| Stretch (QVVS)                         | Size, Shape      | Position              |
 
 It is only when the child’s shape is influenced by the parent that shear can
-occur. Therefore by definition, both QVS and QVVS are shear-free
+occur. Therefore, by definition, both QVS and QVVS are shear-free
 representations.
 
 For what it is worth, Unity’s RigidTransform is a QV. There is such thing as a
@@ -186,7 +186,7 @@ parent changes. In addition, it is given a `LocalTransform` and a
 `ParentToWorldTransform`. The `LocalTransform` contains a single `TransformQvs`
 field. The `ParentToWorldTransform` is where the “cached” comes from, and
 contains the parent’s `WorldTransform` from when the `TransformSuperSystem` last
-ran. It’s purpose is to keep either the world-space or local-space values
+ran. Its purpose is to keep either the world-space or local-space values
 approximated as closely as possible (exact if the parent’s world transform
 doesn’t change) while the other is preserved exactly. Which values are preserved
 exactly and which are approximated depends on the entity’s Hierarchy Update
@@ -210,11 +210,11 @@ However, there is one more type of child, and that’s a child with the
 have a `LocalTransform` nor `ParentToWorldTransform`, and instead copy the
 parent’s `WorldTransform` exactly, including the stretch value. The purpose of
 this tag is for when an object is broken apart into multiple entities which all
-need to share the same transform values, such as a mesh with multiple materials.
-Attempting to modify the transform of such a child via `TransformAspect` will
-result in an error (safety checks only). You are free to add or remove the
-`CopyParentWorldTransformTag`, and the `TransformSuperSystem` will adjust the
-entity’s archetype accordingly.
+need to share the same transform values, such as a renderer with multiple
+material and mesh entities. Attempting to modify the transform of such a child
+via `TransformAspect` will result in an error (safety checks only). You are free
+to add or remove the `CopyParentWorldTransformTag`, and the
+`TransformSuperSystem` will adjust the entity’s archetype accordingly.
 
 ### Other Components
 
@@ -222,12 +222,13 @@ entity’s archetype accordingly.
 values of a transform. When the `TransformSuperSystem` encounters these locks,
 it will modify the local-space values instead. You can add these lock flags to
 any entity (not just the ones the baker targets) with the baker extension method
-`AddHierarchyModeFlags()`. You can also add/modify/remove it at runtime freely.
+`AddHierarchyModeFlags()`. You can also add/modify/remove the component at
+runtime freely.
 
 `PreviousTransform` and `TwoAgoTransform` are optional components as part of the
 Motion History feature. `PreviousTransform` contains a copy of the transform
 from the start of `SimulationSystemGroup`. While `TwoAgoTransform` contains a
-copy of `PreviousTransform` at that same point. These must be added using a
+copy of `PreviousTransform` at that same point. These must be added using
 special baking request components. See [QVVS Transforms
 Baking](QVVS%20Transforms%20Baking.md) for details.
 

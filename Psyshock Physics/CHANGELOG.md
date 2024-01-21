@@ -6,6 +6,34 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic
 Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [0.9.0] – 2024-1-20
+
+Officially supports Entities [1.1.0-pre.3]
+
+### Added
+
+-   *New Feature:* Added `UnitySim.ContactsBetween()` which can find a contact
+    manifold from a `ColliderDistanceResult` using an algorithm that behaves
+    similar to Unity Physics
+-   *New Feature:* Added `XpbdSim` methods `SolveDistanceConstraint()` and
+    `SolveVolumeConstraint()` for use in XPBD particle simulations
+-   Added `ColliderDistanceResult` methods `FlipInPlace()` and `ToFlipped()` for
+    switching the values of A and B in the result
+
+### Changed
+
+-   **Breaking:** `ConvexColliderBlob` was redesigned with new arrays and shrunk
+    data sizes of existing indices arrays
+-   Field layouts of all collider types have been reworked to shrink `Collider`
+    down to 48 bytes
+
+### Improved
+
+-   FindPairs now uses AVX on supported platforms for a mild performance
+    improvement
+-   Reworked convex collider point and ray queries to use 2D hulls with stretch
+    along one axis is zero
+
 ## [0.8.3] – 2023-10-15
 
 Officially supports Entities [1.0.16]

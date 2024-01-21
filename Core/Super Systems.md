@@ -90,6 +90,22 @@ Note: You can use hierarchical update culling while also using the system
 injection workflow. When doing so, simply do not call
 `GetOrCreateAndAdd***System<T>()`.
 
+### ShouldUpdateSystem() vs IRateManager
+
+These are separate tools with separate intended purposes which can be used in
+conjunction. `ShouldUpdateSystem()` is designed for turning off systems that are
+not needed for a given scene or game mode or other context, whereas
+`IRateManager` is designed for customizing the frequency the group of systems
+update. For this reason, `ShouldUpdateSystem()` will affect the Enabled property
+of itself and it and child systems will have `OnStartRunning()` and
+`OnStopRunning()` called when the return value of `ShouldUpdateSystem()` differs
+from its previous call. `IRateManager` will not do these things.
+
+If you override `ShouldUpdateSystem()`, you must return an explicit `true` or
+`false` value. Do not conditionally return the value provided by the base
+`SuperSystem` type as this will simply return the value of the previous call to
+`ShouldUpdateSystem()`.
+
 ## Root Super Systems
 
 Unlike regular `SuperSystem`s, `RootSuperSystem`s are designed to be injected

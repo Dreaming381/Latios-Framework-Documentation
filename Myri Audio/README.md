@@ -62,7 +62,8 @@ sampling work “free”.
 
 *Warning: While this approach reduces frame times, it requires more computation
 effort. Consequently, it may not be well-suited for mobile platforms where
-battery life is a concern.*
+battery life is a concern. Effect Stacks will provide an alternative that may
+perform better in these circumstances.*
 
 ### Simple, Easy, and Job-friendly
 
@@ -92,6 +93,8 @@ were hoping for, well I’m glad I delivered.
 -   Myri will only use up to `n` worker threads when performing sampling, where
     `n` is the sum of spatialization channels across all listeners. A default
     listener has four spatialization channels.
+-   A job which manages listeners and the DSP graph is not Bursted due to
+    DSPGraph limitations.
 
 ## Known Unity Engine and DSPGraph Issues
 
@@ -99,28 +102,20 @@ The following issues are issues with Unity’s underlying DSPGraph and cannot be
 resolved in Myri. If you encounter one of these issues, submit a bug report to
 Unity!
 
--   Background subscene baking crashes while reading the AudioClip assets on
-    some systems. As this is system-specific, it is very important that you
-    report this issue to me if you encounter it. It is also helpful to report if
-    you do not suffer from this issue.
 -   Sometimes in the editor, audio may stutter despite a lack of warnings of the
     DSPGraph being starved. This is because GC spikes stall the audio thread if
     Burst Compilation is disabled.
--   A job which manages listeners and the DSP graph is not Bursted due to
-    DSPGraph limitations.
 -   The Unity Editor sometimes emits an exception from a Bursted job. This is a
     DSPGraph and job system bug related to scheduling, and does not appear to
     have any adverse effects currently.
--   Sometimes DSPGraph will hang editor shutdown if Myri was installed but never
-    used. A workaround was introduced in 0.8 to combat this.
+-   Sometimes DSPGraph will hang editor shutdown or domain reload. This tends to
+    affect some projects more than others, with no known explanation other than
+    that the stall occurs within engine code.
 
 ## Near-Term Roadmap
 
--   Exposed limiter controls
--   Layers
--   Effect Stacks (Includes user DSP APIs)
-
-## Not-So-Near-Term Roadmap
-
--   Clip compression
--   Pitch shifting
+-   Effect Stacks Overhaul
+    -   Exposed limiter controls per listener and master
+    -   Source and listener layer masks
+    -   Streaming audio independent of main thread
+    -   Procedural audio and custom user effects via DSP APIs

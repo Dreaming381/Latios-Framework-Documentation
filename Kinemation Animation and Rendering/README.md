@@ -6,8 +6,8 @@ Kinemation is an animation and rendering solution for Entities which aims to
 tightly integrate gameplay and animation for large-scale worlds. Kinemation is
 still under active development, and it has only laid down the foundations
 towards what it aims to achieve. Yet those foundations are already usable in
-projects. As of Unity DOTS 1.0, no official Entities-based animation solution
-exists.
+projects. As of Unity Entities 1.2, no official Entities-based animation
+solution exists.
 
 Check out the [Getting Started](Getting%20Started%20-%20Part%201.md) page!
 
@@ -15,17 +15,18 @@ Check out the [Getting Started](Getting%20Started%20-%20Part%201.md) page!
 
 *Can I use Mecanim Animator Controllers?*
 
-Yes. Though some bugs will not be fixed in any 0.8.x patch.
+Yes. Support is available through an Addon in the Mimic module.
 
 *Do culling and LODs work?*
 
-Yes. They work the way they are supposed to.
+Yes. They work the way they are supposed to (which is better than Entities
+Graphics).
 
 *Is it faster than Game Objects?*
 
 Way faster!
 
-*Will I run out of memory and cause Unity to crash?*
+*Will I run out of video memory and cause Unity to crash?*
 
 It is far less likely.
 
@@ -96,7 +97,7 @@ This mechanism also works with blendshapes, even for weights outside the range
 of [0f, 1f]. And no. It is not just computing all the vertices. It is doing
 something far more efficient.
 
-### A Better Entities Graphics
+### A Better Entities Graphics Runtime
 
 A large amount of Entities Graphics has been rewritten to better take advantage
 of culling and to support far more characters in open worlds. Now, chunks of
@@ -127,6 +128,8 @@ own culling systems to alter the visibilities of entities without structural
 changes or hacks. Or you can react to existing visibility information for
 gameplay purposes. You can even mimic what Kinemation does and reserve some
 heavy compute shader dispatches for only the entities that will be rendered.
+Kinemation even includes APIs to help you manage your own graphics buffers for
+custom visual effects.
 
 Kinemation’s culling algorithm is also much more aggressive, using an ECS-based
 filtering order that removes many computationally expensive checks early in the
@@ -134,6 +137,21 @@ pipeline, all while preserving fancy culling features like shadow map splits,
 picking, and highlighting.
 
 One last thing, Kinemation has **no per-frame GC allocations**!
+
+### A Better Entities Graphics Baking Pipeline
+
+It isn’t just the runtime that got a rewrite. Baking also has been rewritten to
+take full advantage of the faster runtime and provide more flexibility.
+
+By default, any renderer will be baked using at most two entities. One entity
+will store all the opaque materials, while the other will store all the
+transparent materials. This means less transforms and less culling work.
+
+However, there may be times you need to override this behavior, such as for
+isolating specific materials to specific entities where you want to modify
+material property overrides at runtime. Kinemation provides a custom API for
+this which allows you to define the sets of meshes and materials for each entity
+you bake. That’s right, Kinemation supports entities with multiple meshes!
 
 ### Custom Shader Graph Nodes
 
@@ -145,9 +163,9 @@ Vertex Skinning node if you want motion vectors using vertex skinning.
 
 ### Easy Binding System
 
-Character customization and weapon switching are common use cases that Unity’s
-experimental DOTS animation package made extremely difficult. But Kinemation was
-designed with these use cases in mind.
+Character customization and weapon switching are common use cases that many
+other animation packages struggle with. But Kinemation was designed with these
+use cases in mind.
 
 No longer do you have to copy magical bone arrays between Skinned Mesh
 Renderers. Kinemation bakes transform hierarchy information as strings into Blob
@@ -181,6 +199,10 @@ advanced state machine or graph solution, Kinemation provides a great
 foundational API and comes with the support of someone all too eager to answer
 any questions you may have!
 
+The API is flexible enough for higher-level solutions to be built on top. For
+example, the Mimic module has a Mecanim Animator Controller Addon which supports
+familiar tools and workflows in native ECS.
+
 ### AAA Animation Compression
 
 Unity’s animation compression algorithm is not great. Usually, small sizes come
@@ -207,9 +229,10 @@ Now if only Myri had something this good…
 
 ### Inertial Motion Blending and Motion Vectors
 
-Kinemation has built-in motion history mechanisms that features such as Inertial
-Motion Blending and Motion Vectors can leverage. Both features are baked into
-entities by default, and the former is fully in your control with a simple API.
+Kinemation has built-in motion history mechanisms that other features such as
+Inertial Motion Blending and Motion Vectors can leverage. Inertial motion
+blending is built into Optimized Skeletons and can be controlled with a simple
+API. Motion vectors can be used automatically when a supporting shader is used.
 
 ### Native Squash and Stretch
 
@@ -223,22 +246,23 @@ Kinemation takes full advantage of it to deliver the juiciest of animations.
 
 ### Mecanim Layer to Get Started
 
-Kinemation has a Mecanim Animator Controller runtime so that you can continue
+The Mimic module has a [Mecanim Animator
+Controller](../Mimic/Mecanim%20Runtime.md) runtime so that you can continue
 using the tools you know. The runtime supports all parameter types, all blend
 tree types, transitions, interrupts, root motion, and more. The `MecanimAspect`
 provides the API for interacting with the controller at runtime.
 
-Note: Mecanim functionality is **Experimental** and is a community-contributed
+Note: Mecanim functionality is an Addon to Mimic and is a community-contributed
 feature. Bugfixes cannot be guaranteed. Sovogal is the primary contributor.
 
 ### Lots of Features
 
 While the above features might be the most impactful, Kinemation has plenty more
-to offer. **Blend Shapes** offer an alternative to skeletal animation. **Dynamic
-Meshes** let you animate the vertices directly in Burst jobs. **Enable Toggles**
-let you quickly toggle the visibility of entities based on gameplay without sync
-points. Both exposed and optimized skeletons support **attachments**, including
-nested skeletons.
+to offer. **Blend Shapes** offer an alternative to skeletal animation.
+[**Dynamic Meshes**](Dynamic%20Meshes.md) let you animate the vertices directly
+in Burst jobs. And the `GraphicsBufferBroker` provides direct access to the GPU
+buffers for GPU-based processing. Both exposed and optimized skeletons support
+**attachments**, including nested skeletons.
 
 ### Performance Guarantee
 
@@ -269,25 +293,29 @@ powerful tool for increasing the number of entities the hardware can handle.
 
 ## Known Issues
 
--   Kinemation only supports desktop platforms out-of-the-box. While the
-    ACLUnity native plugin is expected to work across all platforms, you will
-    have to compile the library yourself. If you would like to help Kinemation
-    support your target platform officially, please reach out!
+-   Kinemation does not support all platforms out-of-the-box. While the ACLUnity
+    native plugin is expected to work across all platforms, you may have to
+    compile the library yourself for some platforms. If you would like to help
+    Kinemation support your target platform officially, please reach out!
 -   Occlusion Culling is not supported. Support should be possible in a future
     release.
 -   Entities Graphics stats don’t work. Kinemation will provide its own solution
     for this in a future release which will be more extensible and customizable.
--   The Mecanim runtime contains a design flaw which may result in some
-    unresolvable bugs within the current feature release.
+-   When using Unity Transforms, Kinemation does not enforce the a skinned
+    mesh’s local transform is set to identity after binding to a skeleton, which
+    may result in incorrect rendering if this value is modified later
 
 ## Near-Term Roadmap
 
 -   IK Utilities
     -   Pending Characters in Free Parking
--   Deformed Mesh Normals and Tangents Recalculation
--   Animation Override Layers
+-   GPU Deformed Mesh Normals and Tangents Recalculation
+-   Blend Shape Animation Baking Helpers
 -   Dual Quaternion Skinning
     -   (already implemented, but currently disabled because it is bugged)
 -   Forced Optimized Skeleton Baking from Exposed Game Objects
 -   Stats and Troubleshooting Diagnostics
 -   Cycle-Matching Utilities
+-   LOD Crossfade
+-   Root Delta Sampling Helpers
+-   Blend Tree Helpers

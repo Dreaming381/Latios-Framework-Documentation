@@ -23,7 +23,7 @@ Latios Framework requires a custom bootstrap to inject its custom features into
 the ECS runtime.
 
 You can create one from one of the templates using the Project folder’s create
-menu and selecting *Latios-\>Bootstrap*.
+menu (or the top menu’s “Assets” tab) and selecting *Latios-\>Bootstrap*.
 
 For beginners, it is recommended to choose the *Standard-Injection Workflow*
 variant, as this matches the default Unity behavior while bringing in all Latios
@@ -32,13 +32,23 @@ Framework features.
 For those who prefer explicit ordering of systems, you may find the *Explicit
 Workflow* more enticing. This workflow will automatically inject Unity systems,
 but then allow you to inject only top-level systems which set up children
-systems in a top-down manner. See [Super Systems](Super%20Systems.md) for more
-info on this workflow.
+systems in a top-down manner. This is often the preferred workflow for
+experienced users. See [Super Systems](Super%20Systems.md) for more info on this
+workflow.
+
+There are also Unity Transforms variants of these bootstraps for projects that
+use Unity Transforms. You will need to add LATIOS_TRANSFORMS_UNITY scripting
+define to your project if you use one of these bootstraps.
 
 For NetCode Projects, the Latios Framework will detect the NetCode package and
 enable additional C\# files for compilation. One of these provides a dedicated
-NetCode bootstrap file. *Note: NetCode is not officially supported at this
-time.*
+NetCode bootstrap type called `LatiosClientServerBootstrap`, which offers Latios
+Framework equivalents of `ClientServerBootstrap`. You can further customize each
+type of world with the additional bootstrap interfaces provided, which you can
+automatically generate from the *NetCode Standard – Injection Workflow*
+bootstrap. Those bootstrap interfaces are automatically configured for Unity
+Transforms, which is the recommended transform system for NetCode projects in
+0.9 versions.
 
 After the bootstrap is created, it can be
 [customized](Customizing%20the%20Bootstraps.md).

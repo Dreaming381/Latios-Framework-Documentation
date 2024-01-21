@@ -219,10 +219,13 @@ dependencies.
 
 Fluent Queries have a concept of “weak” requests, or requests that can be
 overridden by other expressions. For example, an extension method may request a
-weak readonly `Translation`. If a `Translation` request already exists (readonly
-or readwrite), the weak request will be ignored.
+read-only `Collider`. If a `Collider` request already exists (read-only or
+read-write), the read-only request will be ignored.
 
-There are similar mechanisms for handling “Any” requests and “Exclude” requests.
+There are similar mechanisms for handling all the various combinations including
+enabled states. The rules are explicit, well-documented, and designed to be
+intuitive when different pieces of code all try to contribute to a single
+`EntityQuery`.
 
 You begin a Fluent chain using the `Fluent` property on `SubSystem` and
 `SuperSystem` or by invoking `Fluent()` on an `EntityManager` or `SystemState`.
@@ -326,7 +329,7 @@ can be resolved correctly without having to write custom baking systems.
 The design outlines a pattern you can follow that allows you to extend the Smart
 Blobber mechanisms to your own blob types. The process is thoroughly documented
 and all APIs contain detailed XML documentation. You can obtain fully parallel
-and Bursted blob asset generation without having to worry about Unity’s
+and Burst-compiled blob asset generation without having to worry about Unity’s
 convoluted blob asset conversion APIs.
 
 See more: [Smart Blobbers](Smart%20Blobbers.md)
@@ -347,7 +350,7 @@ foot.
 
 ### DynamicHashMap
 
-This is a wrapper around a DynamicBuffer that provides hashmap-like
+This is a wrapper around a `DynamicBuffer` that provides hashmap-like
 functionality. Unlike other implementations, this implementation can correctly
 handle serialization of Entity and blob asset references.
 
@@ -360,11 +363,10 @@ handle serialization of Entity and blob asset references.
 -   IL2CPP may require the IL2CPP Code Generation to use the “Faster (smaller)
     builds” option.
 -   Blackboard Entities do not retain blob asset reference counts.
--   Blackboard Entities and `EntityDataCopyKit` do not handle enable bits
-    correctly.
 
 ## Near-Term Roadmap
 
+-   Job stack allocators
 -   Bootstrap Profiles
     -   Allow multiple bootstraps per project for samples and tests
 -   More custom command buffer types

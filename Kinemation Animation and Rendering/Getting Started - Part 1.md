@@ -1,7 +1,7 @@
 # Getting Started with Kinemation – Part 1
 
-This is the fourth preview version released publicly. As such, there’s still
-more to come. For simple use cases, it is easy to get started. But for advanced
+This is the fifth preview version released publicly. As such, there’s still more
+to come. For simple use cases, it is easy to get started. But for advanced
 production workflows, some of that burden may fall on the user.
 
 It will be up to you, a member of the community, to help guide Kinemation’s
@@ -9,10 +9,10 @@ continual development to meet the needs of real-world productions. Please be
 open and loud on your journey. Feedback is critical.
 
 This Getting Started series is broken up into multiple parts. This first part
-covers the terms and runtime structure. It is okay if you do not understand
-everything in this part or choose to skim through it. The remaining parts will
-guide you through the process of configuring and animating a character as an
-entity.
+covers the terminology and runtime structure. It is okay if you do not
+understand everything in this part or choose to skim through it. The remaining
+parts will guide you through the process of configuring and animating a
+character as an entity.
 
 ## Minimum Requirements
 
@@ -64,99 +64,209 @@ analyzes that during baking instead.
 
 However, Kinemation also allows skeletons to be built procedurally from code.
 
-## Anatomy of a Character at Runtime
+## Renderers
 
-There are ten main types of entities in Kinemation. Often, an entity may fall
-under more than one type at once. The types are as follows:
+Renderers in Kinemation are quite similar to Entities Graphics. They are
+fundamentally built on `MaterialMeshInfo` and `RenderMeshArray`, and can contain
+optional material property overrides. However, authoring Mesh Renderers can have
+multiple materials, and how Kinemation deals with this is different than
+Entities Graphics.
 
--   Base skeleton
--   Exposed skeleton
--   Exposed bone
--   Optimized skeleton
--   Exported bone
--   Deformed mesh
--   Skinned mesh
--   Blend shape mesh
--   Dynamic mesh
--   Shared Submesh
+Beginning in Entities Graphics 1.1, a single `MaterialMeshInfo` instance can
+refer to multiple material-mesh-submesh triplets within a `RenderMeshArray`.
+However, Entities Graphics will only bake entities to use this format if a
+particular scripting define is enabled. Thus, Entities Graphics builds entity
+hierarchies like this:
 
-Let’s break down each type.
+-   If single material or scripting define set and not skinned
+    -   primaryEntity – all rendering components
+-   Otherwise
+    -   primaryEntity – no rendering components
+        -   additionalEntity0 – rendering components for first material
+        -   additionalEntity1 – rendering components for second material
+        -   …
 
-### Base Skeleton
+Kinemation does things a little differently by default.
 
-The *base skeleton* is an entity that can be a bind target for skinned meshes.
-It provides a uniform interface for skinned meshes. It is composed of these
-components:
+-   If renderer has both opaque and transparent materials
+    -   primaryEntity – rendering components for all opaque materials
+        -   additionalEntity – rendering components for all transparent
+            materials
+-   Otherwise
+    -   primaryEntity – rendering components for all materials
 
--   SkeletonRootTag
-    -   Required
-    -   Zero-sized
-    -   Added during baking
--   ChunkPerCameraSkeletonCullingMask
-    -   Added at runtime automatically
-    -   Chunk component used for culling
--   ChunkPerCameraSkeletonCullingSplitsMask
-    -   Added at runtime automatically
-    -   Chunk component used for culling shadow maps
--   SkeletonBindingPathsBlobReference
-    -   Optional
-    -   Added during baking
-    -   Used for binding skinned meshes which don’t use overrides
--   DynamicBuffer\<DependentSkinnedMesh\>
-    -   Internal
-    -   Added at runtime automatically
-    -   Cleanup type
--   SkeletonBoundsOffsetFromMeshes
-    -   Internal
-    -   Added at runtime automatically
+This means that in Kinemation by default, there will only ever be at most two
+entities per authoring renderer. No scripting define is required, and the
+behavior is true for both Mesh Renderers and Skinned Mesh Renderers.
 
-A skeleton is not valid if it is only a base skeleton. It needs to also be
-either an *exposed skeleton* or an *optimized skeleton*. Unless you are building
-a skeleton procedurally, you generally do not need to concern yourself with any
-of these components. However, you may find `SkeletonBindingPathsBlobReference`
-useful for looking up bones by name.
+While this is the default setup, Kinemation supports completely overriding the
+setup and distribution of entities. You can find a comprehensive set of API in
+OverrideMeshRendererBaker.cs and there’s an example of its usage for [dynamic
+meshes](Dynamic%20Meshes.md).
 
-A skeleton will automatically receive all motion history components during
-baking.
+Renderer entities can also be given the `RendererVisibilityFeedbackFlag` which
+is an `IEnableableComponent` that is enabled if the renderer was visible in the
+previous frame, and disabled otherwise. Renderer entities can also be given
+`PostProcessMatrix` and `PreviousPostProcessMatrix` for applying shear and other
+visual matrix transform effects to the entities for rendering.
 
-### Exposed Skeleton
+Renderers are invalid if they do not have the appropriate world-space transform
+component for the transform system in use (WorldTransform for QVVS and
+LocalToWorld for Unity Transforms).
 
-An *exposed skeleton* is a skeleton entity in which every one of its bones is an
-entity, and bones rely on Unity’s transform system for skinning and animation.
-In addition to the *base skeleton* components, it also has these components:
+## Deforming Renderers
 
--   DynamicBuffer\<BoneReference\>
-    -   Required
-    -   Each element is a reference to an exposed bone entity
-    -   Added during baking
--   BoneReferenceIsDirtyFlag
-    -   Optional
-    -   Used to command Kinemation to resync the exposed bones with the *exposed
-        skeleton*
-    -   Must be manually added if needed
-    -   Zero-sized `IEnableableComponent`
--   ExposedSkeletonCullingIndex
-    -   Internal
-    -   Added at runtime automatically
-    -   Cleanup type
+Deforming renderers are *renderer* entities (that is, they have the
+`MaterialMeshInfo` component) that contain special types of material property
+components used for deformation. Common examples would be
+`CurrentMatrixVertexSkinningShaderIndex` or `CurrentDeformShaderIndex`. The
+primary entity is given a copy of all deforming material properties of
+additional entities. And each additional entity is given a
+`CopyDeformFromEntity` component which points back to the primary entity. This
+component will cause the entity to receive the culling status and copy all
+material properties of the primary entity in the culling loop, rather than rely
+on its own culling status.
 
-In nearly all cases, the only thing you will want to do is read the
-`BoneReference` buffer. The index of each bone in this buffer corresponds to the
-bone index in a `SkeletonClip`.
+Deforming renderers are automatically created from baking skinned mesh
+renderers, but can also be created by setting `isDeforming` to `true` in
+`MeshRendererBakeSettings`.
 
-For procedural skeletons, the `BoneReference` buffer is the source of truth. Its
-state must be synchronized to all *exposed bones*. That happens once the first
-time Kinemation sees the skeleton. It can happen again by adding the
-`BoneReferenceIsDirtyFlag` component and enabling it. Keeping the
-`BoneReferenceIsDirtyFlag` component around will cause a fairly heavy Kinemation
-system to run every frame. Avoid using it unless you need it.
+## Bound Mesh Deforming Renderers
 
-If an entity in a `BoneReference` does not have the
-`WorldTransform`(QVVS)/`LocalToWorld`(Unity) component, bad things will happen.
+Building on top of *deforming renderers*, *bound mesh deforming renderers*
+additionally contain the `MeshDeformDataBlobReference` component. At runtime,
+these meshes are registered and receive an internal `BoundMesh` cleanup
+component. If you need to change the mesh blob because you changed the mesh at
+runtime, you can add and enable the `NeedsBindingFlag` component.
 
-The *exposed skeleton* entity is typically also an *exposed bone* entity.
+Bound meshes upload unique mesh data to the GPU and reference count usage.
+Visible bound mesh entities will also reserve GPU memory and update deforming
+material properties each frame during the culling loop.
 
-### Exposed Bone
+You will also notice the internal `ChunkDeformPrefixSums` component added to
+Bound mesh entities at runtime.
+
+## Dynamic Meshes
+
+*Dynamic meshes* are a type of *bound mesh deforming renderer* which contain
+components used for deforming the mesh each frame on the CPU. They contain the
+following component types which must be added via user code:
+
+-   `DynamicBuffer<DynamicMeshVertex>`
+-   `DynamicMeshState`
+-   `DynamicMeshMaxVertexDisplacement`
+
+The first two components are abstracted by `DynamicMeshAspect` for significantly
+easier modification. Dynamic meshes pack three copies of the deformed mesh
+vertices in a dynamic buffer and rotate the roles of the three copies each
+frame. This scheme supports high-performance motion vectors and other custom
+shader effects. The rotation is updated in `MotionHistorySuperSystem`.
+
+Dynamic mesh vertices are uploaded to the GPU in the culling loop once the
+entity is determined to be visible for the given frame. GPU data is not cached
+between frames.
+
+Dynamic meshes are explained in more detail [here](Dynamic%20Meshes.md).
+
+## Blend Shape Meshes
+
+*Blend shape meshes* are *bound mesh deforming renderers* that use blend shape
+deformations. They contain two components `DynamicBuffer<BlendShapeWeight>` and
+`BlendShapeState` which are automatically added when baking a Skinned Mesh
+Renderer with blend shapes and are abstracted by `BlendShapeAspect`. Similar to
+dynamic meshes, the weights buffer stores three copies of all weights with the
+roles rotated each frame. The rotation is updated in `MotionHistorySuperSystem`.
+
+Blend shapes are applied in a compute shader on the GPU for visible entities
+inside the culling loop. If the entity is also a *dynamic mesh*, the blend
+shapes are applied additively on top of dynamic mesh vertices. This can be
+disabled by adding the `DisableComputeShaderProcessingTag` component to the
+entity.
+
+A weight value of 0 will skip application of a blend shape, while a weight value
+of 1 will apply the blend shape at full strength. Weight values outside the
+range of [0, 1] are allowed for exaggeration of the shape.
+
+## Skinned Meshes
+
+*Skinned meshes* are *bound mesh deforming renderers* that use a skeleton to
+drive the deformations. They are created via the presence of a
+`BindSkeletonRoot` component as well as either the
+`MeshBindingPathsBlobReference` or the
+`DynamicBuffer<OverrideSkinningBoneIndex>.` The value of `BindSkeletonRoot` can
+point to a skeleton entity, a bone entity, or another entity containing a
+`BindSkeletonRoot`. The binding system will follow this chain until it finds a
+proper skeleton entity with a `SkeletonRootTag` component. `BindSkeletonRoot` is
+automatically initialized on entities with a Skinned Mesh Renderer which are
+descendants of a baked Animator and have bind poses. By default, a Skinned Mesh
+Renderer with bind poses will bake with the `MeshBindingPathsBlobReference`
+component. `OverrideSkinningBoneIndex` is intended for procedural setups and is
+not commonly used.
+
+A large number of changes are made to skinned mesh entities at runtime during
+the binding phase. The skinned mesh entity is reparented directly to the
+skeleton entity and given the `CopyParentWorldTransformTag` component. In Unity
+Transforms, the `LocalTransform` is also set to `Identity` and modification will
+result in undefined behavior. The entity will also be given the internal cleanup
+component `SkeletonDependent` and the chunk component `ChunkSkinningCullingTag`.
+
+The skinned mesh entity will go through a skeleton binding phase where an
+attempt is made to compute bone indices for the bind poses. If this operation
+fails, instead of being parented to the skeleton entity, the skinned mesh entity
+will instead be parented to an entity with the `FailedBindingsRootTag`. If the
+target skeleton needs to be changed at runtime, add and enable to
+`NeedsBindingFlag` component.
+
+Skeletal skinning is partly or completely processed in a compute shader. The
+results are applied additively on top of dynamic meshes and blend shape
+deformations. Skeletal skinning can be disabled via
+`DisableComputeShaderProcessingTag`.
+
+When skeletal skinning is active, `RenderBounds` and `WorldRenderBounds` are
+ignored, and instead culling uses data from the skeleton entities for culling.
+To add additional padding to the culling bounds to account for additional vertex
+deformation effects, use the `ShaderEffectRadialBounds` component.
+
+## Skeletons
+
+As discussed at the beginning, a *skeleton* entity is an entity that represents
+a collection of bones and is what skinned meshes bind to. A skeleton entity has
+the `SkeletonRootTag` component. It will also typically have the
+`SkeletonBindingPathsBlobReference` component, though this is technically
+optional.
+
+Skeleton entities are automatically baked by the presence of an Animator
+component, and will bake both the `SkeletonRootTag` and the
+`SkeletonBindingPathsBlobReference`.
+
+At runtime, several other internal components will be added to the skeleton
+entity:
+
+-   `DynamicBuffer<DependentSkinnedMesh>`
+-   `SkeletonBoundsOffsetFromMeshes`
+-   `ChunkPerCameraSkeletonCullingMask`
+-   `ChunkPerCameraSkeletonCullingSplitsMask`
+
+A skeleton entity is not valid by itself. It must additional be one of two
+specialized archetypes, exposed or optimized.
+
+## Exposed Skeletons
+
+An *exposed skeleton* is a *skeleton* entity where each bone within the skeleton
+is a separate entity. An exposed skeleton has a `DynamicBuffer<BoneReference>`
+which contains a list of the bone entities.
+
+Exposed skeletons are automatically baked when `Animator.hasTransformHierarchy`
+is `true`.
+
+If you modify the `BoneReference` buffer (that is, change which entities are
+part of the skeleton at runtime), you will need to add and enable the
+`BoneReferenceIsDirtyFlag` component to the exposed skeleton.
+
+At runtime, the internal component `ExposedSkeletonCullingIndex` will be added
+to the exposed skeleton entity.
+
+## Exposed Bones
 
 **Note: What Unity’s Rig tab in the model importer refers to as “exposed bones”
 are consequently referred to as “exported bones” in Kinemation. This name better
@@ -166,93 +276,123 @@ be modified by user code, and such modifications will be reflected in attached
 Skinned Meshes. When discussing Kinemation issues, try to stick to the
 Kinemation nomenclature.**
 
-An *exposed bone* is an entity whose transform components dictate its state of
-animation. It has the following components:
+An *exposed bone* is a bone that belongs to an *exposed skeleton’s*
+`BoneReference` buffer. It requires quite a few components to function
+correctly.
 
--   WorldTransform(QVVS)/LocalToWorld(Unity)
-    -   Required
-    -   Added during baking
--   PreviousTransform (QVVS only)
-    -   Required
-    -   Added during baking
--   TwoAgoTransform (QVVS only)
-    -   Required
-    -   Added during baking
--   ExposedBoneInertialBlendState
-    -   Optional
-    -   Convenience for inertial blending operations
-    -   Added during baking
--   BoneOwningSkeletonReference
-    -   Optional
-    -   References the *exposed skeleton* entity
-    -   Added during baking (and initialized)
-    -   Modified by Kinemation during sync if present
--   BoneIndex
-    -   Optional
-    -   The bone’s index in the `BoneReference` buffer
-    -   Added during baking (and initialized)
-    -   Modified by Kinemation during sync if present
+-   Always required
+    -   `BoneIndex`
+    -   `BoneOwningSkeletonReference`
+-   Required when using Unity Transforms
+    -   `LocalToWorld`
+-   Required when using QVVS Transforms
+    -   `WorldTransform`
+    -   `PreviousTransform`
+    -   `TwoAgoTransform`
+-   Required when influencing skinned meshes
+    -   `BoneCullingIndex`
+    -   `BoneBounds`
+    -   `BoneWorldBounds`
+    -   `ChunkBoneWorldBounds`
 
-Similar to `BoneReference`, you usually only want to read
-`BoneOwningSkeletonReference` and `BoneIndex`. The latter is especially useful
-when you need to sample a `SkeletonClip` while chunk-iterating bones.
+With the exception of transform components, all required exposed bone components
+can be added via `CullingUtilities.GetBoneCullingComponentTypes()`. As Unity
+Transforms does not support motion history, deforming material properties that
+request *Previous* or *TwoAgo* representation of the skeleton in Unity
+Transforms projects will simply be given the current frame’s representation
+instead.
 
-In addition, an exposed bone may optionally have the following internal
-components.
+All exposed bone components are added by default during baking. No components
+are added or removed at runtime. However, all non-transform components will be
+reinitialized upon the first time Kinemation systems see the *exposed skeleton*
+or when `BoneReferenceIsDirtyFlag` is present and enabled on the *exposed
+skeleton* entity.
 
--   BoneCullingIndex
--   BoneBounds
--   BoneWorldBounds
--   ChunkBoneWorldBounds
+The `BoneOwningSkeletonReference` is simply an entity reference back to the
+*exposed skeleton*. `BoneIndex` is the index of the exposed bone entity inside
+the *exposed skeleton’s* `BoneReference` buffer. The *exposed skeleton* entity
+is also typically the first exposed bone entity in the `BoneReference` buffer.
 
-These components are added automatically during baking but can also be added
-using `CullingUtilities.GetBoneCullingComponentTypes()`. Every bone that
-influences a skinned mesh **must** have these components, unless the culling
-behavior is overridden entirely.
+Skinning and culling are fully driven by the world-space transforms of the
+exposed bones. This means Kinemation will react appropriately to logic-driven
+modification to bone transforms. In addition, Kinemation is unbothered by
+transform hierarchy changes applied to the bones. This is especially useful when
+using Unity Transforms and Unity Physics to drive a ragdoll character.
 
-### Optimized Skeleton
+**Warning:** If an *exposed skeleton* references an invalid exposed bone, the
+resulting behavior is undefined, and usually pretty bad.
 
-An *optimized skeleton* is an entity whose bones are not represented as entities
-for the purposes of animation and skinning. Instead, the bone data is stored
-directly in dynamic buffers attached to the optimized skeleton. This keeps the
-transforms of the bones next to each other in memory, making hierarchical
-updates, frustum culling, and full pose animation significantly faster.
+## Optimized Skeletons
 
-In addition to the *base skeleton* components, an *optimized skeleton* has the
-following components:
+An *optimized skeleton* is a *skeleton* entity that stores its bones directly
+inside dynamic buffers and blob assets. It is defined by the presence of the
+`DynamicBuffer<OptimizedBoneTransform>`.
 
--   DynamicBuffer\<OptimizedBoneTransform\>
-    -   Required
-    -   3 sets of local and root space QVVS transforms in rotation
-    -   Added during baking (and initialized with the pose at baking time)
--   OptimizedSkeletonState
-    -   Required
-    -   Contains rotation status and various dirty flags
-    -   Added during baking
--   OptimizedSkeletonHierarchyBlobReference
-    -   Optional (Required for `OptimizedSkeletonAspect`)
-    -   Provides hierarchical information to convert local space sampled
-        animation into the skeleton’s local space
-    -   Added during baking
--   DynamicBuffer\<OptimizedBoneInertialBlendState\>
-    -   Optional (Required for `OptimizedSkeletonAspect`)
-    -   Stores state required to perform inertial blending across the entire
-        skeleton
-    -   Added during baking
+Similar to dynamic meshes and blend shapes, optimized skeletons also use a
+rotation system for transforms that is updated in `MotionHistorySuperSystem`.
+However, instead of having 3 sets of transforms, it has 6. This is because each
+rotation stores both local and root-space transforms. This mechanism is
+abstracted by `OptimizedSkeletonAspect`.
 
-When interacting with *optimized skeletons*, it is highly recommended to use the
-`OptimizedSkeletonAspect` as this provides an intuitive API for working with
-animations and individual bones.
+Optimized skeletons are automatically baked when
+`Animator.hasTransformHierarchy` is `false`. The default baker will add an
+`OptimizedSkeletonHierarchyBlobReference` component, which can be used to find
+parent and children bone indices from any other bone index. The baker will also
+add `DynamicBuffer<OptimizedBoneInertialBlendState>` which is used for inertial
+blending (more on that later). These two component types are technically
+optional, but are required for use of `OptimizedSkeletonAspect`.
 
-In addition, Kinemation automatically adds the following internal components at
-runtime:
+At runtime, additional components are added to optimized skeleton entities:
 
--   OptimizedSkeletonTag – Cleanup type
--   DynamicBuffer\<OptimizedBoneBounds\>
--   OptimizedSkeletonWorldBounds
--   ChunkOptimizedSkeletonWorldBounds
+-   `OptimizedSkeletonTag`
+-   `OptimizedSkeletonState`
+-   `DynamicBuffer<OptimizedBoneBounds>`
+-   `OptimizedSkeletonWorldBounds`
+-   `ChunkOptimizedSkeletonWorldBounds`
 
-### Exported Bone
+### OptimizedSkeletonAspect
+
+`OptimizedSkeletonAspect` contains many features to help manipulate the bones in
+an optimized skeleton. Some of these features are exclusive to optimized
+skeletons.
+
+Optimized skeletons require an initialization step. This typically happens in
+`MotionHistoryUpdateSystem`, but if the entity was instantiated after this point
+in the frame, you may need to initialize the entity manually via the
+`ForceInitialize()` method.
+
+An optimized skeleton can either be in a synced or unsynced state. Accessing
+`rawLocalTransformsRW`, sampling poses from skeleton clips (more on that in a
+later part), or applying inertial blending will put the skeleton in an unsynced
+state. You can convert to a synced state via calling `EndSamplingAndSync()`.
+When synced, the root transforms are up-to-date.
+
+When the skeleton is synced, you can index into the `bones` property to get an
+`OptimizedBone`. This type allows you to modify the bone’s transform and changes
+will automatically be propagated through the hierarchy.
+
+Inertial blending is a technique for smoothing out transitions between
+discontinuous animations over time. The technique only requires a brief history
+of the bone transforms and the present state of the bone transforms that would
+be used if no blending were applied. You can start an inertial blend with
+`StartNewInertialBlend()`. Then each frame you smooth out the transforms with
+`InertialBlend()`. It is safe to interrupt an inertial blend with a new inertial
+blend.
+
+### OptimizedRootDeltaROAspect
+
+The root bone of an optimized skeleton typically contains the root motion delta
+when sampling from animation clips. However, Unity’s source generators sometimes
+get tripped up when attempting to use `OptimizedSkeletonAspect` and
+`TransformAspect` in the same job. This makes it difficult to apply the root
+motion to the skeleton entity’s transform.
+
+`OptimizedRootDeltaROAspect` provides read-only access to just the root bone of
+an optimized skeleton to assist with root motion operations. Root motion can be
+computed in one job using `OptimizedSkeletonAspect`, and applied in another
+using `OptimizedRootDeltaROAspect`.
+
+## Exported Bones
 
 An *exported bone* is an entity that copies the root-space
 `OptimizedBoneTransform` QVVS of an *optimized skeleton* bone and assigns it to
@@ -262,207 +402,16 @@ mimics the transform of the optimized bone along with all the optimized bone’s
 animations. This is often used for rigid character accessories like weapons or
 hats.
 
-An *exported bone* has the following components:
+Any entity can become an exported bone simply by adding
+`BoneOwningSkeletonReference` and `CopyLocalToParentFromBone` components and
+setting their values appropriately. Bakers will automatically do this for bones
+made available in the *Rig* tab of the optimized skeleton’s import settings.
 
--   WorldTransform(QVVS)/LocalToWorld(Unity)
-    -   Required
-    -   Added during baking
--   LocalTransform (either QVVS or Unity flavor)
-    -   Required
-    -   Added during baking
--   BoneOwningSkeletonReference
-    -   Required
-    -   Specifies the skeleton entity to copy transforms from
-    -   Added during baking
--   CopyLocalToParentFromBone
-    -   Required
-    -   Specifies the bone index to copy
-    -   Added during baking
-
-Kinemation will generate an exported bone for immediate children of the Animator
-at baking time. Children which have a `SkinnedMeshRenderer` or an `Animator` or
-do not map to a bone in the shadow hierarchy will not be baked into an *exported
-bone*. You can also freely create *exported bones* at runtime by meeting the
-above component requirements and specifying the bone to track in the
-`CopyLocalToParentFromBone` component. The *optimized skeleton* does not know
-about nor care about *exported bones*, which means you can have multiple
-*exported bones* track the same optimized bone. Be careful though, because
-*exported bones* can be relatively costly to update.
-
-*Exported bones* update during the `TransformSuperSystem` update.
-
-An *optimized skeleton* is **not** an *exported bone*.
-
-### Deformed mesh
-
-A *deformed mesh* is an entity whose mesh is deformed by skeletal animation,
-blend shapes, or Burst jobs via Dynamic Mesh API. A deformed mesh must be at
-least one of these three other types of meshes, but can also be more than one
-type at once.
-
-A *deformed mesh* has the following components:
-
--   WorldTransform(QVVS)/LocalToWorld(Unity)
-    -   Required
-    -   Added during baking
--   LocalTransform (either QVVS or Unity flavor)
-    -   Required
-    -   Added during baking
--   MeshDeformDataBlobReference
-    -   Required
-    -   Contains all information Kinemation needs to deform the mesh on the GPU
-    -   Added during baking
--   NeedsBindingFlag
-    -   Optional
-    -   Used to command Kinemation to resync mesh with deformers
-    -   Must be manually added if needed
-    -   Zero-sized `IEnableableComponent`
--   ShaderEffectRadialBounds
-    -   Optional
-    -   Adds additional bounds inflation for a mesh that modifies vertex
-        positions in the vertex shader
-    -   Must be manually added if needed
--   BoundMesh
-    -   Internal
-    -   Added at runtime automatically
-    -   Cleanup type
--   ChunkDeformPrefixSums
-    -   Internal
-    -   Added at runtime automatically
--   Material Property Types
-    -   Added during baking
-    -   Each is optional and depends on shaders used
-    -   Public
-        -   CurrentMatrixVertexSkinningShaderIndex
-        -   PreviousMatrixVertexSkinningShaderIndex
-        -   TwoAgoMatrixVertexSkinningShaderIndex
-        -   CurrentDeformShaderIndex
-        -   PreviousDeformShaderIndex
-        -   TwoAgoDeformShaderIndex
-    -   Internal
-        -   LegacyLinearBlendSkinningShaderIndex
-        -   LegacyComputeDeformShaderIndex
-        -   LegacyDotsDeformParamsShaderIndex
-
-A *deformed mesh* does not necessarily need to be a renderable mesh, but if it
-is and if the `MaterialMeshInfo` changes, then the deformed mesh must keep its
-`MeshDeformDataBlobReference` up-to-date and rebind with `NeedsBindingFlag` on
-every change.
-
-The public material properties can be copied during culling passes for shaders
-that use custom indices for deformations.
-
-### Skinned mesh
-
-A skinned mesh is a *deformed mesh* entity that can be deformed by a skeleton.
-Skinned meshes require the following component at all times:
-
--   BindSkeletonRoot
-    -   Contains a reference to one of the following:
-        -   *Base skeleton*
-        -   *Exposed bone*
-        -   *Exported bone*
-        -   Already bound skinned mesh
-    -   Added during baking (only if descendent of converted skeleton)
-
-In addition, Kinemation requires one of these components to perform a binding:
-
--   MeshBindingPathsBlobReference
-    -   Fails if the target skeleton does not have a
-        `SkeletonBindingPathsBlobReference`
-    -   Added during baking
--   DynamicBuffer\<OverrideSkinningBoneIndex\>
-    -   Directly maps each mesh bone (bindpose) to a skeleton bone
-    -   Has priority
-
-If Kinemation detects the correct components exist for binding, it will attempt
-to bind. Every attempt will result in the following structural changes of
-components:
-
--   Added
-    -   Parent
-    -   CopyParentWorldTransformTag
-    -   SkeletonDependent – Internal Cleanup type
-    -   ChunkSkinningCullingTag
-
-A binding attempt can fail. In that case, Kinemation will parent the skinned
-mesh to a special entity with the `FailedBindingsRootTag`. This is done for a
-better debugging experience. After a failed binding attempt, you will need to
-add the `NeedsBindingFlag` and set its value to `true` in order to reattempt a
-binding.
-
-### Blend Shape Mesh
-
-A blend shape mesh is a *deformed mesh* entity that can be deformed by blend
-shapes. In the case a blend shape mesh is also a *skinned mesh*, the blend
-shapes will be applied before skinning. A blend shape mesh has the following
-components:
-
--   BlendShapeState
-    -   Required
-    -   Controls rotations and dirty flags
-    -   Added during baking
--   DynamicBuffer\<BlendShapeWeight\>
-    -   Required
-    -   3 sets of weights in rotation, with a single weight per shape
-    -   Added during baking
-
-When working with blend shapes, it is recommended to use `BlendShapeAspect`
-which will ensure you write to the correct weights for a given frame.
-
-### Dynamic Mesh
-
-A dynamic mesh is a *deformed mesh* entity whose animated vertices are provided
-directly by the CPU, typically in Burst jobs. Dynamic meshes are excellent for
-simulating soft-bodies or particles on the CPU. If a dynamic mesh is also a
-*blend shape mesh* or *skinned mesh*, the other deformations are applied on top
-of the dynamic mesh vertices. A dynamic mesh has the following components:
-
--   DynamicMeshState
-    -   Required
-    -   Controls rotations and dirty flags
-    -   Must be added by user
--   DynamicBuffer\<DynamicMeshVertex\>
-    -   Required
-    -   3 sets of vertices in rotation
-    -   Must be added by user
--   DynamicMeshMaxVertexDisplacement
-    -   Required
-    -   Contains the max distance a vertex is moved from its undeformed position
-    -   Must be updated by user for culling to work correctly
-    -   Must be added by user
-
-When working with dynamic meshes, it is recommended to use `DynamicMeshAspect`
-which will ensure you write to the correct vertices for a given frame.
-Additionally, because theoretically any mesh could be a dynamic mesh, setup must
-be configured by the user at bake time. A full guide is provided
-[here](Dynamic%20Meshes.md).
-
-### Shared Submesh
-
-A *shared submesh* is an entity which shares the result of skinning with a
-skinned mesh. This typically happens when a Skinned Mesh Renderer that uses
-multiple materials is baked into an entity. It always has a
-`CopyDeformFromEntity` component which points to the entity with the skin it
-should borrow.
-
-A *shared submesh* also has the following components added during baking:
-
--   ChunkCopyDeformTag
-    -   Internal
-    -   Also added at runtime if missing
--   Material Properties
-    -   See *deformed mesh* for list
-
-The biggest surprise with *shared submeshes* is that Kinemation bakes the
-hierarchy a little different from the rest of Entities Graphics. It looks like
-this:
-
--   Skeleton
-    -   Deformed Mesh (Primary Entity) – Material 0
-        -   Shared Submesh – Material 1
-        -   Shared Submesh – Material 2
-        -   …
+*Exported bones* update during either `TransformSuperSystem` or
+`TransformSystemGroup` depending on which transform system you use. The
+*optimized skeleton* does not know about nor care about *exported bones*, which
+means you can have multiple *exported bones* track the same optimized bone. Be
+careful though, because *exported bones* can be relatively costly to update.
 
 ## On to Part 2
 

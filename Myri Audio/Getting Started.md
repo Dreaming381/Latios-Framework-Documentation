@@ -1,6 +1,6 @@
 # Getting Started with Myri Audio
 
-This is the sixth preview version released publicly. It currently supports
+This is the seventh preview version released publicly. It currently supports
 simple use cases appropriate for game jams, experiments, and maybe even some
 commercial projects. However, it likely lacks the necessary control features
 required to deliver a final product. I unfortunately lack the expertise to
@@ -10,6 +10,9 @@ Myri to that level.
 With that said, I do believe that at the time of writing, Myri is the closest to
 a production-ready ECS audio solution for Unity Engine proper. So I hope you
 enjoy trying it out and feel free to send feedback!
+
+**Note: Some common Myri features are very unstable in Unity versions prior to
+2022.3.13f1.**
 
 ## Playing Your First Sound
 
@@ -25,9 +28,6 @@ Next, import an audio source with the *Load Type* set to *Decompress On Load*
 and *Preload Audio Data* checked. Then, on the non-listener Game Object, add a
 *Latios -\> Audio (Myri) -\> Audio Source* component. Drag your clip into the
 *Clip* field. Now enter play mode. You should hear your clip playing.
-
-**Important:** *If Unity crashes during this process, please report the bug to
-Unity.*
 
 Now that you’ve heard your clip, the next thing to do is to start playing around
 with the position of the audio source. If you move your audio source to -1 on
@@ -74,6 +74,11 @@ directional attenuation factor. Listeners within the *Inner Angle* from the
 source’s forward direction will not receive any attenuation. Listeners at the
 *Outer Angle* will be attenuated by the *Outer Angle Volume*.
 
+If *Auto Destroy on Finished* is checked and *Looping* is unchecked, the entity
+containing the audio source will automatically be destroyed once the clip has
+finished playing. This uses the [Auto-Destroy
+Expirables](../Core/Auto-Destroy%20Expirables.md) mechanism.
+
 ### Audio Listener
 
 The *Audio Listener* component provides all the settings for an entity that is
@@ -115,14 +120,14 @@ out info regarding the current audio frame and the audio frame last received.
 
 Because the mixing thread updates independently of the main thread. It is
 possible it may update while Myri is performing sampling. By the time Myri
-finishes sampling, the new samples will be an audio frame old. If Myri has the
-opportunity to update again before the mixing thread’s next update, it will
-correct the issue. However, if the mixing thread updates again first, it will
-skip ahead by a frame in the received sample set. This is usually fine, but a
-problem arises when the received sample set contains the first samples of a new
-one-shot. The first audio frame of that one-shot will be omitted. This is
-significantly more likely to happen if the audio framerate is higher than the
-main thread framerate.
+finishes sampling, the new samples will be an audio frame old. If Myri’s ECS
+system has the opportunity to update again before the mixing thread’s next
+update, it will correct the issue. However, if the mixing thread updates again
+first, it will skip ahead by a frame in the received sample set. This is usually
+fine, but a problem arises when the received sample set contains the first
+samples of a new one-shot. The first audio frame of that one-shot will be
+omitted. This is significantly more likely to happen if the audio framerate is
+higher than the main thread framerate.
 
 In that case, *Audio Frames Per Update* can help mitigate this problem by
 sending multiple audio frames in less frequent batches, effectively reducing the
@@ -143,10 +148,10 @@ rates are 44.1 kHz and 48 kHz. The audio output of the device may have a
 different sample rate than the audio clip. When this happens, Myri needs to
 “resample” the clip to compensate at runtime, which may have a measurable
 performance impact for complex audio workloads. Therefore, it is recommended to
-convert the clips sample rates to the target device’s sample rate if performance
-is a concern. This can be done using the import settings for the audio clip. The
-following image shows an audio clip with a sample rate of 44.1 kHz being
-converted to 48 kHz.
+convert the clips’ sample rates to the target device’s sample rate if
+performance is a concern. This can be done using the import settings for the
+audio clip. The following image shows an audio clip with a sample rate of 44.1
+kHz being converted to 48 kHz.
 
 ![](media/8986587ec983ff3f342baaf8990b8899.png)
 
@@ -186,12 +191,15 @@ name, which is the original `name` of the clip asset when it was baked. The
 `Length` of `loopedOffsets` is the number of unique voices for that clip when
 played by looped sources.
 
+Audio Clips have a full [Smart Blobber API](../Core/Smart%20Blobbers.md) which
+you can use in your own bakers.
+
 ### AudioListener
 
 The `AudioListener` component is very simple, containing only three values. The
 volume is the most useful. The `itdResolution` (inter-aural time difference
-resolution) will be clamped to [0, 15]. The value measures the number of steps
-from center to either side that audio can be delayed by. Higher values increase
+resolution) will be clamped to [0, 15]. This value measures the number of steps
+from center to either ear that audio can be delayed by. Higher values increase
 fidelity but decrease the effectiveness of voice-combining, which comes with a
 performance cost. The `listenerProfile` contains the metadata used to describe
 the spatialization filtering.
@@ -278,6 +286,12 @@ DSPGraph samples. These filters share a unified state-variable filter (SVF)
 kernel. The code has been slightly modified from the samples to improve the
 flexibility of the code and remove unnecessary allocations. However, the actual
 filtering logic remains unchanged.*
+
+### Adding the Blob Asset
+
+If attempting to bake listener profile blob assets for storage outside of a
+listener component, use the `IBaker` extension method
+`BuildAndRegisterListenerProfileBlob()`. This is not a smart blobber API.
 
 ## Custom DSP
 

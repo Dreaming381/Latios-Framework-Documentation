@@ -43,7 +43,7 @@ but also rely on Blobs for stuff that wouldn’t otherwise fit in a copyable
 struct.
 
 One might argue that copying large collider components (it is the same size as
-`LocalToWorld`) is quite a bit more expensive than copying pointers. But given
+`WorldTransform`) is quite a bit more expensive than copying pointers. But given
 how many other performance-hogging decisions Unity.Physics makes, I will take
 this trade any day.
 
@@ -52,9 +52,9 @@ makes them a lot more pleasant to work with.
 
 ### Transform Hierarchy Support
 
-The physics algorithms apply a local to world space conversion when capturing
-data from entities. They will also support world to local space conversion on
-simulation write back once simulation is supported.
+The physics algorithms are able to capture world-space transforms from child
+entities in hierarchies. They will also be able to write back new transforms to
+these entities once simulation is supported.
 
 QVVS Transform features like scale and stretch are also supported and work
 automatically. For shapes which don’t have well-defined stretch algorithms, you
@@ -62,16 +62,16 @@ can choose from one of several approximation methods.
 
 ### Infinite Layers
 
-So fun fact, Unity.Physics default `BuildPhysicsWorldSystem` doesn’t have one
+Fun fact, Unity.Physics default `BuildPhysicsWorldSystem` doesn’t have one
 broadphase structure. It has two. One is for statics, and the other is for
-dynamics. It performs a Bipartite check between the two. So if Bipartite checks
-are cheaper than building the static world broadphase every frame, is there a
-reason why we don’t just build a broadphase structure for each group of
+dynamics. It performs a Bipartite check between the two. So then if Bipartite
+checks are cheaper than building the static world broadphase every frame, is
+there a reason why we don’t just build a broadphase structure for each group of
 colliders we care about?
 
 That was the question I asked myself, and then I said, “No, there is not!”
 
-So instead of building two large broadphase structures with layer masks and then
+Instead of building two large broadphase structures with layer masks and then
 untangling the results, you can build a [CollisionLayer](Collision%20Layers.md)
 per unique `EntityQuery` (or from arbitrary data from a job). Then you can ask
 for all collisions within a single layer or for the collisions between layers.
@@ -203,17 +203,18 @@ with Psyshock, this can be achieved with little effort.
 
 ## Known Issues
 
--   This release is missing quite a few queries and simulation features.
+-   Despite being a “physics” engine, rigidbody simulation isn’t included yet.
 -   Compound Colliders use linear brute force algorithms and lack an underlying
     acceleration structure. Try to keep the count of primitive colliders down to
     a reasonable amount.
--   Compound Colliders do not support embedded Traingle, Convex, or TriMesh
+-   Compound Colliders do not support embedded Triangle, Convex, or TriMesh
     Colliders
 -   Authoring is weak right now. That stuff takes me a while to get working.
 -   This Readme has too many words and not enough pictures.
 
 ## Near-Term Roadmap
 
+-   Unity Physics rigid body collision solver
 -   More Character Controller Utilities
 -   FindPairs improvements
     -   Aabb-only layers
@@ -230,16 +231,11 @@ with Psyshock, this can be achieved with little effort.
     -   Terrain, Convex Compound (V-HCAD)
     -   Layer embedded?
 -   Simplified Overlap Queries
--   Contact Manifold Generation
 -   More Force Equations
+-   More Constraint Formulas
 -   Authoring Improvements
     -   Autofitting
     -   Stretch mode baking options
 -   More Debug Tools
 -   Debug Gizmo Integration Hooks
     -   If you are an asset developer interested in this, please reach out to me
-
-## Not-So-Near-Term
-
--   Simulations (The first piece of this is Contact Manifold Generation)
--   Spatial hash broadphase

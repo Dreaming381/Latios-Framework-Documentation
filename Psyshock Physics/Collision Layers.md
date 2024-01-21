@@ -16,14 +16,15 @@ upon construction. The following pieces of data are stored in a
     -   Collider
     -   RigidTransform – collider-space to world-space
     -   Entity – or some other 64bit ID encoded into an `Entity` struct
+-   Source Index – an integer used to remap elements to an originating array
 
 Collision layers are immutable, which means that if any of the above properties
 change, a new `CollisionLayer` must be built.
 
 A collision layer reorders the above data to a cache-optimized form. It assigns
-each element an index based on this new ordering scheme. When building a
-`CollisionLayer`, it is possible to command the builder to export an array of
-the original indices sorted by the order they exist in the `CollisionLayer`.
+each element an index based on this new ordering scheme. The sourceIndices
+property provides the array of the original indices sorted by the order they
+exist in the `CollisionLayer`.
 
 ### Collision Layer Settings
 
@@ -77,8 +78,6 @@ following read-only handles:
 
 You should cache these handles inside of `OnCreate()` and remember to `Update()`
 them each `OnUpdate()`.
-
-`srcIndices` arrays refer to the `entityInQueryIndex` of the `EntityQuery`.
 
 **Warning: This method will call** `EntityQuery.CalculateEntityCount`
 **immediately, which can force completion of jobs if using a Change Filter or
@@ -197,17 +196,13 @@ In case you want to reorder your data such that it aligns with the
 `CollisionLayer`, here’s an example of how to do it:
 
 ```csharp
-Physics.BuildCollisionLayer(query, this).Run(out var layer, Allocator.TempJob);
-var translations = query.ToComponentDataArray<Translation>(Allocator.TempJob);
-var reorderedTranslations = new NativeArray<Translation>(translations.Length, Allocator.TempJob, NativeArrayOptions.UninitializedMemory);
-
-Job.WithCode(() =>
+Physics.BuildCollisionLayer(query, this).Run(out var layer, state.WorldUpdateAllocator);
+var transforms = query.ToComponentDataArray<WorldTransform>(state.WorldUpdateAllocator);
+var reorderedTransforms = new NativeArray<WorldTransform>(transforms.Length, state.WorldUpdateAllocator, NativeArrayOptions.UninitializedMemory);
+for (int i = 0; i < reorderedTransforms.Length; i++)
 {
-    for (int i = 0; i < reorderedTranslations.Length; i++)
-    {
-        reorderedTranslations[i] = translations[layer.srcIndices[i]];
-    }
-}).Run();
+    reorderedTransforms[i] = transforms[layer.sourceIndices[i]];
+}
 ```
 
 ## FindPairs – Executing a Broadphase Query
@@ -238,9 +233,8 @@ of elements found.
 ### IFindPairsProcessor
 
 `IFindPairsProcessor` is an interface you must implement in a struct and provide
-an instance of when invoking `FindPairs`. The best way to think of it is it’s
-like a custom job type, except you do not need to add the `[BurstCompile]`
-attribute.
+an instance of when invoking `FindPairs`. Think of it like a custom job type,
+except you do not need to add the `[BurstCompile]` attribute.
 
 The interface requires that you implement an `Execute(in FindPairsResult
 result)`.
@@ -314,6 +308,13 @@ really intersecting. You can do that with this expression:
 ```csharp
 if (Physics.DistanceBetween(result.bodyA.collider, result.bodyA.transform, result.bodyB.collider, result.bodyB.transform, 0f, out _))
 ```
+
+#### Buckets
+
+For advanced use cases, you can additionally implement the `BeginBucket()` and
+`EndBucket()` interface methods in the `IFindPairsProcessor`. These combined
+with `Physics.FindPairsJobIndexCount()` can be used to properly set up and use
+`NativeStream.Writer` in an `IFindPairsProcessor`.
 
 ## Running FindPairs
 

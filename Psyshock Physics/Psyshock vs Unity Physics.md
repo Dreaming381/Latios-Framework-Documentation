@@ -26,6 +26,7 @@ that led to this divergence in the first place.
 | Collider Scaling         | Uniform Scale                                                             | Non-uniform stretch                                                                                           |
 | Integrator               | Built-in damping and gravity                                              | Utilities to aid user in writing their own                                                                    |
 | Forces                   | Provide force directly                                                    | Utilities for advanced drag and buoyancy for ballistics                                                       |
+| Contact Manifolds        | Reports first 32 contacts found per pair                                  | Reports area-maximized 32 contacts found per pair                                                             |
 | Collision Solver         | Jacobian                                                                  | Several Planned                                                                                               |
 | Joints                   | Several                                                                   | Planned                                                                                                       |
 | Motors                   | Several                                                                   | Planned                                                                                                       |

@@ -109,4 +109,5 @@ those who need better compatibility with other offerings.
 ## Near-Term Roadmap
 
 -   Uncached Transforms
--   IJobEntityHierarchy
+-   Custom hierarchy-aware job types
+-   Synchronous hierarchy modification APIs
