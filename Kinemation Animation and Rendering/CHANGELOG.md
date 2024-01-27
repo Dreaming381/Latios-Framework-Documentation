@@ -6,6 +6,24 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic
 Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [0.9.1] – 2024-1-27
+
+Officially supports Entities [1.1.0-pre.3]
+
+### Added
+
+-   Added `ExcludeFromSkeletonAuthoring` to prevent a baked Game Object and its
+    children from being included in a skeleton
+
+### Fixed
+
+-   Fixed baking of optimized skeletons and animations for prefabs
+-   Fixed exception during skeleton baking if a descendent skinned mesh does not
+    have a valid mesh assigned
+-   Fixed inertial blending buffers being uninitialized on optimized skeletons,
+    resulting in a hard crash
+-   Fixed transparency sorting when using Unity Transforms
+
 ## [0.9.0] – 2024-1-20
 
 Officially supports Entities [1.1.0-pre.3]
