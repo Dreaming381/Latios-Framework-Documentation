@@ -19,7 +19,7 @@ been really hesitant to explore the world of codegen.
 
 And that makes source generators a great choice for this “Tech Adventures”
 article series, where I will be exploring technology I’m less familiar with. My
-goal is that you the leader will be able to learn with me or point out the
+goal is that you the reader will be able to learn with me or point out the
 things I get wrong.
 
 ## Why Source Generators? Why Now?
@@ -34,9 +34,9 @@ reflection not being GC-collectable in Unity. So they have been trying to
 replace all runtime reflection with compile time IL Post-Processing, which is a
 codegen step that runs after source generators but before Burst compilation. In
 this process, they’ve broken a lot of people’s generic systems and other things.
-And the Latios Framework has been repeatedly been the victim of complicated bugs
-that have prevented migration to newer prerelease versions of Entities. And so
-I’ve come to a conclusion. I’m going to remove as many generics of Unity-defined
+And the Latios Framework has repeatedly been the victim of complicated bugs that
+have prevented migration to newer prerelease versions of Entities. And so I’ve
+come to a conclusion. I’m going to remove as many generics of Unity-defined
 interfaces as possible, and replace them with source generators. But also,
 there’s some potential for improvements to the framework I can make along the
 way.
