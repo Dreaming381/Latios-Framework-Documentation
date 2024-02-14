@@ -48,3 +48,13 @@ aspect will be corrected and ready for use.
 *If you encounter issues with initialization or struggle to apply the suggested
 fixes, feel free to discuss in the Latios Framework Discord. It is very likely
 new utility APIs can be added to help resolve the issues you are facing.*
+
+## Baking Mesh Paths
+
+If you get an error from `MeshPathsSmartBlobberSystem`, odds are you have a bone
+influence in the mesh referencing the Game Object with the Animator. This is not
+supported with the default bakers. [This
+page](Binding%20Skinned%20Meshes%20to%20Skeletons%20at%20Runtime.md) explains
+why this is and how you might work around it. This issue is not an issue you are
+likely to run into unless you do custom mesh manipulations on skinned meshes in
+the Editor.
