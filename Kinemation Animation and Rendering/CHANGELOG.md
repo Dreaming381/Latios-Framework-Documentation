@@ -6,6 +6,20 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic
 Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [0.9.3] – 2024-3-2
+
+Officially supports Entities [1.1.0-pre.3]
+
+### Fixed
+
+-   Fixed BatchSkinning compute shader failing to compile on some platforms
+-   Fixed moving LOD Groups not updating correctly
+-   Fixed memory leak from batches not being removed from the
+    `BatchRendererGroup`
+-   Fixed a range exception while computing optimized skeleton bounds if the
+    skeleton was initialized via `OptimizedSkeletonAspect.ForceInitialize()`
+    before it was registered with the binding system
+
 ## [0.9.2] – 2024-2-4
 
 Officially supports Entities [1.1.0-pre.3]
