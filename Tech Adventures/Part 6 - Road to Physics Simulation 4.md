@@ -267,12 +267,77 @@ those as arguments.
 ### Contact Events
 
 The next piece is handling contact events. Unity Physics writes this out to a
-NativeStream, copying all the contact points (which is the only time this method
-reads contact points). The only actual data computed directly in this method is
-whether the event should be fired and the accumulated impulses. The former can
-be this method’s `return` value, and the latter can be an `out` parameter.
+`NativeStream`, copying all the contact points (which is the only time this
+method reads contact points). The only actual data computed directly in this
+method is whether the event should be fired and the accumulated impulses. The
+former can be this method’s `return` value, and the latter can be an `out`
+parameter.
 
 ### Solve Friction
+
+Much of the beginning is mostly small remapping of names to variables and static
+utility methods that have already been ported over to Psyshock. The first big
+item is the `enableFrictionVelocitiesHeuristic`. In Unity Physics, this is
+passed in as an argument. From an initial exploration, it isn’t clear yet if
+there’s a better way to handle this, so we’ll do the same for now.
+
+Next is the `GetFrictionVelocities()` method. In Unity Physics, this is an
+instance method, but it doesn’t reference any members, so we can make it static.
+
+Then we have surface velocity. Unity Physics stores whether or not this exists
+in the header, and then uses it along with the contact normal to compute a
+`float3` of friction “Dv” values. Interestingly, it repeats a method call for
+getting perpendicular axes to the contact normal rather than just reusing the
+results still in scope. I’m going to leave this for now, but I plan to optimize
+this when I go through and rename all the variables and reorganize the inputs.
+
+At this point, we’ve finally encountered usage of the member fields. We’ll store
+those in a `ContactJacobianBodyState` struct and add that to the argument list.
+We’ll also copy over `JacobianUtilities.BuildSymmetricMatrix()`.
+
+The last piece of the puzzle is that we need the inverse number of solver
+iterations. We’ll add that as an argument.
+
+### Cleanup
+
+If you didn’t catch on from the last piece, this `Solve()` method is intended to
+be called multiple times on the same contact Jacobian, once for each solver
+iteration. That means that it may be worth caching some calculations. Unity
+Physics keeps both read-only and read-write data together in the same structs,
+because all that data lives in a `NativeStream` and there’s not really any
+benefit to splitting them. However, Psyshock won’t know where this data lives,
+so splitting read-only and read-write data could potentially save the user from
+writing back unchanged data.
+
+One such piece of data is the `ContactJacobianAngular`. Only the impulse is ever
+written to, so we should split that out. That means we will need two spans for
+our `ContactJacobianContactState`. Let’s rename the main struct to
+`ContactJacobianContactParameters`, and the other will just be a span of float
+values containing the impulses.
+
+We’ll do a similar rename for `ContactJacobianBodyState` to
+`ContactJacobianBodyParameters`. This struct has 3 `ContactJocabianAngular`
+instances, so we will need three impulse floats separate. We’ll make this a `ref
+float3` argument named `bodyFrictionImpulses`.
+
+Wait, no! We never read these impulses. It seems this is just an export for the
+user, and is never used internally by Unity Physics. Speaking of, our
+`totalAccumulatedImpulse` isn’t actually the total either, it is just the total
+from all the contacts. We can export all four of these values as an output
+struct.
+
+We can also move our `contactNormal` into `ContactJacobianBodyParameters`. And
+while we are at it, we can cache our friction directions and Dv values. We’ll
+need the friction directions exposed anyways so that the output friction
+impulses have some kind of meaning. And that eliminates the branch for it inside
+our method.
+
+And that’s it for now. There might still be things we want to clean up in the
+future, but we’ll need a little more understanding of how Unity Physics works
+first. Now that we have our `Solve() `method, we should figure out how we
+generate all the input parameters it requires.
+
+## Porting a Builder
 
 Todo: This is where I am going to cut things off for now. But don’t worry, I’m
 not giving up on this. Just need to take things in stride.
