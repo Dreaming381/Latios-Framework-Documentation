@@ -339,5 +339,116 @@ generate all the input parameters it requires.
 
 ## Porting a Builder
 
-Todo: This is where I am going to cut things off for now. But don’t worry, I’m
-not giving up on this. Just need to take things in stride.
+The code responsible for building our required inputs doesn’t live inside
+ContactJacobian.cs. There are two ways to track down its source. We can start
+from `CreateJacobiansSystem` and follow the method calls and jobs invoked, or we
+can scan one of the read-only fields and look for assignment. Both methods will
+lead us to `Solver.BuildJacobians()`.
+
+Unity Physics is attempting to bake all the required data into a `NativeStream`,
+and a good amount of the code is spent on attempting to set that up. Meanwhile,
+we can represent our outputs as a `Span<ContactJacobianContactParameters>` and
+an `out ContactJacobianBodyParameters`. We also know we will need the contact
+normal and contact points. However, we won’t use `ContactsBetweenResult` because
+the user may choose to compress the data into a dynamic buffer or something.
+Instead, we’ll use a `ReadOnlySpan<ContactsBetweenResult.ContactOnB>`.
+
+### Contacts
+
+The first real hurdle is the call to `BuildContactJacobians()`. This method
+takes quite a few arguments that we will need to source. Two of these arguments
+are `worldFromA` and `worldFromB`. You might think these are just the world
+transforms of our entities, but that’s not quite it. The position is the center
+of mass position, not the entity position. We’ll need a utility to help
+calculate this from a collider, similar to `AabbFrom()`. But for this method,
+we’ll make the user explicitly pass in these transforms as `RigidTransforms`. A
+user may want to override the center of mass location anyways. But there’s one
+other gotcha in this. If the body is static, Unity sets the transform to
+identity. I suspect this is just an optimization to avoid reading the transform
+(it is a random access into an array). But we should keep it in mind in case we
+learn it becomes a requirement.
+
+There’s also a frequency being passed in, but that’s actually the inverse of the
+fixed time step. Then, it takes the velocity values, but it only ever reads the
+inverse inertia vectors from those. And the inverse masses are summed. Either
+way, we can add the masses to our list of arguments.
+
+The `maxDepenetrationVelocity` is interesting. Unity hardcodes the default to
+one of two values depending on whether one of the objects in the pair is static.
+There’s [this
+thread](https://forum.unity.com/threads/how-to-slow-down-depenetration-of-overlapping-colliders.1486314/)
+on the topic. And based on that thread, it might be wise to make this a
+parameter to our method and provide some constant default values.
+
+The `BuildContactJacobians()` method is only ever called in two locations, and
+one of them is for triggers. We’ll inline it. And in doing so, we’ll convert it
+from reading and writing directly with the `NativeStream` memory and instead
+operate on our spans. Inside this method, there’s a call to a method named
+`BuildJacobian()`. We’ll rename it to `BuildJacobianAngular()`, since that’s
+what it actually does.
+
+### Contact Restitution
+
+Next, we need the `coefficientOfRestitution`, which is the combined “bounciness”
+between the two bodies. Unity Physics has some various rules for how the value
+of each body gets combined. We’re just going to let the user combine them and
+make the combined value a method parameter.
+
+And now we finally need the velocities of the bodies, so we’ll add those to the
+arguments as well. There’s also a `negContactRestingVelocity`. And this value is
+computed from a `gravityAcceleration` and the time step. The purpose of this is
+a bit of a hack, and Unity has a long comment explaining this. But it is used to
+calculate the “correct” bounce velocity while somewhat accounting for gravity.
+The hacky part is that it assumes that the contact normal opposes the direction
+of gravity fully, such that the actual gravity applied will likely result in
+some energy loss. And Unity passes in the magnitude of the global gravity
+setting for this. I do wonder why they don’t use the dot product of gravity with
+the contact normal to get something more accurate. But perhaps that’s something
+we can experiment with? Regardless, I am renaming the gravity value to
+`gravityAgainstContactNormal`.
+
+### Friction
+
+Surprise, we calculate the two complementary friction axes in this builder too.
+The custom constructor we made to cache that information was completely
+unnecessary. So we’ll rework that to be a surface velocity setter instead.
+
+We’ll need to borrow the static method `CalculateInvEffectiveMassOffDiag()` from
+Unity Physics. Same for `InvertSymmetricMatrix()`. That brings in a method named
+`HorizontalMul()`, which just multiplies the x, y, and z components of a
+`float3` together.
+
+And that’s it! That’s all the math and solving logic to make things bounce off
+other things. Do I understand the math of all these “angulars” and “jacobians”
+and “symmetric matrices”? Absolutely not!
+
+But there are pieces I do understand, and I was able to navigate their utility
+and make design choices for how I would want these to operate within the
+Psyshock philosophy. Maybe we’ll figure out the rest later. Or maybe we won’t
+need to. But there’s still a few more pieces of the puzzle we need to tackle
+first.
+
+## What’s Next
+
+While we still haven’t constructed MotionStabilizationInput, we have a default
+value we can use when that feature is disabled. Likewise, we don’t need to worry
+about all the other joint or motor types yet either. We just want things to
+collide and bounce around to start with. And for that, we are probably two
+adventure articles away from our first attempt (which will likely fail
+spectacularly).
+
+Next time we’ll cover a variety of smaller items such as how we calculate our
+masses, inertias, centers of masses, and similar properties. We’ll also cover
+expanding our AABBs to compensate for motion prediction. And then we’ll tackle
+the integrators.
+
+After that, we’ll build a multi-box oriented stream structure that can handle
+solver iterations from pairs found in multiple different FindPairs queries as
+well as custom-provided data. And we’ll use that to wire up our simulation loop.
+I’m actually really excited about this, because it solves the FindPairs caching
+use case in a way more powerful and flexible way than what I was initially
+thinking of doing for that.
+
+From there, who knows? But I can’t wait to find out!
+
+Thanks for reading!
