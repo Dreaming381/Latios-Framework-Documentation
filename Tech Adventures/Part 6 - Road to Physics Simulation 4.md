@@ -430,7 +430,7 @@ first.
 
 ## What’s Next
 
-While we still haven’t constructed MotionStabilizationInput, we have a default
+While we still haven’t constructed `MotionStabilizationInput`, we have a default
 value we can use when that feature is disabled. Likewise, we don’t need to worry
 about all the other joint or motor types yet either. We just want things to
 collide and bounce around to start with. And for that, we are probably two
@@ -442,7 +442,7 @@ masses, inertias, centers of masses, and similar properties. We’ll also cover
 expanding our AABBs to compensate for motion prediction. And then we’ll tackle
 the integrators.
 
-After that, we’ll build a multi-box oriented stream structure that can handle
+After that, we’ll build a multi-box-oriented stream structure that can handle
 solver iterations from pairs found in multiple different FindPairs queries as
 well as custom-provided data. And we’ll use that to wire up our simulation loop.
 I’m actually really excited about this, because it solves the FindPairs caching
