@@ -66,3 +66,17 @@ Builds*. Suggestions for improving build support are welcome!
 
 If there is some other unexpected behavior, that is likely a bug. Please report
 the issue!
+
+### IL2CPP Specifics
+
+Latios Framework uses reflection at runtime for a small number of features. The
+following lists the areas where reflection is used on otherwise inaccessible
+members so that you can properly preserve them.
+
+-   Core
+    -   Any `ICollectionComponent` or `IManagedStructComponent` implementing
+        type will have generated code which will need to be preserved.
+-   Psyshock
+    -   Psyshock calls `EarlyJobInit()` on generic jobs for
+        `IFindPairsProcessor` and `IFindObjectsProcessor`. The `EarlyJobInit()`
+        method may be stripped for these jobs.
