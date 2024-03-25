@@ -625,7 +625,7 @@ var findBodyBodyProcessor = new FindBodyVsBodyProcessor
 state.Dependency = Physics.FindPairs(in rigidBodyLayer, in findBodyBodyProcessor).ScheduleParallelUnsafe();
 ```
 
-Wait, why `ScheduleParallelUnsafe()`?
+Wait, why `ScheduleParallelUnsafe(state.Dependency)`?
 
 Well, we only ever read components in our processor, and
 `PairStream.ParallelWriter` supports this mode, so we may as well enable it for
@@ -646,6 +646,8 @@ needed. Here’s the simple list of changes:
 -   We set the environment’s `Velocity` to `default`
 -   We set the environment’s `Mass` to `default`, which becomes infinite mass
     and inertia due to the type storing inverses
+-   We use `kMaxDepenetrationVelocityDynamicStatic` instead of
+    `kMaxDepenetrationVelocityDynamicDynamic`
 -   We set the environment’s read-write access in our pair to `false`
 
 The code for all that looks like this:
@@ -670,7 +672,7 @@ struct FindBodyVsEnvironmentProcessor : IFindPairsProcessor
         {
             var contacts = UnitySim.ContactsBetween(result.colliderA, result.transformA, result.colliderB, result.transformB, in distanceResult);
 
-            ref var streamData = ref pairStream.AddPairAndGetRef<ContactStreamData>(result.pairStreamKey, true, true, out var pair);
+            ref var streamData = ref pairStream.AddPairAndGetRef<ContactStreamData>(result.pairStreamKey, true, false, out var pair);
             streamData.contactParameters = pair.Allocate<UnitySim.ContactJacobianContactParameters>(contacts.contactCount, NativeArrayOptions.UninitializedMemory);
             streamData.contactImpulses = pair.Allocate<float>(contacts.contactCount, NativeArrayOptions.ClearMemory);
 
@@ -686,7 +688,7 @@ struct FindBodyVsEnvironmentProcessor : IFindPairsProcessor
                                     contacts.AsSpan(),
                                     rigidBodyA.coefficientOfRestitution,
                                     rigidBodyA.coefficientOfFriction,
-                                    UnitySim.kMaxDepenetrationVelocityDynamicDynamic,
+                                    UnitySim.kMaxDepenetrationVelocityDynamicStatic,
                                     9.81f,
                                     deltaTime,
                                     inverseDeltaTime);
@@ -713,10 +715,347 @@ var findBodyEnvironmentProcessor = new FindBodyVsEnvironmentProcessor
     deltaTime        = Time.DeltaTime,
     inverseDeltaTime = math.rcp(Time.DeltaTime)
 };
-state.Dependency = Physics.FindPairs(in rigidBodyLayer, in environmentLayer.layer, in findBodyEnvironmentProcessor).ScheduleParallelUnsafe();
+state.Dependency = Physics.FindPairs(in rigidBodyLayer, in environmentLayer.layer, in findBodyEnvironmentProcessor).ScheduleParallelUnsafe(state.Dependency);
 ```
 
 ## The Solver Loop
 
-Todo: This is where I am going to cut things off for now. But don’t worry, I’m
-not giving up on this. Just need to take things in stride.
+We’re now at the point where we need to solve all our collisions. We do this in
+multiple iterations over all the pairs with the hope that within a number of
+iterations, we’ll converge on a solution that satisfies all the collision
+constraints. Every time we process an entity in a pair, we have to ensure we
+have exclusive read-write access to its data so that we can include the results
+of its previous pair solves in the current pair solve. This is the classical
+Gauss-Seidel method.
+
+Fortunately, Psyshock has already established a robust method for ensuring
+exclusive read-write via FindPairs. And the new `PairStream` is just a cached
+version of the same concept, with some fun little twists. With FindPairs,
+there’s some trickiness with parallelizing the “Part 2” when cross-buckets have
+to test against cells. However, in a `PairStream`, all the pairs from “Part 2”
+are known during “Part 1”. This means that during “Part 1”, we can assign one
+extra thread to further divide up “Part 2” into “islands”. Islands are basically
+sets of pairs that each form a connected graph, where each island is
+disconnected from any other. An entity will only ever be part of a single
+island, which means islands can be processed in parallel to each other.
+
+So how do we do this?
+
+Well just like how with collision layers we had FindPairs, with `PairStream`, we
+have ForEachPair. And naturally, we operate using an `IForEachPairProcessor`. It
+looks like this:
+
+```csharp
+struct SolveBodiesProcessor : IForEachPairProcessor
+{
+    public PhysicsComponentLookup<RigidBody> rigidBodyLookup;
+
+    public void Execute(ref PairStream.Pair pair)
+    {
+                
+    }
+}
+```
+
+Notice, we are passed in the exact same `Pair` type we created when writing to
+the `PairStream`. Some internal safety flags may be set differently, but
+otherwise it is the same APIs and we can do all the same things with it. If we
+want to do additional allocations, we can. If we want to modify the user values,
+we can. If we want to swap out root object, we can.
+
+However, right now we don’t actually need to do any of those things. All we care
+about is getting read-write access to our `ContactStreamData` and our
+`RigidBody` instances.
+
+For the `ContactStreamData`, we can read it like this:
+
+```csharp
+ref var streamData = ref pair.GetRef<ContactStreamData>();
+```
+
+What would happen if you were to ask for the wrong type?
+
+While unfortunately `PairStream` can’t tell you what type you stored, it can
+still tell you that you asked for the wrong type. It does this by storing the
+`BurstRuntime.GetHashCode32<>()` in the pair, and then checking that against the
+type you passed in. There’s technically a very small chance it misses a
+violation, but the odds are miniscule. I’d argue it is a significant step up
+from `NativeStream`.
+
+We can get our “A” `RigidBody` using our `PhysicsComponentLookup`, just like in
+FindPairs.
+
+```csharp
+ref var rigidBodyA = ref rigidBodyLookup.GetRW(pair.entityA).ValueRW;
+```
+
+However, this time around, we don’t have a separate processor to distinguish
+between our second entity being a rigid body or environment. Fortunately, we can
+determine which based on whether we gave that entity read-write access. The Pair
+allows us to query that.
+
+```csharp
+if (pair.bIsRW)
+{
+    ref var rigidBodyB = ref rigidBodyLookup.GetRW(pair.entityB).ValueRW;
+}
+else
+{
+
+}
+```
+
+Now we just need to populate our `SolveJacobian()` calls for each branch. For
+`MotionStabilizationInput`, we can simply use `kDefault`. Likewise,
+`enableFrictionVelocitiesHeuristic` will be `false`, since we don’t have that
+yet. Lastly, `invNumSolverIterations` is a value we will have to get from the
+main thread, so that becomes a field in our processor.
+
+Our environment entity requires a little extra. We already know we can safely
+pass a default `Mass`. But `Velocity` is needed by `ref`. The solution is to
+create a default `Velocity` on the stack and pass that by `ref`. We’ll ignore
+any modifications made to it. Thus, this becomes our whole processor:
+
+```csharp
+struct SolveBodiesProcessor : IForEachPairProcessor
+{
+    public PhysicsComponentLookup<RigidBody> rigidBodyLookup;
+    public float                             invNumSolverIterations;
+
+    public void Execute(ref PairStream.Pair pair)
+    {
+        ref var streamData = ref pair.GetRef<ContactStreamData>();
+
+        ref var rigidBodyA = ref rigidBodyLookup.GetRW(pair.entityA).ValueRW;
+
+        if (pair.bIsRW)
+        {
+            ref var rigidBodyB = ref rigidBodyLookup.GetRW(pair.entityB).ValueRW;
+            UnitySim.SolveJacobian(ref rigidBodyA.velocity,
+                                    in rigidBodyA.mass,
+                                    UnitySim.MotionStabilizationInput.kDefault,
+                                    ref rigidBodyB.velocity,
+                                    in rigidBodyB.mass,
+                                    UnitySim.MotionStabilizationInput.kDefault,
+                                    streamData.contactParameters.AsSpan(),
+                                    streamData.contactImpulses.AsSpan(),
+                                    in streamData.bodyParameters,
+                                    false,
+                                    invNumSolverIterations,
+                                    out _);
+        }
+        else
+        {
+            UnitySim.Velocity environmentVelocity = default;
+            UnitySim.SolveJacobian(ref rigidBodyA.velocity,
+                                    in rigidBodyA.mass,
+                                    UnitySim.MotionStabilizationInput.kDefault,
+                                    ref environmentVelocity,
+                                    default,
+                                    UnitySim.MotionStabilizationInput.kDefault,
+                                    streamData.contactParameters.AsSpan(),
+                                    streamData.contactImpulses.AsSpan(),
+                                    in streamData.bodyParameters,
+                                    false,
+                                    invNumSolverIterations,
+                                    out _);
+        }
+    }
+}
+```
+
+If you ignore the quantity of arguments that have to be passed to
+SolveJacobian(), the implementation is actually quite short. But we still need
+to schedule these.
+
+We actually will schedule this ForEachPair operation multiple times, one for
+each iteration. That means we need to know the number of iterations in advance.
+This is typically a configurable setting, and Unity Physics by default uses 4
+iterations, which is also a typical choice. We’ll use 4 iterations too. The rest
+of the scheduling code should look very intuitive if you’ve already used
+FindPairs.
+
+```csharp
+int numIterations = 4;
+var solveProcessor = new SolveBodiesProcessor
+{
+    rigidBodyLookup = GetComponentLookup<RigidBody>(false),
+    invNumSolverIterations = math.rcp(numIterations)
+};
+for (int i = 0; i < numIterations; i++)
+{
+    state.Dependency = Physics.ForEachPair(in pairStream, in solveProcessor).ScheduleParallel(state.Dependency);
+}
+```
+
+We’re almost done. Only one job left!
+
+## The Integrator
+
+Up to this point, we’ve applied gravity to our velocity, found a bunch of pairs
+with their contacts, and the modified the velocities in the solver loop. The
+last step is to integrate those velocities into the transforms of the entities.
+
+We don’t need any pairs for this, just the rigid body entities. Which means we
+can go back to `IJobEntity`. In fact, we don’t even need to know anything about
+the colliders at this point. All we’ll need are the `TransformAspect`, the
+`RigidBody` component, and the timestep.
+
+The `Integrate()` method requires damping parameters. As discussed last time,
+these map to drag values in authoring in Unity. We’ll add these to our authoring
+component and `RigidBody` component.
+
+The `Integrate()` method operates on our `inertialPoseWorldTransform`, which is
+different from our entity’s transform. There are two different methods to apply
+this change back to our world transform. One method uses the delta between the
+inertial poses, while the other uses the local space center of mass and inertia
+tensor. The former better suits the data we have on hand, so we’ll use that one.
+
+And this is the last job:
+
+```csharp
+[BurstCompile]
+partial struct IntegrateRigidBodiesJob : IJobEntity
+{
+    public float deltaTime;
+
+    public void Execute(TransformAspect transform, ref RigidBody rigidBody)
+    {
+        var previousInertialPose = rigidBody.inertialPoseWorldTransform;
+        UnitySim.Integrate(ref rigidBody.inertialPoseWorldTransform, ref rigidBody.velocity, rigidBody.linearDamping, rigidBody.angularDamping, deltaTime);
+        transform.worldTransform = UnitySim.ApplyInertialPoseWorldTransformDeltaToWorldTransform(transform.worldTransform,
+                                                                                                 in previousInertialPose,
+                                                                                                 in rigidBody.inertialPoseWorldTransform);
+    }
+}
+```
+
+We can schedule that job in our `OnUpdate()`, and call this system complete!
+
+## Moment of Truth
+
+I’ve set up the scene with a cube using scale of (100, 1, 100) and added the
+Environment component to it. I then created a cube, gave it a red material, and
+gave it the RigidBody Authoring component. I moved the cube up in the air and
+gave it some initial rotation. Then, I pressed play.
+
+![](media/0d5fe4e7ab2a69e9e3cd39b005670fc5.gif)
+
+Well, that’s definitely not quite right.
+
+There’s a few things we know are working. We know that gravity is working, along
+with the integrator. As the object falls correctly. We know that FindPairs is
+working, because it detects the collision. And we know that ForEachPair is
+detecting the pair correctly. This means the bug is either in contact generation
+or something regarding the “contact jacobian”. Let’s add a sphere and see if
+that provides a clue.
+
+![](media/e513a38b3bd470190f43ef84acc215cd.gif)
+
+Okay. So there’s definitely a problem in the solver, potentially not
+understanding the contacts correctly. I’m going to investigate and report back
+if I find anything.
+
+## T is 4 Trouble
+
+During my investigation, I created a new Unity project with Unity Physics as an
+embedded package. My goal was to log specific variables in both projects and see
+what was going on.
+
+What I discovered was in our `SolveJacobian()` method, our contact normal was
+opposite of Unity’s. And this was in spite of the falling sphere being the “A”
+body in both scenarios, which I validated by logging the velocities.
+
+As I thought about it more, I realized that indeed something was wrong. The
+contact points are supposed to be on the environment collider, and consequently
+the direction from the environment to the sphere should be up. But I was seeing
+the contact normal pointing down. What was weird was that I had a previous test
+between a sphere and a box where I knew I was generating contacts correctly. So
+what is different here?
+
+Well, tracing the code, I came across this:
+
+```csharp
+case (ColliderType.Sphere, ColliderType.Box):
+{
+    var result = SphereBox.UnityContactsBetween(in colliderB.m_box, in bTransform, in colliderA.m_sphere, in aTransform, in distanceResult);
+    result.FlipInPlace();
+    return result;
+}
+```
+
+This is the generalized collider dispatch code generated by T4, and is
+responsible for figuring out the types of colliders and then calling the
+specialized methods. In this case, we have a box vs sphere, but not a sphere vs
+box, so the dispatcher flips the results.
+
+But, it wasn’t flipping the input `distanceResult`!
+
+After fixing that bug, I managed to get this to happen:
+
+![](media/8867d21045c51462f304deb2fa113783.gif)
+
+It is rolling!
+
+That means friction and rotation and all those other pieces are working.
+
+Unfortunately, this bug didn’t affect our cube, which is still blasting off to
+space. But at this point, I think I can assume the culprit is with contact
+generation.
+
+## Follow the Signs
+
+I wrote a dev dungeon in Free Parking designed to help diagnose issues like
+this. It is called PsyshockPairDebugging. Open up the subscene and look at the
+PairCapture GameObject. There’s a Draw Operation setting which you can set to
+show the contacts. And you can drag in any pair of Game Objects to have lines
+between their contact points drawn. Here’s a fixed cube vs the giant floor cube.
+
+![](media/4b240add49231e81867db701416723f4.png)
+
+Notice the green lines connect between the surfaces of the two objects. Before I
+fixed those bugs, those lines were going away from the FloorCube.
+
+If we flip the colliders, we discover another bug:
+
+![](media/d3ec59b6d476576d2d46a2a49d77c75a.png)
+
+When there is only one line like this, that means it is using the closest points
+as the contact point, which means the algorithm failed to find any contact
+points.
+
+What is it that is plaguing contact generation?
+
+Sign issues.
+
+Unity’s contact generation algorithm didn’t align with Psyshock’s collider
+representations cleanly (Psyshock uses a much more compact representation for
+box and triangle colliders). And while trying to recreate the algorithms, some
+signs got lost in the process, since Unity Physics devs seem to like to call
+things using names that have formal definitions, but not actually follow those
+definitions.
+
+Anyways, it will take some time to hunt down all the various incorrect contact
+generation issues. And I will likely need help building out the various
+scenarios.
+
+But in the meantime, here’s what we can do now:
+
+![](media/f1b36ea3b026de8048df919dbb6c375e.gif)
+
+## What’s Next
+
+We have basic simulations now! That’s quite the milestone!
+
+Besides stomping out any remaining bugs, there’s still plenty of areas we could
+explore. There’s motion stabilization and sleeping if we want stable stacking.
+And there’s joints and motors for ragdolls or other character accessories.
+
+We could also explore alternative algorithms for the various pieces, such as
+different contact generation schemes or different solvers. And of course there’s
+likely lots of gameplay utility APIs we are still missing.
+
+Whatever it is we explore next, we at least know that Psyshock’s design is up
+for the challenge!
+
+Thanks for reading!
