@@ -129,7 +129,7 @@ Ultimately, the behavior is as expected.
 If using the *Bootstrap – Explicit Workflow*, you’ll find that this works
 correctly out-of-the-box.
 
-### Only one scene active at a time
+### Only one scene active at a time (When Scene Management is installed)
 
 I know, I know. You’ve always had multiple scenes loaded at runtime because of
 conflicts and editor performance and all that. But with subscenes, there’s no

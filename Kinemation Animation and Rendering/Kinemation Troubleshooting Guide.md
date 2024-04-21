@@ -5,6 +5,44 @@ to diagnose and resolve them. If you encounter an issue not present in this
 guide, please share the issue in the Latios Framework Discord for the fastest
 resolution.
 
+## Invisible Meshes
+
+Very frequently someone reports that Kinemation isn’t rendering. There could be
+a variety of causes. Here are the initial steps to help diagnose the problem.
+
+Before you do anything else, make sure there are no warnings or errors during
+baking or runtime. Any issue, even on an unrelated object, could potentially
+corrupt the caches used in rendering. If you do get an error, you may wish to
+look at the line of code containing the error message. If that line of code
+belongs to the Latios Framework, pay extra attention to the message. It is there
+to tell you what is wrong and why.
+
+Now, put the object in its own subscene, and without entering play mode, switch
+to the game tab. If the object is visible and correctly shaped there, that means
+Kinemation is rendering it just fine (yes, Kinemation renders the game view tab
+in edit mode). We can rule out shader issues as the problem.
+
+As a next test, you want to look at the runtime inspector of your entity and
+look for this component:
+
+![](media/46388f3f82312c2489fd12b1b7305a08.png)
+
+Every ECS chunk has up to 128 entities. Lower is a bitmask of the first 64
+entities, and Upper is the second. Copy these values into an integer-\>binary
+converter to see which entities have a ‘1’. Those entities were ones Kinemation
+chose to render in the last frame. If your entity has a ‘1’, then your issue is
+almost certainly one of three things:
+
+1.  Your shader is wrong/incompatible
+2.  Your mesh has bad data (especially for dynamic meshes or Calligraphics)
+3.  Your transform has zero scale or stretch
+
+If your entity has a ‘0’, then Kinemation does not believe your object should be
+rendered. This could be due to improper archetype, wrong bounds, incorrect LODs,
+wrong layer masks, or other reasons.
+
+This should hopefully help focus your investigations.
+
 ## Bindings and Initialization
 
 Kinemation requires managing and tracking internal state with many of the
