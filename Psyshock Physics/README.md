@@ -2,7 +2,7 @@
 
 Well… really more like a spatial query engine at this point, but whatever.
 
-Check out the [Getting Started](Getting%20Started.md) page!
+Check out the [Getting Started](Getting%20Started%20-%20Part%201.md) page!
 
 ## Why?
 
