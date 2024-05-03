@@ -106,6 +106,10 @@ If you override `ShouldUpdateSystem()`, you must return an explicit `true` or
 `SuperSystem` type as this will simply return the value of the previous call to
 `ShouldUpdateSystem()`.
 
+You can use `SuperSystem` in Injection Workflow projects. However, you typically
+would not add systems via `GetOrCreateAndAddSystem()` and instead rely on
+`[UpdateInGroup]` attributes.
+
 ## Root Super Systems
 
 Unlike regular `SuperSystem`s, `RootSuperSystem`s are designed to be injected
