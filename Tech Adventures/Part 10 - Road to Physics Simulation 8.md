@@ -412,7 +412,8 @@ including the timestep and the solver iteration count. If these latter two
 values are constant, then tau and damping could be cached. For this reason, we
 keep them as inputs, and we’ll discuss how to calculate them later.
 
-Lastly, we need a `bool3` representing which axes are constrained.
+Lastly, we need a `bool3` representing which axes are constrained. These are
+relative to the shared axes of the joint.
 
 Omitting the giant TODO comment, we end up with this:
 
@@ -451,14 +452,330 @@ public static void BuildJacobian(out PositionConstraintJacobianParameters parame
     }
 
     // Calculate the current error
-    parameters.initialError = CalculatePositionConstraintError(in parameters, in inertialPoseWorldTransformA, parameters.jointPositionInInertialPoseASpace,
-                                                                in inertialPoseWorldTransformB, parameters.jointPositionInInertialPoseBSpace, out _);
+    parameters.initialError = CalculatePositionConstraintError(in parameters, in inertialPoseWorldTransformA, in inertialPoseWorldTransformB, out _);
 }
 ```
 
 Phew. One constraint down. 5 more to go!
 
-## The Rotation Constraint
+## The Rotation 1D Constraint
+
+Did I say 5? Sorry. I meant 7. Rotation constraints (Angular Limit in Unity
+Physics) has three variants, one for each dimensionality. Unlike the position
+constraint which could mostly generalize across all three dimensions, rotations
+require wildly different logic at each dimension.
+
+### Rotation 1D Constraint Solve
+
+We start off by integrating our bodies. That means we need the velocities as
+well as the timestep. However, there’s a twist this time. Instead of integrating
+in world-space, Unity Physics chooses to only integrate the rotations relative
+to each other. This apparently is done for performance benefits. We can’t say no
+to that!
+
+To do this, we need a relative rotation, `inertialPoseAInInertialPoseBSpace`.
+That will go into a `Rotation1DConstraintJacobianParameters` struct. And we need
+a new utility method in our general Jacobian Utilities file to perform the
+integration. Here’s my version of that method, tweaked to help Burst out a
+little:
+
+```csharp
+static quaternion IntegrateOrientationBFromA(quaternion bFromA, float3 angularVelocityA, float3 angularVelocityB, float timestep)
+{
+    var halfDeltaTime = timestep * 0.5f;
+    var dqA           = new quaternion(new float4(angularVelocityA * halfDeltaTime, 1f));
+    var invDqB        = new quaternion(new float4(angularVelocityB * -halfDeltaTime, 1f));
+    return math.normalize(math.mul(math.mul(invDqB, bFromA), dqA));
+}
+```
+
+Next, we need a parameter in our parameters struct named
+`axisInInertialPoseASpace` to calculate the effective mass.
+
+Now, we need to compute our error and its correction just like with position
+constraints. The error correction logic has a note that for 1D, the algorithm
+only works well for angles constrained to 90 degrees or less, because otherwise
+there’s multiple solutions. With multiple solutions, a stateless engine could
+pick different solutions every frame, resulting in a glitchy mess. There’s a
+method inside this error correction called `CalculateTwistAngle()` which we will
+need to add to our utilities.
+
+Lastly, we have to compute the correction and apply the impulse. This time, the
+impulse takes the form of a scalar value which then gets applied to each body as
+a rotation-only impulse.
+
+Here’s what we end up with, with the giant pitfall comment removed again:
+
+```csharp
+public struct Rotation1DConstraintJacobianParameters
+{
+    public quaternion inertialPoseAInInertialPoseBSpace;
+    public quaternion jointRotationInInertialPoseASpace;
+    public quaternion jointRotationInInertialPoseBSpace;
+
+    // Limited axis in motion A space
+    public float3 axisInInertialPoseASpace;
+
+    public float minAngle;
+    public float maxAngle;
+
+    public float initialError;
+    public float tau;
+    public float damping;
+
+    public int axisIndex;
+}
+
+// Returns the scalar impulse applied only to the angular velocity for the constrained axis.
+public static float SolveJacobian(ref Velocity velocityA, in Mass massA, ref Velocity velocityB, in Mass massB,
+                                    in Rotation1DConstraintJacobianParameters parameters, float deltaTime, float inverseDeltaTime)
+{
+    // Predict the relative orientation at the end of the step
+    quaternion futureMotionBFromA = IntegrateOrientationBFromA(parameters.inertialPoseAInInertialPoseBSpace, velocityA.angular, velocityB.angular, deltaTime);
+
+    // Calculate the effective mass
+    float3 axisInMotionB = math.mul(futureMotionBFromA, -parameters.axisInInertialPoseASpace);
+    float  effectiveMass;
+    {
+        float invEffectiveMass = math.csum(parameters.axisInInertialPoseASpace * parameters.axisInInertialPoseASpace * massA.inverseInertia +
+                                            axisInMotionB * axisInMotionB * massB.inverseInertia);
+        effectiveMass = math.select(1.0f / invEffectiveMass, 0.0f, invEffectiveMass == 0.0f);
+    }
+
+    // Calculate the error, adjust by tau and damping, and apply an impulse to correct it
+    float futureError  = CalculateRotation1DConstraintError(in parameters, futureMotionBFromA);
+    float solveError   = CalculateCorrection(futureError, parameters.initialError, parameters.tau, parameters.damping);
+    float impulse      = math.mul(effectiveMass, -solveError) * inverseDeltaTime;
+    velocityA.angular += impulse * parameters.axisInInertialPoseASpace * massA.inverseInertia;
+    velocityB.angular += impulse * axisInMotionB * massB.inverseInertia;
+
+    return impulse;
+}
+
+static float CalculateRotation1DConstraintError(in Rotation1DConstraintJacobianParameters parameters, quaternion motionBFromA)
+{
+    // Calculate the relative joint frame rotation
+    quaternion jointBFromA = math.mul(math.InverseRotateFast(parameters.jointRotationInInertialPoseBSpace, motionBFromA), parameters.jointRotationInInertialPoseASpace);
+
+    // Find the twist angle of the rotation.
+    float angle = CalculateTwistAngle(jointBFromA, parameters.axisIndex);
+
+    // Angle is in [-2pi, 2pi].
+    // For comparison against the limits, find k so that angle + 2k * pi is as close to [min, max] as possible.
+    float centerAngle = (parameters.minAngle + parameters.maxAngle) / 2.0f;
+    bool  above       = angle > (centerAngle + math.PI);
+    bool  below       = angle < (centerAngle - math.PI);
+    angle             = math.select(angle, angle - 2.0f * math.PI, above);
+    angle             = math.select(angle, angle + 2.0f * math.PI, below);
+
+    // Calculate the relative angle about the twist axis
+    return CalculateError(angle, parameters.minAngle, parameters.maxAngle);
+}
+```
+
+### Rotation 1D Constraint Build
+
+There is absolutely nothing new here. There’s a few values that are trivially
+calculated, and the rest comes from arguments.
+
+```csharp
+public static void BuildJacobian(out Rotation1DConstraintJacobianParameters parameters,
+                                    quaternion inertialPoseWorldRotationA, quaternion jointRotationInInertialPoseASpace,
+                                    quaternion inertialPoseWorldRotationB, quaternion jointRotationInInertialPoseBSpace,
+                                    float minAngle, float maxAngle, float tau, float damping, int axisIndex)
+{
+    parameters = new Rotation1DConstraintJacobianParameters
+    {
+        inertialPoseAInInertialPoseBSpace = math.normalize(math.InverseRotateFast(inertialPoseWorldRotationB, inertialPoseWorldRotationA)),
+        jointRotationInInertialPoseASpace = jointRotationInInertialPoseASpace,
+        jointRotationInInertialPoseBSpace = jointRotationInInertialPoseBSpace,
+        axisInInertialPoseASpace          = new float3x3(jointRotationInInertialPoseASpace)[axisIndex],
+        minAngle                          = minAngle,
+        maxAngle                          = maxAngle,
+        tau                               = tau,
+        damping                           = damping,
+        axisIndex                         = axisIndex
+    };
+    parameters.initialError = CalculateRotation1DConstraintError(in parameters, parameters.inertialPoseAInInertialPoseBSpace);
+}
+```
+
+## The Rotation 2D Constraint
+
+Double the dimensions, double the problems, right?
+
+Well, hopefully not. 2D is kinda a mix of 1D, some more complicated math we
+won’t investigate, and a very small amount of new things.
+
+### Rotation 2D Constraint Solve
+
+Just like in 1D, our 2D variant integrates rotations in relative space. We can
+use the same arguments as 1D, except with a different `parameters` struct.
+
+This time, we’ll need an axis from each inertial pose space, but we won’t need
+the joint rotations in that space anymore, which is nice.
+
+The next curveball is the presence of `RSqrtSafe()`. This is a new utility
+define like so:
+
+```csharp
+static float RSqrtSafe(float v) => math.select(math.rsqrt(v), 0.0f, math.abs(v) < 1e-10f);
+```
+
+Why `1e-10f`? I have no idea. That’s probably why the method is internal in
+Unity Physics.
+
+The rest of the method can be ported over without any incident, all the way up
+to where we compute the impulse. This impulse is a 2D impulse, with a value for
+each of the constrained axes and is applied exclusively to the angular velocity.
+We’ll need to provide a method for the user to map these values to ordinate
+indices.
+
+It all looks like this:
+
+```csharp
+public struct Rotation2DConstraintJacobianParameters
+{
+    public quaternion inertialPoseAInInertialPoseBSpace;
+
+    public float3 axisAInInertialPoseASpace;
+    public float3 axisBInInertialPoseBSpace;
+
+    public float minAngle;
+    public float maxAngle;
+
+    public float initialError;
+    public float tau;
+    public float damping;
+}
+
+public static int2 ConvertRotation2DJacobianFreeRotationIndexToImpulseIndices(int freeIndex) => (freeIndex + new int2(1, 2)) % 3;
+
+// Returns the scalar impulse applied only to the angular velocity for the constrained axis.
+public static float2 SolveJacobian(ref Velocity velocityA, in Mass massA, ref Velocity velocityB, in Mass massB,
+                                    in Rotation2DConstraintJacobianParameters parameters, float deltaTime, float inverseDeltaTime)
+{
+    // Predict the relative orientation at the end of the step
+    quaternion futureBFromA = IntegrateOrientationBFromA(parameters.inertialPoseAInInertialPoseBSpace, velocityA.angular, velocityB.angular, deltaTime);
+
+    // Calculate the jacobian axis and angle
+    float3 axisAinB     = math.mul(futureBFromA, parameters.axisAInInertialPoseASpace);
+    float3 jacB0        = math.cross(axisAinB, parameters.axisBInInertialPoseBSpace);
+    float3 jacA0        = math.mul(math.inverse(futureBFromA), -jacB0);
+    float  jacLengthSq  = math.lengthsq(jacB0);
+    float  invJacLength = RSqrtSafe(jacLengthSq);
+    float  futureAngle;
+    {
+        float sinAngle = jacLengthSq * invJacLength;
+        float cosAngle = math.dot(axisAinB, parameters.axisBInInertialPoseBSpace);
+        futureAngle    = math.atan2(sinAngle, cosAngle);
+    }
+
+    // Choose a second jacobian axis perpendicular to A
+    float3 jacB1 = math.cross(jacB0, axisAinB);
+    float3 jacA1 = math.mul(math.inverse(futureBFromA), -jacB1);
+
+    // Calculate effective mass
+    float2 effectiveMass;  // First column of the 2x2 matrix, we don't need the second column because the second component of error is zero
+    {
+        // Calculate the inverse effective mass matrix, then invert it
+        float invEffMassDiag0   = math.csum(jacA0 * jacA0 * massA.inverseInertia + jacB0 * jacB0 * massB.inverseInertia);
+        float invEffMassDiag1   = math.csum(jacA1 * jacA1 * massA.inverseInertia + jacB1 * jacB1 * massB.inverseInertia);
+        float invEffMassOffDiag = math.csum(jacA0 * jacA1 * massA.inverseInertia + jacB0 * jacB1 * massB.inverseInertia);
+        float det               = invEffMassDiag0 * invEffMassDiag1 - invEffMassOffDiag * invEffMassOffDiag;
+        float invDet            = math.select(jacLengthSq / det, 0.0f, det == 0.0f);  // scale by jacLengthSq because the jacs were not normalized
+        effectiveMass           = invDet * new float2(invEffMassDiag1, -invEffMassOffDiag);
+    }
+
+    // Normalize the jacobians
+    jacA0 *= invJacLength;
+    jacB0 *= invJacLength;
+    jacA1 *= invJacLength;
+    jacB1 *= invJacLength;
+
+    // Calculate the error, adjust by tau and damping, and apply an impulse to correct it
+    float  futureError  = CalculateError(futureAngle, parameters.minAngle, parameters.maxAngle);
+    float  solveError   = CalculateCorrection(futureError, parameters.initialError, parameters.tau, parameters.damping);
+    float2 impulse      = -effectiveMass * solveError * inverseDeltaTime;
+    velocityA.angular  += massA.inverseInertia * (impulse.x * jacA0 + impulse.y * jacA1);
+    velocityB.angular  += massB.inverseInertia * (impulse.x * jacB0 + impulse.y * jacB1);
+
+    return impulse;
+}
+```
+
+### Rotation 2D Constraint Build
+
+If there’s any surprise this time, it is that Unity Physics doesn’t have a
+dedicated error calculation method for this constraint type, and instead just
+calculates it inline.
+
+```csharp
+public static void BuildJacobian(out Rotation2DConstraintJacobianParameters parameters,
+                                    quaternion inertialPoseWorldRotationA, quaternion jointRotationInInertialPoseASpace,
+                                    quaternion inertialPoseWorldRotationB, quaternion jointRotationInInertialPoseBSpace,
+                                    float minAngle, float maxAngle, float tau, float damping, int freeAxisIndex)
+{
+    parameters = new Rotation2DConstraintJacobianParameters
+    {
+        inertialPoseAInInertialPoseBSpace = math.normalize(math.InverseRotateFast(inertialPoseWorldRotationB, inertialPoseWorldRotationA)),
+        axisAInInertialPoseASpace         = new float3x3(jointRotationInInertialPoseASpace)[freeAxisIndex],
+        axisBInInertialPoseBSpace         = new float3x3(jointRotationInInertialPoseBSpace)[freeAxisIndex],
+        minAngle                          = minAngle,
+        maxAngle                          = maxAngle,
+        tau                               = tau,
+        damping                           = damping,
+    };
+    // Calculate the initial error
+    {
+        float3 axisAinB         = math.mul(parameters.inertialPoseAInInertialPoseBSpace, parameters.axisAInInertialPoseASpace);
+        float  sinAngle         = math.length(math.cross(axisAinB, parameters.axisBInInertialPoseBSpace));
+        float  cosAngle         = math.dot(axisAinB, parameters.axisBInInertialPoseBSpace);
+        float  angle            = math.atan2(sinAngle, cosAngle);
+        parameters.initialError = CalculateError(angle, parameters.minAngle, parameters.maxAngle);
+    }
+}
+```
+
+## The Rotation 3D Constraint
+
+The 3D constraint operates a lot like the 2D constraint, except there’s a lot
+more inline matrix math involved. And as you might expect, it generates a 3D
+impulse, of which there is no ambiguity as to what each component means.
+
+In fact, the only real tricky part about this version is one of the struct
+parameters Unity named `RefBFromA`, alongside the normal `BFromA` which we
+translated to `inertialPoseAInInertialPoseBSpace`. It seems to be some kind of
+bind orientation between the two bodies at the joint, to map the inertial pose
+from one body to the compensated inertial pose of the other.
+
+Regardless of what it is called, Unity Physics only ever uses the inverse of
+this value, so as a tiny optimization, we’ll store the inverse of this rotation.
+
+### Breather Time
+
+We are done with the non-motor constraints. We’ve been able to successfully
+reason about all the inputs and outputs to these constraints. And we’ve
+developed an understanding of their shortcomings. However, the math describing
+the generation of the impulses with things like “effective masses” and the
+matrices still elude us. It is possible this math is the real reason why Unity
+Physics calls all these things “Jacobians”. Perhaps with motors, we’ll gain some
+clues for how to write custom constraints?
+
+Otherwise, we at least these building blocks on which to build our joints. But
+before we do that, let’s try to make sense of motors, just to make sure we don’t
+miss anything in our foundation.
+
+## The Position 1D Motor
+
+Wait, 1D?
+
+Oh no, does that mean that we have three of these as well?
+
+Nope.
+
+Unity Physics only supports 1D position motors. We can all take a sigh of
+relief.
 
 Todo: This is where I am going to cut things off for now. But don’t worry, I’m
 not giving up on this. Just need to take things in stride.
