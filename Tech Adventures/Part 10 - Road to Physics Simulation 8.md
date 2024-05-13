@@ -13,10 +13,10 @@ We should fix that.
 There’s lots of physics that can be applied to characters, such as ragdolls,
 dynamic bones, or softbody simulations. And in more advanced use cases physics
 can be used to add realism to procedural motion. It is time to start building
-this functionality, and we’ll begin with the essentials for rigid bodies: joints
-and motors.
+this functionality, and we’ll begin with the essentials for rigid bodies:
+joints.
 
-## What Even Are Joints and Motors?
+## What Even Are Joints?
 
 We’re very fortunate to have Unity Physics as a reference implementation. Even
 though I don’t often agree with their architecture, there’s a lot to be learned
@@ -766,7 +766,7 @@ Otherwise, we at least these building blocks on which to build our joints. But
 before we do that, let’s try to make sense of motors, just to make sure we don’t
 miss anything in our foundation.
 
-## The Position 1D Motor
+## The Position 1D Motor Or What Are We Doing?
 
 Wait, 1D?
 
@@ -777,5 +777,198 @@ Nope.
 Unity Physics only supports 1D position motors. We can all take a sigh of
 relief.
 
-Todo: This is where I am going to cut things off for now. But don’t worry, I’m
-not giving up on this. Just need to take things in stride.
+But why does Unity Physics only support 1D motors?
+
+Architecture.
+
+Oh no.
+
+The way the position motor works in Unity Physics is that BodyA in the
+constraint is the motorized body, and the BodyB is the target. BodyB has an axis
+extruding from the joint point, and the BodyA’s joint point is projected onto
+this axis. The distance between the projected point and BodyB’s joint point is
+the compared against a target distance, to create an impulse along the axis. The
+impulse is then clamped based on a max impulse which is accumulated between
+solver iterations.
+
+In this case, the motor drives towards a plane. But what if we want to drive
+towards a line, or a point, or a volume?
+
+The majority of the logic is nearly identical to the position constraint. So
+much so, that even without fully understanding the effective mass matrix stuff,
+we could still probably implement these, but it brings to question which of
+these are the common cases, and which of these are the rare ones? What is worth
+generalizing? And what is worth being specific and concise with our API?
+
+With all these unanswered questions, perhaps we should ignore motors for now,
+and explore them in a future adventure.
+
+Anyways, let’s move on to computing our `tau` and `damping` for our current
+constraints.
+
+## Springs and Dampers
+
+Have you ever heard of Hooke’s Law? It has a formula like this:
+
+F = -kx
+
+Here, F is a force of a spring-like structure, x is how much the spring-like
+structure is expanded or contracted beyond its resting state, and k is the
+spring constant, where a higher value results in a stiffer spring. The negative
+sign is because the force opposes the displacement
+
+A spring damper represents internal frictional or friction-like forces that
+resist the spring. Thus, a spring damper equation is as follows:
+
+F = -kx - cv
+
+In this equation, v is the velocity and c is the damping constant. Thus, a
+damped spring can be characterized by its spring constant and its damping
+constant.
+
+If we wanted a spring that had the same motion behavior independent of masses,
+we can instead represent it as a spring frequency and a damping ratio. Here’s
+some code to convert between representations:
+
+```csharp
+public static float kStiffSpringFrequency = 74341.31f;
+public static float kStiffDampingRatio    = 2530.126f;
+
+public static float SpringFrequencyFrom(float springConstant, float inverseMass)
+{
+    return springConstant * inverseMass * rcpTwoPI;
+}
+
+public static float SpringConstantFrom(float springFrequency, float mass)
+{
+    return springFrequency * mass * 2f * math.PI;
+}
+
+public static float DampingRatioFrom(float springConstant, float dampingConstant, float mass)
+{
+    var product = springConstant * mass;
+    if (product < math.EPSILON)
+    {
+        if (springConstant < math.EPSILON || mass < math.EPSILON)
+            return kStiffDampingRatio;
+
+        var critical = 2f * math.sqrt(springConstant) * math.sqrt(mass);
+        return dampingConstant / critical;
+    }
+    return dampingConstant / (2f * math.sqrt(product));  // damping coefficient / critical damping coefficient
+}
+
+public static float DampingConstantFrom(float springConstant, float dampingRatio, float mass)
+{
+    var product = springConstant * mass;
+    if (product < math.EPSILON)
+    {
+        if (springConstant < math.EPSILON || mass < math.EPSILON)
+            return dampingRatio * float.Epsilon;
+        var critical = 2f * math.sqrt(springConstant) * math.sqrt(mass);
+        return dampingRatio * critical;
+    }
+    return dampingRatio * 2f * math.sqrt(product);
+}
+
+const float rcpTwoPI = 0.5f / math.PI;
+```
+
+Note that for damping ratio, there’s a failure case for small values. My version
+handles the approximation of small values a little more elegantly than Unity
+Physics.
+
+You’ll also see some “stiff” constants, which describe a really, really,
+*really* stiff spring. In fact, this is the spring that Unity uses for “rigid”
+joints.
+
+So what do all of these springs and dampers have to do with constraints? Well,
+there’s a giant comment block in Unity Physics which starts with the following:
+
+>   In the following we derive the formulas for converting spring frequency and
+>   damping ratio to the solver constraint regularization parameters tau and
+>   damping, representing a normalized stiffness factor and damping factor,
+>   respectively.
+
+Turns out that alongside a time step and the number of solver iterations, you
+can convert these spring parameters into constraint parameters and vice-versa,
+thanks to a very good derivation from the Unity Physics team.
+
+I won’t go into details on how these conversions work. We can pretty much copy
+them as-is. There are probably some micro-optimization opportunities in the
+future, but that would be for Optimization Adventures.
+
+## Composing Joints from Constraints
+
+Now that we have a mechanism to build and solve constraint Jacobians, and we
+have the ability to specify the constraint springs and dampers, the final step
+is to compose actual joints from these parts.
+
+Unity Physics provides many high-level utility APIs for representing joints
+found in PhysX and other engines. However, these APIs assume a runtime data
+storage representation. However, if you’ve decided to delve into the control and
+flexibility Psyshock has to offer, you may find that constraints are not that
+difficult to reason about.
+
+For example, to create a hinge joint for a door, you would first want to lock
+the position of the door on all axes, as the door can only rotate. That’s done
+by setting the min and max values to zero and using the really stiff spring
+constants. You’d want to do the same for rotation on two axes using a 2D
+rotation constraint. Then the third constraint would be a 1D rotation constraint
+with a nonzero max value, and optionally a less stiff spring if you want to
+allow a little overshoot.
+
+Remember, for the rotation constraints, the jointRotationInInertialPoseA/BSpace
+should match when transform to world space when the pair of bodies are in their
+initial relative orientations. You can rotate both of these in world-space to
+change the axes of rotation. This allows you to have multiple rotation
+constraints around different axes which can be used for asymmetric joints like
+shoulders.
+
+As another example, perhaps instead of a rotating door we have a sliding door.
+This time, we want to lock the position on two axes, and lock rotation on all
+three. Then, we want a distance constraint with a min and max along our
+free-moving axis.
+
+## Incorporating Constraints
+
+Unfortunately, I don’t have a good project for demonstrating joints yet. And I
+would prefer to keep Free Parking’s demo simple. But I can provide a few hints
+for how you might incorporate all of this.
+
+First, you need to add both bodies of a constraint to a `PairStream`. This time,
+you can’t use a `ParallelWriter`, and instead have to provide the bucket indices
+yourself. To get the bucket indices, you can calculate them from an `Aabb` using
+`CollisionLayerBucketIndexCalculator`. If one of the bodies is static, make sure
+`isRW` is `false` for that body, and then you can pass in the same bucket index
+as the dynamic body. It doesn’t matter what bucket index the static body
+actually belongs to. For world constraints (such as global orientation locks),
+you can use `Entity.Null` for the non-body in the pair.
+
+Next, you need a way to encode the constraint Jacobians into the pair. You can
+use `userUShort` and `userByte` to encode the base type information that you
+write. You may wish to pack multiple constraints into a single type struct for
+common joint types. This way, you can avoid having to load entity data multiple
+times when processing multiple constraints for the same pair.
+
+Lastly, since you can’t use `ParallelWriter`, you must add these constraints in
+single-threaded jobs. To regain some level of parallelism, you can create a
+separate `PairStream` using the same allocator for each ECS query with
+constraints. Then later in an `IJob`, you can concatenate the `PairStreams` via
+`PairStream.ConcatenateFrom()`. This will allow you to combine all your
+`PairStreams` from various FindPairs operations and all your constraint
+`PairStreams` into a single `PairStream` which you can use in a single
+`Physics.ForEachPair()` in your solver loop.
+
+## What’s Next
+
+We now have constraints which can model joints. This makes a lot of cool new
+physics things possible. But before we dive further, we’ll likely need some more
+real-world use cases to help us explore all that the world of physics engines
+has to offer.
+
+I don’t know what the next adventure will entail, but I do know there will be
+another one. In the meantime, be sure to try out all these rigid body APIs
+yourself and see if you can build the perfect physics engine for your game!
+
+Thanks for reading!
