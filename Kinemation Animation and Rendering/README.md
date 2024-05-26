@@ -153,6 +153,18 @@ material property overrides at runtime. Kinemation provides a custom API for
 this which allows you to define the sets of meshes and materials for each entity
 you bake. That’s right, Kinemation supports entities with multiple meshes!
 
+### LOD Crossfade
+
+One major deviation from Entities Graphics workflow is a completely overhauled
+LOD runtime system. This LOD System is designed for the common case where LOD
+meshes are spawned as direct children of their LOD Group, and baking will
+completely optimize out the LOD Group, removing all component lookups from the
+runtime. Having a much smaller archetype footprint and cache-friendly algorithm,
+the new LOD implementation gets even better by supporting LOD Crossfade,
+including SpeedTree crossfade in Unity 6. This lets you push your lower-res mesh
+LODs much closer to the camera without visible popping, allowing you to cram
+more entities on screen at once!
+
 ### Custom Shader Graph Nodes
 
 Kinemation has more features to offer than what Unity’s built-in Shader Graph
@@ -160,6 +172,13 @@ nodes provide. That’s why Kinemation provides its own. Look for the Latios
 Vertex Skinning node if you want motion vectors using vertex skinning.
 
 ![](media/5342e4cc79a0e5d5b1d9b9b640c467b9.png)
+
+### Dual Quaternion Skinning
+
+You can choose the traditional matrix linear blend skinning or dual quaternion
+skinning for each skinned mesh. Dual quaternion skinning preserves volume
+better, but can result in sometimes unwanted bulging. Typically, which you use
+should match the algorithm used in the DCC application.
 
 ### Easy Binding System
 
@@ -244,7 +263,7 @@ that the scaling causes rotated child transforms to shear in undesirable ways.
 Non-shearing stretch is built into many features of the Latios Framework, and
 Kinemation takes full advantage of it to deliver the juiciest of animations.
 
-### Mecanim Layer to Get Started
+### Mecanim Controller to Get Started
 
 The Mimic module has a [Mecanim Animator
 Controller](../Mimic/Mecanim%20Runtime.md) runtime so that you can continue
@@ -297,11 +316,10 @@ powerful tool for increasing the number of entities the hardware can handle.
     native plugin is expected to work across all platforms, you may have to
     compile the library yourself for some platforms. If you would like to help
     Kinemation support your target platform officially, please reach out!
--   Occlusion Culling is not supported. Support should be possible in a future
-    release.
+-   Occlusion Culling is not supported.
 -   Entities Graphics stats don’t work. Kinemation will provide its own solution
     for this in a future release which will be more extensible and customizable.
--   When using Unity Transforms, Kinemation does not enforce the a skinned
+-   When using Unity Transforms, Kinemation does not enforce that a skinned
     mesh’s local transform is set to identity after binding to a skeleton, which
     may result in incorrect rendering if this value is modified later
 
@@ -311,11 +329,8 @@ powerful tool for increasing the number of entities the hardware can handle.
     -   Pending Characters in Free Parking
 -   GPU Deformed Mesh Normals and Tangents Recalculation
 -   Blend Shape Animation Baking Helpers
--   Dual Quaternion Skinning
-    -   (already implemented, but currently disabled because it is bugged)
 -   Forced Optimized Skeleton Baking from Exposed Game Objects
 -   Stats and Troubleshooting Diagnostics
 -   Cycle-Matching Utilities
--   LOD Crossfade
 -   Root Delta Sampling Helpers
 -   Blend Tree Helpers

@@ -8,6 +8,12 @@ but we feel its absence like a missing limb. Like a lot of developers braving
 the wilderness of Unity ECS, you were probably surprised to find zero TextMesh
 support. That's why I wrote Calligraphics.
 
+## Main Camera
+
+Make sure your main camera is not using FXAA anti-aliasing. FXAA does a poor job
+at preserving text crispness, but unfortunately is the default anti-aliasing
+method in URP.
+
 ## Authoring
 
 Calligraphics provides a single component for authoring text. You can find it in
@@ -20,19 +26,32 @@ For animating the text, an additional component can be found in *Latios* -\>
 The *Text Renderer* component exposes all of the settings required to render
 Rich Text to world space.
 
--   **Text** - The Rich Text to render.
--   **Word Wrap** - Whether to wrap the text should it exceed **Max Line
+-   **Text** – The Rich Text to render.
+-   **Font Size** – The size to use for the text
+-   **Word Wrap** – Whether to wrap the text should it exceed **Max Line
     Width**.
--   **Max Line Width** - The maximum line width for a single line of text. If
+-   **Max Line Width** – The maximum line width for a single line of text. If
     **Word Wrap** is false, this setting does nothing.
--   **Horizontal Alignment** and **Vertical Alignment** - These two settings
-    provide a pivot point for the text rendering. They do not affect text
-    alignment, but rather in which directions to expand the text relative to the
+-   **Horizontal Alignment** and **Vertical Alignment** – These two settings
+    provide a pivot point for the text rendering. They not only affect text
+    alignment, but also in which directions to expand the text relative to the
     authoring transform.
--   **Color** - The base color of the text when no Color tag is in scope.
--   **Fonts and Materials** - The font-material pairs used by the renderer. When
-    the tag is supported, all fonts/materials used within the text will need to
-    be specified here.
+-   **Is Orthographic** – Controls how the text reacts to scaling
+-   **Enable Kerning** – Enable kerning pair adjustments
+-   **Font Style** – Base styling options to apply to the text
+-   **Word Spacing, Line Spacing, and Paragraph Spacing** – Additional spacing
+    values in font units where a value of 1 equals 1/00em
+-   **Color** – The base color of the text when no Color tag is in scope.
+-   **Fonts and Materials** – The font-material pairs used by the renderer. All
+    fonts/materials called out by font rich text tags will need to be specified
+    here. There should always be at least one entry for the base font.
+-   **Gpu Resident** – When checked, the text uses GPU-resident mode in which
+    text changes are always uploaded and stored on the GPU regardless of
+    visibility. However, visible text is not reuploaded each frame when no
+    changes occur.
+
+*Warning: GPU Resident Text can be prone to fragmentation, so be wary of
+modification patterns.*
 
 ### Text Animation
 

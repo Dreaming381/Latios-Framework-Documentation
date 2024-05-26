@@ -1,6 +1,6 @@
 # Getting Started with Kinemation – Part 1
 
-This is the fifth preview version released publicly. As such, there’s still more
+This is the sixth preview version released publicly. As such, there’s still more
 to come. For simple use cases, it is easy to get started. But for advanced
 production workflows, some of that burden may fall on the user.
 

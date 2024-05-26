@@ -305,10 +305,10 @@ partial struct CollideAndSlideCharacterJob : IJobEntity
             {
                 currentTransform.position += moveDirection * (hitInfo.distance - skinEpsilon);
                 distanceRemaining         -= hitInfo.distance;
-                if (math.dot(hitInfo.normalOnTarget, moveDirection) < 0.9f) // If the obstacle directly opposes our movement
+                if (math.dot(hitInfo.normalOnTarget, moveDirection) < -0.9f) // If the obstacle directly opposes our movement
                     break;
                 // LookRotation corrects an "up" vector to be perpendicular to the "forward" vector. We cheat this to get a new moveDirection perpendicular to the normal.
-                moveDirection = math.mul(quaternion.LookRotation(-hitInfo.normalOnTarget, moveDirection), math.up());
+                moveDirection = math.mul(quaternion.LookRotation(hitInfo.normalOnCaster, moveDirection), math.up());
             }
         }
         transform.worldPosition = currentTransform.position;
@@ -349,6 +349,13 @@ You can also iterate through all the colliders and all their data via the
 relative to how they were created. Use the `srcIndices` property to get the
 original creation index (`entityInQueryIndex` or `ColliderBody` array index).
 
+### ColliderBody Warning
+
+The Collider and `TransformQvvs` associated with an Entity in a `CollisionLayer`
+is a **copy** captured at the `CollisionLayer` creation time, and will **not**
+automatically update if you modify the `WorldTransform` or `Collider` components
+on the entity.
+
 ## On to Part 3
 
 Spatial queries on collision layers are powerful and flexible. But they come
@@ -356,3 +363,5 @@ with the limitation that if we want to use them in parallel jobs, we can only
 read data from the entities in a collision layer. In the next part, we’ll
 explore FindPairs, an algorithm that gives us parallel write-safe access to
 pairs of entities, and is also even faster!
+
+Continue to [Part 3](Getting%20Started%20-%20Part%203.md).

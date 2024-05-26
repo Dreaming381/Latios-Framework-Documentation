@@ -6,6 +6,12 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic
 Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [0.10.0] – 2024-5-26
+
+Officially supports Entities [1.2.1]
+
+This release only contains internal compatibility changes
+
 ## [0.9.2] – 2024-2-4
 
 Officially supports Entities [1.1.0-pre.3]

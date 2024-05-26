@@ -1,8 +1,10 @@
 # Psyshock Physics
 
-Well… really more like a spatial query engine at this point, but whatever.
+Psyshock is a build-your-own-physics-engine toolkit with a powerful spatial
+query API and various simulation building blocks and utilities to provide
+complete control over all things spatial and physics.
 
-Check out the [Getting Started](Getting%20Started%20-%20Part%201.md) page!
+Check out the [Getting Started](Getting%20Started%20-%20Part%201.md) series!
 
 ## Why?
 
@@ -10,9 +12,8 @@ Unity Physics and Psyshock have very different design goals. Unity Physics is
 aimed towards designers and out-of-the-box simulation. Psyshock is aimed towards
 gameplay programmers and extreme flexibility. If both these solutions were
 pizzas, Unity Physics would be a supreme pizza, whereas Psyshock would be a
-choose-your-own-toppings pizza…
-
-…with a bunch of toppings out of stock.
+choose-your-own-toppings pizza, with more and more toppings being stocked in
+each release.
 
 If Unity Physics can’t do what you want, or does more than you want and tanks
 your performance, Psyshock may provide a faster route to success!
@@ -184,7 +185,11 @@ convenience method using public API). There are no systems (other than baking).
 Even the debug tools are static!
 
 Unity.Physics first and foremost tries to be an out-of-the-box solution and then
-slowly is working on exposing flexibility.
+slowly is working on exposing flexibility. However, this often comes at the cost
+of performance. For example, in Unity.Physics, triggers are determined by
+simulating a contact impulse, resulting in contacts being generated in
+situations where all you care about is whether or not a body entered some
+trigger volume.
 
 In constrast, Psyshock tries to be a “Build your own solution” framework and is
 being designed inside-out. Over time, it will eventually achieve an
@@ -201,9 +206,14 @@ provided or make up your own. Do you want every object to experience its own
 rate of time? Such a concept would usually require a custom physics engine. But
 with Psyshock, this can be achieved with little effort.
 
+Psyshock doesn’t come with an out-of-the-box constraint solver, but rather
+provides the constraint-solving algorithms and a powerful `PairStream` data
+structure that makes it simple and safe for you to build your own solver. This
+also means you can define your own constraints, such as custom rules for
+character controllers or magical forces.
+
 ## Known Issues
 
--   Despite being a “physics” engine, rigidbody simulation isn’t included yet.
 -   Compound Colliders use linear brute force algorithms and lack an underlying
     acceleration structure. Try to keep the count of primitive colliders down to
     a reasonable amount.
@@ -214,13 +224,11 @@ with Psyshock, this can be achieved with little effort.
 
 ## Near-Term Roadmap
 
--   Unity Physics rigid body collision solver
 -   More Character Controller Utilities
+-   Motor Constraints
 -   FindPairs improvements
     -   Aabb-only layers
-    -   Pair filter caching
     -   Mismatched layers support
-    -   CollisionLayers fully deferrable
     -   Distance inflation
     -   Optimizations
 -   FindObjects improvements

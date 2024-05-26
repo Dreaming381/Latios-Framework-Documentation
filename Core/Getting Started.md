@@ -5,8 +5,10 @@
 In *Project Settings*, under the *Player* tab, in *Other Settings* and under the
 *Configuration* header, set the *API Compatibility Level* to *.NET Standard*.
 
-Also, add the Scripting Define Symbol:
-UNITY_BURST_EXPERIMENTAL_ATOMIC_INTRINSICS
+Also, add the Scripting Define Symbols:
+
+-   UNITY_BURST_EXPERIMENTAL_ATOMIC_INTRINSICS
+-   ENTITY_STORE_V1
 
 ### Mono
 
@@ -48,7 +50,7 @@ type of world with the additional bootstrap interfaces provided, which you can
 automatically generate from the *NetCode Standard – Injection Workflow*
 bootstrap. Those bootstrap interfaces are automatically configured for Unity
 Transforms, which is the recommended transform system for NetCode projects in
-0.9 versions.
+0.10 versions.
 
 After the bootstrap is created, it can be
 [customized](Customizing%20the%20Bootstraps.md).

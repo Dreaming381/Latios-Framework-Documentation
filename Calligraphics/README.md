@@ -38,17 +38,9 @@ text at once, so you know it's fast!
 
 ### Rich Text Support
 
-Calligraphics supports the exclusion of all recognized Rich Text tags from the
-rendering engine, both start and optional end tags. It also has rendering
-support for a small subset of tags:
-
--   Alpha
--   Color
--   Gradient
--   Size
-
-Eventually, I plan to support the same set of tags as Unity TextCore, but these
-can get you started.
+Calligraphics supports many of the rich text tags offered by TextCore and
+TextMeshPro. The results often overlap the generation of TextMeshPro perfectly,
+but with the power of Burst, Jobs, and ECS!
 
 ### Animation
 
@@ -65,9 +57,6 @@ five types of animation:
 
 ## Known Issues
 
--   Limited tag support. Many fundamental tags, such as bold and italics, don't
-    affect text rendering. I recognize this as a major issue and will be
-    prioritizing tag support in future releases.
 -   Animation systems require glyphs to regenerate each frame in order for
     transitions to work, even when the transition is complete. This performance
     overhead is not ideal.
@@ -75,21 +64,24 @@ five types of animation:
     finding itself on the back-burner. A rich text editor would offer the most
     comfortable authoring experience, but creating one from scratch is a TON of
     work.
--   The Calligraphics shader does not render text edges as sharply as it should.
-    The cause of this is unknown. The shader is based on TextMeshPro
-    4.0.0-pre.2.
+-   The Calligraphics shader suffers heavily from FXAA on the camera, and you
+    should not use this anti-aliasing method when using Calligraphics.
+    Unfortunately, FXAA is the default in URP projects.
 -   While Calligraphics represents strings internally as UTF-8, it does not
     handle glyph generation mechanisms for all languages correctly. Feel free to
     get involved to help support your native language.
 
 ## Near-Term Roadmap
 
--   Commonly-used Tag support
+-   Diacritics
+-   Sprites
 -   Billboards
 -   9-Slice Panels
 -   Decals
+-   Vector Graphics
+    -   3D Line Renderer
+    -   SVG Elements
 
 ## Not-So-Near-Term Roadmap
 
 -   Animation overhaul (solid-state after transition is complete)
--   Complete tag support

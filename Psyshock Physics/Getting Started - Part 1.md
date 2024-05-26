@@ -1,8 +1,16 @@
 # Getting Started with Psyshock Physics – Part 1
 
-This is the ninth preview version I am releasing out to the public. It currently
-only supports spatial query use cases. The number of supported use cases will
-grow with each release.
+Psyshock is an ever-growing kit of tools and algorithms for spatial queries and
+physics simulations. You have likely never encountered a physics package like
+Psyshock, and consequently, the learning curve may be a little steep. The basic
+premise is that you have near complete control over your data as well as what
+happens and when. There’s no engine. Just engine parts for you to assemble your
+own.
+
+While the learning curve is steep, it will be easier than writing your own
+physics engine from scratch though. And if you considered writing your own
+physics engine, you may be able to save time and debugging using Psyshock’s
+low-level APIs instead.
 
 This Getting Started series is broken up into multiple parts. This first part
 will introduce the basics of colliders. Colliders are the basic building blocks

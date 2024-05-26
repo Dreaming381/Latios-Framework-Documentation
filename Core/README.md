@@ -127,7 +127,7 @@ to *(hopefully)*.
 
 You can request a new scene using the `RequestLoadScene` component, and you can
 get useful scene info from the `CurrentScene` component attached to the
-`worldGlobalEntity`. All subscenes loaded are forced to load synchronously,
+`worldBlackboardEntity`. All subscenes loaded are forced to load synchronously,
 ensuring that settings entities are present right away.
 
 If you want an entity to stick around (besides the `worldBlackboardEntity` which
@@ -334,18 +334,18 @@ convoluted blob asset conversion APIs.
 
 See more: [Smart Blobbers](Smart%20Blobbers.md)
 
-### UnsafeParallelBlockList
+### UnsafeParallelBlockList and UnsafeIndexedBlockList
 
-This container is really unsafe. It was originally only meant for internal
-purposes. But here it is on this page. Why?
+These containers are really unsafe. They were originally only meant for internal
+purposes. But here they are on this page. Why?
 
-It is fast! Really fast!
+They are fast! Really fast!
 
-So fast that people were finding ways to use it anyways, whether that be copying
-the code or modifying the package. Now it is public API so people don’t have to
-do those workarounds anymore.
+So fast that people were finding ways to use them anyways, whether that be
+copying the code or modifying the package. Now they are public API so people
+don’t have to do those workarounds anymore.
 
-Just be warned. It really truly is a gun eager to put a bullet through your
+Just be warned. They really truly are a gun eager to put a bullet through your
 foot.
 
 ### DynamicHashMap
@@ -366,7 +366,7 @@ handle serialization of Entity and blob asset references.
 
 ## Near-Term Roadmap
 
--   Job stack allocators
+-   `ThreadStackAllocator` `AllocatorManager` support
 -   Bootstrap Profiles
     -   Allow multiple bootstraps per project for samples and tests
 -   More custom command buffer types

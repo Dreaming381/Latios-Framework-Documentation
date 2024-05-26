@@ -56,6 +56,17 @@ Once you’ve done that, you will need to create materials using your new shader
 
 ![](media/299fe25fca0ebd0661503dc965a4a4d9.png)
 
+### Dual Quaternion Skinning
+
+If your skinned mesh should use dual quaternion skinning, how you set it up
+differs based on which graph node you chose. If you chose *Latios Vertex
+Skinning*, you can simply change the Algorithm dropdown in the node. However, if
+you chose *Latios Deform*, you must instead add a *Skinned Mesh Settings*
+component to your *Skinned Mesh Renderer* Game Object and check the *Use Dual
+Quaternion Skinning* checkbox:
+
+![](media/9f4934c5bae8734acd11b9e871c2a420.png)
+
 ## Baking the Entity
 
 Now, drag your character into a subscene. Assign it the new materials, and make

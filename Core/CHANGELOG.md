@@ -6,6 +6,63 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic
 Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [0.10.0] – 2024-5-26
+
+Officially supports Entities [1.2.1]
+
+### Added
+
+-   *New Feature:* Added `UnsafeIndexedBlockList` which allows for a
+    user-specified number of blocklists to be stored within the container with
+    support for direct aligned reading and writing
+-   *New Features:* Added `AddComponentsCommndBuffer` which supports
+    initializing values and has special options for when the entity is destroyed
+    prior to playback to aid with cleanup component preservation
+-   Added Subscene Load Options for authoring and
+    `DisableSynchronousSubsceneLoadingTag` for runtime to allow some
+    automatically loaded subscenes to be loaded asynchronously when using Scene
+    Management
+-   Added `ThreadStackAllocator` which provides a per-thread scoped memory
+    allocation mechanism for advanced use cases
+-   Added `SystemState` extension methods `InitSystemRng()`, `GetJobRng()`, and
+    `GetMainThreadRng()` to simplify `SystemRng` usage
+-   Added `float2` extension method `x0y()` to convert from 2D to xz-planar 3D
+-   Added `BlobArray` extension method `AsSpan()`
+-   Added `NativeList` extension method `Clone()`
+-   Added `CollectionsExtension.CombineDependencies()` method which can accept
+    `Span<JobHandle>`
+-   Added `EntityQuery` extension method `UsesEnabledFiltering()` which allows
+    for quickly determining if the query has any components that expect a
+    particular enabled state
+-   Added `UnityObjectRef` extension method `InstanceID()` which allows
+    obtaining the instance ID of the stored object
+
+### Changed
+
+-   **Breaking:** The scripting define `ENTITY_STORE_V1` is now required when
+    the Latios Framework is installed
+-   **Breaking:** Renamed `UnityEngine.Object` extension method
+    `DestroyDuringConversion()` to `DestroySafelyFromAnywhere()`
+-   **Breaking:** `UnsafeParallelBlockList` is now a wrapper around
+    `UnsafeIndexedBlockList` and uses the `UnsafeIndexedBlockList` Enumerator
+    and `ElementPtr` types in its API
+
+### Fixed
+
+-   Fixed an internal flagging issue with `DynamicHashMap` resulting in
+    incorrect behavior
+-   Fixed wrong namespace for `AutoDestroyExpirablesSystem`
+
+### Improved
+
+-   *New Feature:* All `ComponentSystemGroup` types can properly update systems
+    making use of Latios Framework features such as conditional updates and
+    dependency tracking
+-   Collection Components codegen no longer requires the assembly be compiled
+    with `unsafe` support
+-   Collection Components codegen should now support higher IL2CPP code
+    stripping levels
+
 ## [0.9.1] – 2024-1-27
 
 Officially supports Entities [1.1.0-pre.3]

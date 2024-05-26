@@ -6,6 +6,110 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic
 Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [0.10.0] – 2024-5-26
+
+Officially supports Entities [1.2.1]
+
+### Added
+
+-   *New Feature:* AclUnity has been updated to support masked sampling and
+    automatic weight accumulation for skeletons
+-   *New Feature:* LOD Crossfade (including SpeedTree) is now supported,
+    although animated crossfade mode is not
+-   *New Feature:* Added `LodCrossfade`, `LodHeightPercentages`,
+    `LodHeightPercentagesWithCrossfadeMargins`, and `SpeedTreeCrossfadeTag`
+    components for the new LOD implementation
+-   *New Feature:* Dual Quaternion Skinning is now supported, which can be
+    enabled in the *Latios Vertex Skinning Node* in Shader Graph or via the *Use
+    Dual Quaternion Skinning* option in *Skinned Mesh Settings* authoring
+    component when using the *Latios Deform Node* which adds the
+    `DualQuaternionSkinningDeformTag` for runtime
+-   *New Feature:* Added `SkeletonClip.SamplePose()` overloads which accept a
+    `ReadOnlySpan<ulong>` bitmask selecting which bones in the skeleton should
+    be sampled
+-   *New Feature:* Added `ParameterClip.SampleSelectedParameters()` which
+    accepts a `ReadOnlySpan<ulong>` bitmask selecting which parameter indices
+    should be sampled
+-   *New Feature:* Added `RuntimeBlobBuilders` namespace with utility struct
+    types `SkeletonClipSetSampler` and `SkeletonClipSetSampleData` for creating
+    skeleton clip blobs at runtime
+-   Added `IBaker` extension method `RequestBoneNames()` providing a
+    `BoneNamesRequestHandle`, which like a `SmartBlobberHandle` can be later
+    resolved to obtain bone names for an optimized hierarchy
+-   Added `SkeletonClip.SamplePose()` overloads which write directly to a raw
+    `NativeArray<TransformQvvs>()` for total manual control
+-   Added `OptimizedSkeletonAspect.nextSampleWillOverwrite` property to manually
+    override if the next sample will be overwriting or additive, especially
+    effective when using masked sampling
+-   Added *URP14-LOD_Crossfade_Fix_Node* Shader Subgraph for enabling LOD
+    Crossfade in 2022 LTS, though this is unnecessary in Unity 6
+-   Added support for Light Probe Anchor Overrides
+-   Added `TransformQvvs` extension method `NormalizeBone()` which will correct
+    a bone transform based on the accumulated weight stored in the `worldIndex`
+
+### Changed
+
+-   **Breaking:** The Entities Graphics LOD components and algorithm are no
+    longer supported, as they have been removed in favor of the new
+    high-performance algorithm that supports LOD Crossfade
+-   **Breaking:** `MeshRendererBakeSettings` `lodGroupEntity` and `lodGroupMask`
+    have been replaced with `lodSettings`, which is also the new output argument
+    of `IBaker` extension method `GetLOD()`
+-   **Breaking:** Sampling from a `SkeletonClip` now writes the bone weights
+    into the `worldIndex` of the `TransformQvvs`, which is used when performing
+    normalization
+-   **Breaking:** Renamed `BufferPoseBlender` method `NormalizeRotations()` to
+    `Normalize()`, as this method will also normalize the accumulated weights
+-   **Breaking:** `BufferPoseBlender.ComputeRootSpaceTransforms()` now expects a
+    `ReadOnlySpan<short>` for `parentIndices` instead of `ref BlobArray<short>`
+-   `SkeletonBindingPathsBlob` methods `StartsWith()` and
+    `TryGetFirstPathIndexThatStartsWith()` are now generic methods that can work
+    with any Burst-compatible string type
+-   Light probes now use the center of world bounding box as the reference
+    point, same as game objects
+-   `ShaderEffectRadialBounds` now applies to all renderers, not just deforming
+    renderers
+
+### Fixed
+
+-   Fixed `LatiosFrozenStaticRendererSystem` using the wrong query
+-   Fixed `GraphicsBufferBroker` sometimes not performing a buffer resize
+    correctly and missing the last dispatch
+-   Fixed skinning compute shader compilation on some platforms
+-   Fixed CopyBytes compute shader only copying a fourth of the bytes it is
+    supposed to
+-   Fixed issue where sometimes `LatiosEntitiesGraphicsSystem` would not
+    allocate a large enough buffer for new entities
+-   Fixed wrong namespaces for `CombineExposedBonesSystem`,
+    `UpdateSkinnedPostProcessMatrixBoundsSystem`, `UpdateBrgBoundsSystem`,
+    `LatiosAddWorldAndChunkRenderBoundsSystem`,
+    `LatiosRenderBoundsUpdateSystem`, and
+    `LatiosUpdateEntitiesGraphicsChunkStructureSystem`
+-   Fixed rebinding flag bitfield not being initialized correctly
+
+### Improved
+
+-   *New Feature:* All `ComponentSystemGroup` types can properly update systems
+    making use of Latios Framework features such as conditional updates and
+    dependency tracking
+-   Baking for `MaterialMeshInfo` using range indexing (multiple meshes and/or
+    materials) now performs basic deduplication at bake time, reducing subscene
+    load costs when a multi-material prefab is spammed across the subscene
+-   Baking `RenderMeshArray` no longer allocates GC
+-   `WorldToLocal` matrices are now computed correctly for shaders in more
+    extreme scenarios (smaller transforms)
+-   Refined criteria for when deformed bounds need to be updated in a chunk,
+    resulting in fewer updates
+-   Tiny improvements to handling of enabled components via
+    `ArchetypeChunk.SetComponentEnabledForAll()` rather than setting the value
+    for each bit
+-   Removed a frequent GC allocation in `LatiosEntitiesGraphicsSystem` caused by
+    `SortedSet.Add()`, replacing it with an unmanaged implementation
+
+### Removed
+
+-   Removed `UpdateLODsSystem` and `LatiosLODRequirementsUpdateSystem`
+
 ## [0.9.3] – 2024-3-2
 
 Officially supports Entities [1.1.0-pre.3]

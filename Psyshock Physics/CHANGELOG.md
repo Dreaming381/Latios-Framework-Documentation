@@ -6,6 +6,84 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic
 Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [0.10.0] – 2024-5-26
+
+Officially supports Entities [1.2.1]
+
+### Added
+
+-   *New Feature:* Added many new APIs and functionality in UnitySim to support
+    rigid body simulation, which is now possible to do in Psyshock
+-   *New Feature:* Added `Physics.ForEachPair`, `IForEachPairProcessor`,
+    `PairStream`, and related APIs in FindPairs which allow for capturing
+    arbitrary data about pairs and iterating over them in parallel, intended for
+    use in constraint solvers
+-   Added `Physics.BuildCollisionLayer()` overloads which accept `NativeList`
+    arguments
+-   Added default interface methods `Begin()` and `End()` to
+    `IDistanceBetweenAllProcessor`, which provide the number of sub-colliders
+    for a given pair
+-   Added FindPairs `ScheduleParallelByA()` which is a scheduling mode that only
+    guarantees thread-safety for the ‘A’ body in a bipartite (dual layer)
+    operation, but does so using a single parallel job
+-   Added center of mass and inertia tensor properties to convex, tri-mesh, and
+    compound collider blob assets
+-   Added `CollisionLayerBucketIndexCalculator` which allows you to predict the
+    bucket index of an `Aabb` for adding pairs to `PairStream`
+-   Added entity property to `SafeEntity` to simplify syntax over a cast
+    operation in some contexts
+-   Added `DistanceBetweenAllCache` which can be used as a simple
+    `IDistanceBetweenAllProcessor`
+
+### Changed
+
+-   **Breaking:** `CollisionLayer` is now backed by `NativeLists` instead of
+    `NativeArrays`, meaning that the element count of a `CollisionLayer` is no
+    longer always safe to access
+-   **Breaking:** `IFindPairsProcessor.BeginBucket()` now returns a `bool` which
+    when `false` will cause processing of the bucket pair and the `EndBucket()`
+    calls to be skipped
+-   Safety validation of FindPairs has changed, such that unsafe contexts like
+    `ScheduleParallelUnsafe()` will no longer produce valid `SafeEntity`
+    instances for use in `PhysicsComponentLookup` and `PhysicsBufferLookup`
+-   `WithCrossCache()` is no longer supported in FindPairs using
+    `ScheduleParallel()` and will be ignored with a warning
+
+### Fixed
+
+-   Fixed a memory corruption caused by a defensive copy made to blob asset
+    collider types
+-   Fixed `PhysicsDebug.DrawCollider()` not transforming a sphere’s center
+    correctly
+-   Fixed various issues with `UnitySim.ContactsBetween()`
+-   Fixed `Physics.DistanceBetween()` not correctly identifying the correct
+    feature normals for some pairs involving triangle and convex colliders
+-   Fixed `maxDistance` not being accounted for in `Physics.DistanceBetween()`
+    and `Physics.DistanceBetweenAll()` involving tri-mesh colliders
+-   Fixed wrong transform being used in `Physics.DistanceBetween()` involving a
+    box and a triangle
+-   Fixed `Physics.DistanceBetweenAll()` returning extra invalid results due to
+    a missing condition guard in the dispatcher
+-   Fixed excessive allocation in CompoundColliderBlob
+-   `CollisionLayer.Dispose()` taking a `JobHandle` no longer forces job
+    completion if allocated with a custom allocator
+
+### Improved
+
+-   Added an early-out in `Physics.DistanceBetween()` involving a box and a
+    triangle, which results in a significant speedup of
+    `Physics.DistanceBetween()` and `Physics.DistanceBetweenAll()` for some
+    scenarios involving a box and a tri-mesh
+-   Improved IL2CPP stripping support for `IFindPairsProcessor` and
+    `IFindObjectsProcessor`
+-   FindPairs now compiles significantly fewer jobs and provides better profiler
+    markers
+-   FindPairs is significantly faster when there are a large number of colliders
+    in a cross-bucket while testing against cells
+-   Improved performance of layer queries when running without Burst
+-   `Physics.BuildCollisionLayer()` no longer induces sync points when the
+    passed in query contains enabled component filtering
+
 ## [0.9.4] – 2024-3-16
 
 Officially supports Entities [1.1.0-pre.3]

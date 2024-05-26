@@ -8,7 +8,11 @@ Getting Started](Core/Getting%20Started.md) first.
 
 ## Installation
 
-Latios Framework 0.9 uses a custom transform system rather than Unity’s
+When you first install the package, you may experience compiler errors due to
+lack of special scripting defines. Add the requested scripting defines to
+continue.
+
+Latios Framework 0.10 uses a custom transform system rather than Unity’s
 Transforms by default. This system will bake `GameObject` `Transform`s fine, but
 may pose compatibility issues with other ECS packages. If compatibility is a
 larger concern to you than the performance and feature advantages of this custom
@@ -49,20 +53,26 @@ often avoids this problem but otherwise produces the same results.
 Features are controlled through the use of *installers*. You can see these
 installers in action by looking through the bootstrap templates. Every bootstrap
 is found in a static class named `<moduleName>Bootstrap` or
-`<moduleName>AuthoringBootstrap`. Check the documentation of each method to
-learn which bootstraps it needs to be called within.
+`<moduleName>BakingBootstrap`. Check the documentation of each method to learn
+which bootstraps it needs to be called within.
 
 ## Platform Support
 
-Latios Framework currently only supports Windows, Mac OS, and Linux desktop
-platforms. This is because the Kinemation module ships with a native plugin
-which is currently only built for those platforms. You can learn more about the
-plugin and how you can help extend it to work on more platforms
+Latios Framework does not support all platforms out-of-the-box. This is because
+the Kinemation module ships with a native plugin which is currently only built
+for those platforms. You can learn more about the plugin and how you can help
+extend it to work on more platforms
 [here](https://github.com/Dreaming381/AclUnity).
 
-In addition, code stripping must be set to *Minimal* or *None*, and if building
-for IL2CPP, you may need to set the code generation mode to *Faster (Smaller)
-Builds*. Suggestions for improving build support are welcome!
+Currently, out-of-the-box is supported for the following:
+
+-   Windows
+-   Linux Desktop
+-   Mac OS
+-   Android (including Meta Quest headsets)
+
+In addition, if building for IL2CPP, you may need to set the code generation
+mode to *Faster (Smaller) Builds*.
 
 If there is some other unexpected behavior, that is likely a bug. Please report
 the issue!
@@ -71,7 +81,7 @@ the issue!
 
 Latios Framework uses reflection at runtime for a small number of features. The
 following lists the areas where reflection is used on otherwise inaccessible
-members so that you can properly preserve them.
+members. They should be correctly preserved, but if not, please report them.
 
 -   Core
     -   Any `ICollectionComponent` or `IManagedStructComponent` implementing
@@ -79,4 +89,4 @@ members so that you can properly preserve them.
 -   Psyshock
     -   Psyshock calls `EarlyJobInit()` on generic jobs for
         `IFindPairsProcessor` and `IFindObjectsProcessor`. The `EarlyJobInit()`
-        method may be stripped for these jobs.
+        method may accidentally be stripped for these jobs.

@@ -1,6 +1,6 @@
 # Mecanim Runtime Addon
 
-Mimic includes a Mecanim runtime as an addod, so that you can use the old
+Mimic includes a Mecanim runtime as an addon, so that you can use the old
 familiar tools in your Latios Framework project.
 
 Note: Mecanim functionality is an **Addon** and is a community-contributed

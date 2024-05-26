@@ -1,6 +1,6 @@
 # Getting Started with Myri Audio
 
-This is the seventh preview version released publicly. It currently supports
+This is the eighth preview version released publicly. It currently supports
 simple use cases appropriate for game jams, experiments, and maybe even some
 commercial projects. However, it likely lacks the necessary control features
 required to deliver a final product. I unfortunately lack the expertise to

@@ -79,11 +79,7 @@ following read-only handles:
 You should cache these handles inside of `OnCreate()` and remember to `Update()`
 them each `OnUpdate()`.
 
-**Warning: This method will call** `EntityQuery.CalculateEntityCount`
-**immediately, which can force completion of jobs if using a Change Filter or
-Enabled Components.**
-
-#### (NativeArray\<ColliderBody\> bodies)
+#### (NativeArray/List\<ColliderBody\> bodies)
 
 This overload allows you to build a `CollisionLayer` from the set of raw data at
 runtime. You can use this to procedurally generate collider data that will be
@@ -92,13 +88,16 @@ stored in the `CollisionLayer`.
 Each `Aabb` is calculated from the `Collider` and `RigidTransform` of each
 element.
 
-#### (NativeArray\<ColliderBody\> bodies, NativeArray\<Aabb\> overrideAabbs)
+The `NativeList` variant will invoke `AsDeferredJobArray()` allowing for an
+unknown number of elements at schedule-time.
+
+#### (NativeArray/List\<ColliderBody\> bodies, NativeArray/List\<Aabb\> overrideAabbs)
 
 This overload is similar to the previous overload, except instead of calculating
 the `Aabb`s from the `Collider` and `RigidTransform`, it uses the passed in
 `Aabb`s instead. This allows you to do more custom operations such as accounting
-for projected movements. Use the `Physics.AabbFrom()` methods for common use
-cases
+for projected movements. Use the `Physics.AabbFrom()` and
+`UnitySim.MotionExpansion.ExpandAabb()` methods for common use cases.
 
 ### Step 2: WithXXX - Choose your settings
 
@@ -254,6 +253,8 @@ finds a pair of overlapping `Aabb`s. It contains the following properties:
 -   transformB – The second transform element in the pair
 -   bodyA – The `ColliderBody` representing the first element in the pair
 -   bodyB – The `ColliderBody` representing the second element in the pair
+-   aabbA – The `Aabb` of the first element in the pair
+-   aabbB – The `Aabb` of the second element in the pair
 -   layerA – The full `CollisionLayer` the first element in the pair comes from
 -   layerB – The full `CollisionLayer` the second element in the pair comes from
 -   bodyIndexA – The index of the first element in the pair as stored in its
@@ -266,6 +267,8 @@ finds a pair of overlapping `Aabb`s. It contains the following properties:
     `CollisionLayer`’s created source.
 -   jobIndex – An index for deterministically writing to
     `EntityCommandBuffer.ParallelWriter` and similar API
+-   pairStreamKey – A special key which can be used for writing to a
+    `PairStream.ParallelWriter`
 
 #### PhysicsComponentLookup and SafeEntity
 
@@ -400,16 +403,23 @@ You may see these stages in the profiler:
 *Note: You can disable the entity aliasing check using
 WithoutEntityAliasingChecks() between steps 1 and 2.*
 
+#### ScheduleParallelByA(JobHandle inputDeps = default)
+
+This method schedules the `FindPairs` algorithm using a single job, and only
+provides thread-safety for the first element in each pair in a bipartite
+operation.
+
 #### ScheduleParallelUnsafe(JobHandle inputDeps = default)
 
 This method schedules the `FindPairs` algorithm using multiple jobs for all
 stages but sacrifices thread safety for the pair of entities and indices.
 
-There are a couple of applications where this is useful. First, if the processor
-may only ever write a hardcoded value and never read from it, then the operation
-is deterministic regardless of the order of the writes. Second, `jobIndex` is
-still safe, which means writing to `EntityCommandBuffer.ParallelWriter` is also
-safe.
+There are a few applications where this is useful. First, if the processor may
+only ever write a hardcoded value and never read from it, then the operation is
+deterministic regardless of the order of the writes. Second, `jobIndex` is still
+safe, which means writing to `EntityCommandBuffer.ParallelWriter` is also safe.
+Third, `pairStreamKey` is also safe, allowing for fast storage into
+`PairStreams`
 
 This method returns a `JobHandle `which represents the final state of the
 `FindPairs` algorithm.

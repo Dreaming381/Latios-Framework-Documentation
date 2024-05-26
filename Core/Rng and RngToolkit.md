@@ -129,7 +129,7 @@ than per entity. `SystemRng` helps facilitate this behavior.
 `Entity` in `OnCreate()` or `OnNewScene()` like so:
 
 ```csharp
-public void OnNewScene(ref SystemState state) => state.EntityManager.AddComponentData(state.SystemHandle, new SystemRng("AiSearchAndDestroyInitializePersonalitySystem"));
+public void OnNewScene(ref SystemState state) => state.InitSystemRng("AiSearchAndDestroyInitializePersonalitySystem"));
 ```
 
 Next, your `IJobEntity` will also need to implement `IJobEntityChunkBeginEnd`,
@@ -166,14 +166,12 @@ this:
 ```csharp
 new Job
 {
-    rng = state.EntityManager.GetComponentRW<SystemRng>(state.SystemHandle).ValueRW.Shuffle(),
+    rng = state.GetJobRng()
 }.ScheduleParallel(m_query);
 ```
 
-**Important: Do not use** `SystemAPI` **for shuffling** `SystemRng`**!**
-
-Doing so will associate the `SystemRng` type with scheduled jobs, causing the
-next system that reads its own `SystemRng` to complete unnecessary jobs.
+There is also `state.GetMainThreadRng()` for when you want to use `SystemRng` on
+the main thread, such as for an idiomatic foreach.
 
 ## Rng Randomness
 

@@ -44,6 +44,9 @@ to be a viable approach.
 
 **Workflow-wise? Nothing!**
 
+Okay, you’ll find that you need to add a couple of scripting defines to get it
+to compile, with one being ENTITY_STORE_V1, which might be a little disruptive.
+
 You will probably want to add the scripting define LATIOS_TRANSFORMS_UNITY if
 you decide to only go this far.
 
@@ -66,6 +69,7 @@ Features made available in this state include:
 -   Fluent Queries
 -   `EntityWith<>` and `EntityWithBuffer<>`
 -   `DynamicHashMap`
+-   `ThreadStackAllocator`
 -   The `TransformQvvs` type and operations
 -   All static runtime methods of Psyshock (Psyshock at runtime is system-free)
 -   Various other extension methods
@@ -170,8 +174,14 @@ parented to the skeleton entity at runtime.
 But regarding material properties, they use the same scheme as Mesh Renderers.
 
 While Kinemation swaps out many of Entities Graphics systems, aside from skinned
-meshes, these changes only expose new features, enhance performance, and fix
-lingering bugs (like LODs not updating).
+meshes and LODs, these changes only expose new features, enhance performance,
+and fix lingering bugs.
+
+As for LODs, Kinemation has a brand new LOD algorithm that supports LOD
+Crossfade, including SpeedTree Crossfade. You can use the same LOD Group
+GameObject Component when authoring. However, the runtime components are set up
+differently. Most LOD users will be unaffected by this, other than seeing a
+performance improvement.
 
 Material Property components and shaders are all preserved. Even picking and
 highlighting functions as normal.
@@ -200,6 +210,7 @@ Features and improvements made available with Kinemation include:
     CPU and GPU benefits)
 -   Vertex skinning support (faster on some platforms when simple skinning is
     needed)
+-   Dual Quaternion Skinning
 -   Custom shader graph nodes with motion history (history only works with
     optimized skeletons, and Unity’s built-in shader graph nodes are still
     supported)
@@ -214,6 +225,11 @@ Features made available include:
 -   Support for material property components and custom shader graphs
 -   Animated properties and rich text tags
 -   Changing text at runtime
+
+## Changes When Enabling GameObjectEntity
+
+Several additional systems will be added to support binding GameObjects with
+entities at runtime and synchronizing their transforms.
 
 ## Changes When Using the NetCode Bootstrap
 
@@ -313,7 +329,7 @@ transforms in-sync.
 Features and improvements made available include:
 
 -   Stretch (shear-resistant non-uniform scaling)
--   GameObjectEntity (binding scene Game Objects to subscene entities)
+-   GameObjectEntity (always on)
 -   Motion History
 -   Hierarchy Update Modes (lock world-space attributes on children)
 -   World-space persistence when deparenting
@@ -355,6 +371,10 @@ Features made available include:
     loaded entities
 -   Automatically resets the `sceneBlackboardEntity`
 -   Automatically invokes `ISystemNewScene` callbacks
+
+New in 0.10, there are methods to allow specifying some subscenes to load
+asynchronously. You can use this to force essentials to load first, but then
+stream non-essentials in later.
 
 ## Frequently Asked Questions
 

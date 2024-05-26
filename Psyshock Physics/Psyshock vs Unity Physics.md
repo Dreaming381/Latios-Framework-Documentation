@@ -25,13 +25,20 @@ that led to this divergence in the first place.
 | Simulator Modification   | User callbacks or intermediate systems                                    | User drives each step from anywhere                                                                           |
 | Collider Scaling         | Uniform Scale                                                             | Non-uniform stretch                                                                                           |
 | Integrator               | Built-in damping and gravity                                              | Utilities to aid user in writing their own                                                                    |
-| Forces                   | Provide force directly                                                    | Utilities for advanced drag and buoyancy for ballistics                                                       |
+| Forces                   | Explosion forces out-of-the-box                                           | Utilities for advanced drag and buoyancy for ballistics                                                       |
 | Contact Manifolds        | Reports first 32 contacts found per pair                                  | Reports area-maximized 32 contacts found per pair                                                             |
-| Collision Solver         | Jacobian                                                                  | Several Planned                                                                                               |
-| Joints                   | Several                                                                   | Planned                                                                                                       |
+| Collision Solver         | Self-contained loop                                                       | Loop controlled by user using Physics.ForEachPair                                                             |
+| Joints                   | Strictly-defined                                                          | User can fully customize sources and define own custom constraints                                            |
 | Motors                   | Several                                                                   | Planned                                                                                                       |
 
 ## The Rant
+
+**Disclaimer:** I do not think lowly of the Unity Physics developers. They are
+incredibly intelligent individuals who have designed some amazingly innovative
+algorithms that I really like and have brought over into Psyshock! My concerns
+here all pertain to “software architecture” and “API design”, which are
+typically areas mathematical and research-inclined individuals tend to struggle
+with.
 
 I get asked this a lot. Why? Is Unity.Physics not good enough? Is Havok’s
 solution not good enough?
@@ -76,7 +83,8 @@ So let’s examine how Unity.Physics stacks up:
 -   We need morphing collider shapes. We only needed uniform scaling in this
     case, so Unity Physics 1.0 is sufficient. However, if we needed non-uniform
     scaling to sync with squishy animations, then we would have to allocate and
-    deallocate blob assets every frame which is pretty awful.
+    deallocate blob assets every frame which is pretty awful, even with the
+    convenient APIs Unity Physics provides for unique colliders.
 -   Most of our game logic is going to be detecting if two colliders
     intersected. We want to know if our friendly projectiles hit the enemies, if
     the enemy fire hits us, if any projectile hits terrain, if two different
@@ -150,5 +158,5 @@ Havok.Physics) thinking backwards about my problems trying to not pay the cost
 for things I don’t need.
 
 So I presented my concerns on the forums, and then decided that if I wanted it
-done right, I was going to have to do it myself. I’m definitely not there yet,
-but I am comfortable and confident in the direction I am headed.
+done right, I was going to have to do it myself. There’s always more to do, but
+I am comfortable and confident in what I have and the direction I am headed.

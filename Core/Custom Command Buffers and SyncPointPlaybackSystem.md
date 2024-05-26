@@ -137,6 +137,22 @@ partial struct Job : IJobEntity
 }
 ```
 
+### AddComponentsCommandBuffer
+
+`AddComponentsCommandBuffer` is similar to `InstantiateCommandBuffer`, except
+without the instantiation part. It can initialize up to 5 components, and add up
+to 15 more.
+
+Additionally, `AddComponentsCommandBuffer` has an
+`AddComponentsDestroyedEntityResolution` argument in its constructor, which
+allows you to specify what to do when playback determines the target entity has
+been destroyed. You can choose to `DropData` and skip the command, you can
+choose `ThrowException` to alert the presence of a bug, or you can choose
+`AddToNewEntityAndDestroy`, in which a new entity will be created, have the
+components added to, and then promptly destroyed. The lattermost option is
+useful for ensuring cleanup component values are preserved to avoid potential
+memory leaks or other cleanup-related problems.
+
 ### EntityOperationCommandBuffer
 
 In the case where you need to store only the entity in some command buffer
