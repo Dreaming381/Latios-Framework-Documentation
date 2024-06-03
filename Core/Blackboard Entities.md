@@ -55,7 +55,7 @@ public struct CompA : IComponentData
     public int count;
 }
 
-public class ManagedSystem : SubSystem
+public partial class ManagedSystem : SubSystem
 {
     protected override void OnUpdate()
     {
@@ -66,7 +66,7 @@ public class ManagedSystem : SubSystem
 }
 
 [BurstCompile]
-public struct UnmanagedSystem : ISystem
+public partial struct UnmanagedSystem : ISystem
 {
     LatiosWorldUnmanaged latiosWorld;
 
@@ -86,7 +86,7 @@ public struct UnmanagedSystem : ISystem
     }
 }
 
-public class BlackboardSuperSystem : SuperSystem
+public partial class BlackboardSuperSystem : SuperSystem
 {
     protected override void CreateSystems()
     {
