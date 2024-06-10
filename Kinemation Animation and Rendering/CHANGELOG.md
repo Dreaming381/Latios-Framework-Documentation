@@ -6,6 +6,21 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic
 Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [0.10.1] – 2024-6-9
+
+Officially supports Entities [1.2.1]
+
+### Fixed
+
+-   Fixed rotations not being normalized when multiple bone animation sample
+    weights sum up to exactly 1f
+-   Fixed Dual Quaternion Skinning node option in shader graph Latios Vertex
+    Skinning node generating invalid code
+
+### Improved
+
+-   Eliminated a warning in Rider about OptimizedSkeletonAspect
+
 ## [0.10.0] – 2024-5-26
 
 Officially supports Entities [1.2.1]

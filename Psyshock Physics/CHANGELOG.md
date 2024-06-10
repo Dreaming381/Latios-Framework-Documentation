@@ -6,6 +6,41 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic
 Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [0.10.1] – 2024-6-9
+
+Officially supports Entities [1.2.1]
+
+### Added
+
+-   Added `CollisionLayerSettings.kDefault` as an alternative to
+    `BuildCollisionLayerConfig.defaultSettings`
+
+### Changed
+
+-   `Physics.DistaneBetween()` for pairs of box colliders now uses GJK and EPA
+    instead of the old SAT algorithm, as the old algorithm proved to be
+    unreliable and needs to be rewritten
+-   Collision layers using subdivisions per axis of (1, 1, 1) no longer allocate
+    a cross-bucket, and all FindPairs and ForEachPairs operations that use a
+    parallel schedule command on such a layer will instead use ScheduleSingle()
+
+### Fixed
+
+-   Fixed Burst compatibility of `UnitySim` stiff spring constants
+-   Fixed contact normal being in opposite direction in
+    `UnitySim.ContactsBetween()` between pairs involving boxes and triangles
+-   Fixed normal vector determination in `Physics.DistanceBetween()` for pairs
+    which utilize GJK
+-   Fixed ForEachPair alias detection not executing with safety checks enabled
+-   Fixed memory aliasing of PairStream when writing elements using a
+    ParallelWriterKey with a cross-bucket element marked read-write and a cell
+    element marked read-only
+
+### Improved
+
+-   Added various new safety check validations across the codebase, allowing for
+    automatic detection of more user mistakes
+
 ## [0.10.0] – 2024-5-26
 
 Officially supports Entities [1.2.1]

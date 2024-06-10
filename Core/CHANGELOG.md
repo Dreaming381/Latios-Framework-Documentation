@@ -6,6 +6,20 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic
 Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [0.10.1] – 2024-6-9
+
+Officially supports Entities [1.2.1]
+
+### Fixed
+
+-   Fixed broken `DynamicHashMap` resize logic
+
+### Improved
+
+-   `RngToolkit` `AsFloat()` and related methods no longer require
+    `minInclusive` to be less than `maxExclusive`, matching the behavior of
+    `Unity.Mathematics.Random`
+
 ## [0.10.0] – 2024-5-26
 
 Officially supports Entities [1.2.1]
