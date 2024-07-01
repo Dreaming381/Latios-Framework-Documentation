@@ -196,14 +196,14 @@ must be identity. In Blender, this usually means “applying transforms” befor
 parenting the mesh to the armature.
 
 And third, the skinned mesh’s local transform in ECS should remain identity.
-QVVS Transforms enforce this. But Unity Transforms provide no such mechanism
-only will only correct the transform once on binding.
+QVVS Transforms enforce this. But Unity Transforms provide no such mechanism and
+will only correct the transform once on binding.
 
 If you want to further modify the transform of the skinned mesh independent of
 the rest of the skeleton, use the `PostProcessMatrix` component. Kinemation uses
 the skeleton transforms for culling and generally ignores the skinned mesh
-transform as an optimization. However, the presence of this component will
-inform Kinemation to correct for it during culling.
+transform as an optimization. The presence of this component will inform
+Kinemation to correct for it during culling.
 
 And if you are wondering how multiple influences work, they effectively compute
 the world-space vertex for each influence and then use a weighted blend of the

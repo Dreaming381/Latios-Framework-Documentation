@@ -6,6 +6,25 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic
 Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [0.10.3] – 2024-6-30
+
+Officially supports Entities [1.2.1] – [1.2.3]
+
+### Added
+
+-   Added overload of `OptimizedSkeletonAspect.StartNewInertialBlend()` which
+    accepts a mask to only apply the blend to specific bones
+
+### Fixed
+
+-   Fixed Latios Vertex Skinning node for meshes which used fewer than 3 real
+    bone influences per vertex across the entire mesh
+-   Fixed an issue where the history of all mesh uploads was uploaded whenever
+    new uploads were requested
+-   Fixed GPU memory recycling issues where bindposes would often fail to reuse
+    memory while bone weights would allocate in too small of regions and clobber
+    memory, which would result in GPU crashes
+
 ## [0.10.2] – 2024-6-22
 
 Officially supports Entities [1.2.1] – [1.2.3]

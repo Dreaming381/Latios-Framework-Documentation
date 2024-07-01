@@ -11,17 +11,6 @@ Otherwise, I’m assuming you are here because you are a programmer and want to
 contribute to an open source project the way programmers do. Keep reading to get
 some ideas.
 
-## Consider Free Parking
-
-[Free Parking](https://github.com/Dreaming381/Free-Parking) is an open project
-designed as an experimental playground for framework developers, users,
-teachers, learners, experimenters, prototypers, tech demoers, open-source
-enthusiasts, and much more! There, you’ll be able to collaborate quickly with
-other developers to help land the features you desire as fast as possible.
-
-However, if you’d prefer to work in your own projects, please continue reading
-this guide.
-
 ## Picking a Feature
 
 If you are just looking to contribute some bug fixes, skip this step.
@@ -39,7 +28,11 @@ projects.
 If you a looking for an optimization challenge, there’s plenty around too, many
 of which will have real impacts for lots of users.
 
-Always ask for the latest open challenges via Discord, forums, GitHub, or email.
+You can find open tasks
+[here](https://github.com/Dreaming381/Latios-Framework/issues?q=is%3Aopen+is%3Aissue+label%3A%22open+to+contributors%22).
+If you don’t see a task in an area that interests you, reach out via Discord,
+forums, GitHub, or email to see if there are other items that may not be fully
+defined yet.
 
 ## Developing Using a Public GitHub Account
 
@@ -138,12 +131,25 @@ to your name, let me know that as well.
 When a member of the community contributes a large feature, it may not always be
 possible or practical for someone else to fix any bugs related to that feature.
 For this reason, large features contributed by the community are often marked as
-experimental. Bugs in experimental features may not be fixed in a patch release.
+“experimental” or “addons”. Bugs in such features may not be fixed in regular
+patch releases.
 
 With that said, very seldom do people get designs right the first time. Much of
 the Latios Framework comes from analyzing previous designs and finding ways to
 do things better. Even if your big feature is experimental, it is still valuable
 and will help the community learn and grow and eventually do something amazing!
+
+## Consider Open Projects
+
+[Free Parking](https://github.com/Dreaming381/Free-Parking) is an open project
+designed as an experimental playground for framework developers, users,
+teachers, learners, experimenters, prototypers, tech demo-ers, open-source
+enthusiasts, and much more! There, you’ll be able to collaborate quickly with
+other developers to help land the features you desire as fast as possible.
+
+For something that is a little less formalized, there is also the Hack-Labs
+repository, which is intended to be a contributors-only repository for various
+developments.
 
 ## My Own Workflow
 
@@ -196,7 +202,7 @@ here’s a living list of ideas that will be especially helpful:
 
 -   Detailed 3D characters
     -   The more detailed, the better, as detail tends to push the tech harder
-        and sometimes incentivize the development of new features a details
+        and sometimes incentivize the development of new features a detailed
         character could leverage.
 -   Character concept art for ATAR
     -   Magical girls, but each character’s magic borrows from different
@@ -209,5 +215,8 @@ here’s a living list of ideas that will be especially helpful:
     -   ATAR has FPS gameplay, so guns are a must. But also, guns that aren’t
         necessarily weapons make for great tools for symbolizing interactivity
         in Physics experiments.
+-   Terrain
+    -   Complex terrain scenes with trees and various LODs can really push the
+        boundaries of technology.
 
 If you have further inquiries, PM me on the Unity forums or DM me on Discord.

@@ -50,7 +50,9 @@ And here’s what it looks like using *Latios Deform*:
 
 *Q: What about Unity’s Linear Blend Skinning and Compute Deform nodes?*
 
-*A: Those are supported too, but may have slightly worse performance.*
+*A: Those are supported too, but may have slightly worse performance. In
+addition, Linear Blend Skinning produces artifacts when every vertex in the mesh
+has two or less bone influences each.*
 
 Once you’ve done that, you will need to create materials using your new shaders.
 

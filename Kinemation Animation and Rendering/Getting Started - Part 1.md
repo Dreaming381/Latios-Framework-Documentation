@@ -73,10 +73,10 @@ multiple materials, and how Kinemation deals with this is different than
 Entities Graphics.
 
 Beginning in Entities Graphics 1.1, a single `MaterialMeshInfo` instance can
-refer to multiple material-mesh-submesh triplets within a `RenderMeshArray`.
-However, Entities Graphics will only bake entities to use this format if a
-particular scripting define is enabled. Thus, Entities Graphics builds entity
-hierarchies like this:
+refer to multiple material-mesh-submesh triplets within a `RenderMeshArray`. But
+Entities Graphics will only bake entities to use this format if a particular
+scripting define is enabled. Thus, Entities Graphics builds entity hierarchies
+like this:
 
 -   If single material or scripting define set and not skinned
     -   primaryEntity – all rendering components
@@ -139,7 +139,7 @@ these meshes are registered and receive an internal `BoundMesh` cleanup
 component. If you need to change the mesh blob because you changed the mesh at
 runtime, you can add and enable the `NeedsBindingFlag` component.
 
-Bound meshes upload unique mesh data to the GPU and reference count usage.
+Bound meshes upload unique mesh data to the GPU and are reference counted.
 Visible bound mesh entities will also reserve GPU memory and update deforming
 material properties each frame during the culling loop.
 
@@ -214,7 +214,7 @@ The skinned mesh entity will go through a skeleton binding phase where an
 attempt is made to compute bone indices for the bind poses. If this operation
 fails, instead of being parented to the skeleton entity, the skinned mesh entity
 will instead be parented to an entity with the `FailedBindingsRootTag`. If the
-target skeleton needs to be changed at runtime, add and enable to
+target skeleton needs to be changed at runtime, add and enable the
 `NeedsBindingFlag` component.
 
 Skeletal skinning is partly or completely processed in a compute shader. The
@@ -247,7 +247,7 @@ entity:
 -   `ChunkPerCameraSkeletonCullingMask`
 -   `ChunkPerCameraSkeletonCullingSplitsMask`
 
-A skeleton entity is not valid by itself. It must additional be one of two
+A skeleton entity is not valid by itself. It must additionally be one of two
 specialized archetypes, exposed or optimized.
 
 ## Exposed Skeletons
@@ -331,7 +331,7 @@ inside dynamic buffers and blob assets. It is defined by the presence of the
 Similar to dynamic meshes and blend shapes, optimized skeletons also use a
 rotation system for transforms that is updated in `MotionHistorySuperSystem`.
 However, instead of having 3 sets of transforms, it has 6. This is because each
-rotation stores both local and root-space transforms. This mechanism is
+history rotation stores both local and root-space transforms. This mechanism is
 abstracted by `OptimizedSkeletonAspect`.
 
 Optimized skeletons are automatically baked when
