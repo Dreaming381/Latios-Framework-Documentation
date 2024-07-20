@@ -6,6 +6,15 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic
 Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [0.10.4] – 2024-7-20
+
+Officially supports Entities [1.2.1] – [1.2.3]
+
+### Fixed
+
+-   Fixed exceptions during baking for null animators, where an error was
+    supposed to be logged instead
+
 ## [0.10.3] – 2024-6-30
 
 Officially supports Entities [1.2.1] – [1.2.3]
