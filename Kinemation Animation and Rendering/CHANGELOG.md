@@ -6,6 +6,16 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic
 Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [0.10.5] – 2024-7-28
+
+Officially supports Entities [1.2.1] – [1.2.3]
+
+### Fixed
+
+-   Backported lightmap material fix from Entities Graphics 1.3.0-pre.4
+-   Fixed skeleton shadows only being drawn when all skeletons in a chunk were
+    completely within the shadow culling planes
+
 ## [0.10.4] – 2024-7-20
 
 Officially supports Entities [1.2.1] – [1.2.3]
