@@ -1,6 +1,6 @@
 # Getting Started with Calligraphics
 
-*Written by Sovogal – Edited by DreamingImLatios*
+*Originally written by Sovogal – Edited by DreamingImLatios*
 
 From damage numbers to simply labeling world space objects, text rendering is
 one of those engine features that we don't spend a lot of time thinking about,
@@ -45,6 +45,8 @@ Rich Text to world space.
 -   **Fonts and Materials** – The font-material pairs used by the renderer. All
     fonts/materials called out by font rich text tags will need to be specified
     here. There should always be at least one entry for the base font.
+    Calligraphics includes a Liberations-Sans Font set up for URP to get started
+    quickly.
 -   **Gpu Resident** – When checked, the text uses GPU-resident mode in which
     text changes are always uploaded and stored on the GPU regardless of
     visibility. However, visible text is not reuploaded each frame when no
@@ -52,6 +54,36 @@ Rich Text to world space.
 
 *Warning: GPU Resident Text can be prone to fragmentation, so be wary of
 modification patterns.*
+
+### Fonts and Materials
+
+Calligraphics fonts are generated using Unity’s TextCore and use SDF rendering.
+To create a new font, make sure an imported font file is selected in the project
+folder. Then right-click on it, and select Create Text Core Font Asset SDF.
+
+![](media/73c606af1e0c965ffc59b93ae86d32fa.png)
+
+Next, set the atlas type to *Static*, then press the *Update Atlas Texture*
+button to open the Font Asset Creator window. All parameters in this window will
+affect Calligraphics in the same way as traditional TextMeshPro or UI Toolkit.
+However, it is worth calling out some common settings.
+
+First, some level of padding is required for bold or text outlines, as otherwise
+the rendered quads won’t be large enough. Second, because this is a static
+atlas, you must specify which characters will be baked into the font atlas.
+Lastly, be sure to select *Get Font Features* for kerning support.
+
+![](media/9272a5c4777200cad8988fcfc50782f3.png)
+
+Once you are happy with your selection, press *Generate Font Atlas* and then
+*Save*.
+
+In a font-material pair, if you leave the material empty, Calligraphics will use
+the material from the font. The material must use a Calligraphics-compatible
+shader in order to read the Calligraphics glyph buffer. Two shaders, one for URP
+and one for HDRP are provided out-of-the-box by Calligraphics. These shaders are
+created with Shader Graph, so you can copy them and modify them for custom
+effects.
 
 ### Text Animation
 
