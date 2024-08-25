@@ -6,6 +6,15 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic
 Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [0.10.7] – 2024-8-25
+
+Officially supports Entities [1.2.1] – [1.2.4]
+
+### Fixed
+
+-   Fixed an issue where the `SceneBoundingVolume` was populated with NaNs when
+    only entities centered at the origin were included in the subscene
+
 ## [0.10.5] – 2024-7-28
 
 Officially supports Entities [1.2.1] – [1.2.3]

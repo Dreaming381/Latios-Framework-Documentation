@@ -6,6 +6,16 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic
 Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [0.10.7] – 2024-8-25
+
+Officially supports Entities [1.2.1] – [1.2.4]
+
+### Fixed
+
+-   Fixed FindPairs repeating results when using only a single cell in the
+    `CollisionLayer`
+-   Fixed various queries with TriMesh colliders that have scaling
+
 ## [0.10.4] – 2024-7-20
 
 Officially supports Entities [1.2.1] – [1.2.3]
