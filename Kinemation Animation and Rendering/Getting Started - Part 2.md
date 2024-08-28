@@ -54,9 +54,26 @@ And here’s what it looks like using *Latios Deform*:
 addition, Linear Blend Skinning produces artifacts when every vertex in the mesh
 has two or less bone influences each.*
 
+*Q: When would I use Latios Vertex Skinning, and when would I use Latios
+Deform?*
+
+*A: Latios Deform works in all scenarios, but consumes more VRAM and is slower
+on some platforms. Latios Vertex Skinning only supports skeletal mesh
+deformations (no dynamic meshes or blend shapes) and only supports up to 4 bone
+influences per vertex, but is faster on some platforms and consumes less VRAM.*
+
 Once you’ve done that, you will need to create materials using your new shaders.
 
 ![](media/299fe25fca0ebd0661503dc965a4a4d9.png)
+
+*Q: I get an error: Material {material_name} used by non-deforming
+MeshRendererBakeSettings index {number} for object {game_object_name} uses
+shader {shader_name} which uses deformations. This may result in incorrect
+rendering.*
+
+*A: Your character probably has a rigid (non-skinned) mesh attached to a bone,
+and you assigned a skinning shader to it. This doesn’t work. Use a normal
+unskinned material for this mesh.*
 
 ### Dual Quaternion Skinning
 
