@@ -37,8 +37,8 @@ Framework. And never hesitate to ask questions on our discord to keep you moving
 forward.
 
 With that said, if you are the kind of person to jump off the deep end right
-away, you are definitely not the first within the community. Time has proven it
-to be a viable approach.
+away, you are definitely not the first within the community. Some of our discord
+members have proven it to be a viable approach.
 
 ## Changes on Installation
 
@@ -46,6 +46,8 @@ to be a viable approach.
 
 Okay, you’ll find that you need to add a couple of scripting defines to get it
 to compile, with one being ENTITY_STORE_V1, which might be a little disruptive.
+This is a stopgap to ensure full per-hardware determinism, something that the
+framework guarantees.
 
 You will probably want to add the scripting define LATIOS_TRANSFORMS_UNITY if
 you decide to only go this far.
@@ -63,7 +65,7 @@ Features made available in this state include:
 
 -   Smart Blobber and Smart Bakers
 -   `BootstrapTools` functionality
--   Math and `Rng` Extensions
+-   Math and `Rng` Extensions and utilities
 -   Collections and Custom Command Buffers (user-invoked playback only)
 -   `EntityDataCopyKit` (and its underlying `EntityManager` extension methods)
 -   Fluent Queries
@@ -72,6 +74,8 @@ Features made available in this state include:
 -   `ThreadStackAllocator`
 -   The `TransformQvvs` type and operations
 -   All static runtime methods of Psyshock (Psyshock at runtime is system-free)
+-   NetCode Bootstrap and utility APIs (when NetCode package is installed)
+-   Kinemation’s `GraphicsUnmanaged` and `GraphicsBufferUnmanaged` APIs
 -   Various other extension methods
 
 It is very rare for people to only go this far. But it might make sense if you
@@ -104,6 +108,9 @@ systems are always created first, then framework systems, and then your systems.
 This is done to allow you to specify in the bootstrap which framework features
 you want added to the world, and then to safely inject your own systems into the
 `ComponentSystemGroups` those features create.
+
+An exception exists for systems that update in `DefaultVariantSystemGroup` in a
+NetCode project.
 
 Features made available with this bootstrap include:
 
@@ -188,6 +195,9 @@ highlighting functions as normal.
 
 Features and improvements made available with Kinemation include:
 
+-   LOD Crossfade support
+-   LOD1 Append which allows packing a LOD0 and LOD1 into a single entity with
+    crossfade for extreme performance
 -   Exposed skeletons which automatically deform meshes based on bone entity
     transforms
 -   Optimized skeletons which keep bones in buffers for fast manipulation
@@ -198,6 +208,7 @@ Features and improvements made available with Kinemation include:
 -   Bake-time support for animation retargeting
 -   Animation clip event storage
 -   Inertial blending
+-   Root motion utilities
 -   Automatic bounds updates
 -   Squash-and-stretch bone scaling for Optimized Skeletons
 -   Dynamic Meshes (animate vertices using Burst)
@@ -231,7 +242,7 @@ Features made available include:
 Several additional systems will be added to support binding GameObjects with
 entities at runtime and synchronizing their transforms.
 
-## Changes When Using the NetCode Bootstrap
+## Changes When Using the NetCode Standard Bootstrap
 
 This bootstrap brings all the same changes as the previous bootstrap. In
 addition, you need to replace all static method calls to `ClientServerBootstrap`
@@ -265,7 +276,9 @@ It can be a useful debugging feature.
 
 You’ll find the installers for Mimic’s Mecanim addon commented out across
 several lines in the bootstrap. Uncomment them to get runtime systems that can
-play baked-out Animator Controllers in native ECS.
+play baked-out Animator Controllers in native ECS. Note that there are known
+issues with animation timing code with the Mecanim implementation, which may or
+may not affect your character.
 
 Features made available include:
 
@@ -309,8 +322,8 @@ designed for using QVVS Transforms. As such, make sure to not use the
 LATIOS_TRANSFORMS_UNITY scripting define symbol when using these.
 
 With QVVS Transforms enabled, the transform system is completely swapped out.
-This breaks compatibility with Unity Physics, NetCode, and vanilla Entities
-Graphics. You must use Kinemation for rendering.
+This breaks compatibility with Unity Physics, parts of NetCode, and vanilla
+Entities Graphics. You must use Kinemation for rendering.
 
 This mode is best-suited for single-player experiences or if you are rolling
 your own networking solution. It is especially well-suited for high entity
@@ -326,6 +339,10 @@ parenting, and a cached `Child` buffer. However, when writing transforms, you
 always want to use `TransformAspect`, because it keeps local and world
 transforms in-sync.
 
+Early experimental NetCode support for QVVS Transforms has been added in 0.11.0,
+and you are invited to suggest further compatibility improvements for future
+releases.
+
 Features and improvements made available include:
 
 -   Stretch (shear-resistant non-uniform scaling)
@@ -334,7 +351,7 @@ Features and improvements made available include:
 -   Hierarchy Update Modes (lock world-space attributes on children)
 -   World-space persistence when deparenting
 -   CopyParentWorldTransformTag
--   Greatly improved chunk occupancy
+-   Greatly improved chunk occupancy for root entities
 -   Extreme Transforms mode for high entity count optimization
 -   Parenting and reparenting system jobification optimizations
 -   Improved determinism (for now)
@@ -393,3 +410,8 @@ communicate much elsewhere.
 
 Since you skipped that part, that feature is completely optional and you can use
 everything else without it. It is purely a preference.
+
+*Q: How much of the framework works in Unity Transforms mode?*
+
+Nearly all of it. What doesn’t work tends to be very specialized features. But
+you will also miss out on some of the optimizations QVVS Transforms offers.

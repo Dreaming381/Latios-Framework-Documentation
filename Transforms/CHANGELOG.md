@@ -6,6 +6,18 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic
 Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [0.11.0] – 2024-9-29
+
+Officially supports Entities [1.3.2]
+
+### Added
+
+-   *New Feature:* Added NetCode default ghost variant for `WorldTransform`
+-   Added NetCode-exclusive aliased fields for `WorldTransform` so that new
+    ghost variants can be added for it
+-   Added experimental `DefaultWorldTransformSmoothingAction` which can be
+    enabled via the `Register()` method
+
 ## [0.10.0] – 2024-5-26
 
 Officially supports Entities [1.2.1]

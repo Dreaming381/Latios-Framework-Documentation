@@ -367,6 +367,7 @@ handle serialization of Entity and blob asset references.
 ## Near-Term Roadmap
 
 -   `ThreadStackAllocator` `AllocatorManager` support
+-   More NetCode utilities
 -   Bootstrap Profiles
     -   Allow multiple bootstraps per project for samples and tests
 -   More custom command buffer types

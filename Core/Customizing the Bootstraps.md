@@ -13,6 +13,9 @@ A `LatiosWorld` populates itself with an `InitializationSystemGroup`, a
 framework systems. For more details, see [LatiosWorld in
 detail](LatiosWorld%20in%20Detail.md).
 
+For NetCode projects, you there is a `NetCodeBootstrapTools` as well as a
+`LatiosClientServerBootstrap`.
+
 ## Customizing Features
 
 Many features come as optional components which can be installed via the three
@@ -29,6 +32,7 @@ Installers can be found in the following static classes:
     -   Latios.Kinemation.KinemationBootstrap
     -   Latios.Calligraphics.CalligraphicsBootstrap
 -   Baking World
+    -   Latios.Core.Authoring.CoreBakingBootstrap
     -   Latios.Transforms.Authoring.TransformsBakingBootstrap
     -   Latios.Psyshock.Authoring.PsyshockBakingBootstrap
     -   Latios.Kinemation.Authoring.KinemationBakingBootstrap

@@ -48,9 +48,7 @@ NetCode bootstrap type called `LatiosClientServerBootstrap`, which offers Latios
 Framework equivalents of `ClientServerBootstrap`. You can further customize each
 type of world with the additional bootstrap interfaces provided, which you can
 automatically generate from the *NetCode Standard – Injection Workflow*
-bootstrap. Those bootstrap interfaces are automatically configured for Unity
-Transforms, which is the recommended transform system for NetCode projects in
-0.10 versions.
+bootstrap. The *NetCode QVVS – Explicit Workflow* bootstrap is experimental.
 
 After the bootstrap is created, it can be
 [customized](Customizing%20the%20Bootstraps.md).

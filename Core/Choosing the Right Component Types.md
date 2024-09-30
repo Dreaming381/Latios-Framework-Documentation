@@ -100,6 +100,10 @@ though nothing really cares once the skeleton is destroyed, the type still uses
 
 Use this to store managed Unity Assets created/loaded at runtime on Entities.
 
+*Note: Many of the use cases for* `IManagedStructComponent` *can instead be
+replaced by* `UnityObjectRef<>`*. Prefer to use the latter instead, as it is
+better supported and often can be made Burst-compatible.*
+
 Unity Assets like `GameObject` prefabs and `ScriptableObject`s can be loaded at
 runtime from Resources, Addressables, or a custom mechanism. A common pattern is
 to store a hash or `FixedString` in a struct `IComponentData` to load these

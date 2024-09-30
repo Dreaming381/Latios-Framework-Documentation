@@ -30,3 +30,10 @@ Operations between `simdFloat3`s and vector types can be confusing. If a
 equivalent of multiplying each `float3` in `p` by `v`. However, if `p` were
 instead multiplied by `float4 s`, the result will be equivalent to performing
 `p.a * s.x, p.b * s.y, p.c * s.z, and p.d * s.w`.
+
+## QCP
+
+QCP is an algorithm similar to the Kabsch algorithm for computing the rigid
+transform that produces the minimum RMSD of one set of points relative to
+another set of target points in a pair-wise manner. The implementation provided
+in the Latios Framework is highly-optimized, especially with Burst.

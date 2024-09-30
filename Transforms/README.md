@@ -108,6 +108,7 @@ those who need better compatibility with other offerings.
 
 ## Near-Term Roadmap
 
--   Uncached Transforms
+-   Improved NetCode support
 -   Custom hierarchy-aware job types
 -   Synchronous hierarchy modification APIs
+-   Uncached Transforms

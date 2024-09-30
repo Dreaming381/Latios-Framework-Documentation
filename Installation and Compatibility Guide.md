@@ -12,15 +12,15 @@ When you first install the package, you may experience compiler errors due to
 lack of special scripting defines. Add the requested scripting defines to
 continue.
 
-Latios Framework 0.10 uses a custom transform system rather than Unity’s
+Latios Framework 0.11 uses a custom transform system rather than Unity’s
 Transforms by default. This system will bake `GameObject` `Transform`s fine, but
 may pose compatibility issues with other ECS packages. If compatibility is a
 larger concern to you than the performance and feature advantages of this custom
 transform system, you can enable a compatibility mode for Unity Transforms via
 the LATIOS_TRANSFORMS_UNITY scripting define. Note that Unity Transforms is
-required for NetCode support unless you build your own adapter for QVVS
-Transforms. Additionally, Unity Transforms are required for Unity Physics unless
-you modify the Unity Physics package.
+required for full NetCode support as QVVS support is experimental. Additionally,
+Unity Transforms are required for Unity Physics unless you modify the Unity
+Physics package.
 
 Nearly all Latios Framework functionality requires that the World instance be a
 subclass instance called `LatiosWorld`. If your project currently uses default

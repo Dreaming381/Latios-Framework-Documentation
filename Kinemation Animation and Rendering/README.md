@@ -271,8 +271,11 @@ using the tools you know. The runtime supports all parameter types, all blend
 tree types, transitions, interrupts, root motion, and more. The `MecanimAspect`
 provides the API for interacting with the controller at runtime.
 
-Note: Mecanim functionality is an Addon to Mimic and is a community-contributed
-feature. Bugfixes cannot be guaranteed. Sovogal is the primary contributor.
+Note: The Mecanim module has known issues and is not considered suitable for
+production. It is merely provided as a quick-start to get familiar with
+Kinemation and also serves as a potential learning resource for how to leverage
+Kinemation’s APIs. If you desire a production-ready Mecanim implementation and
+are willing to invest in its existence, please reach out!
 
 ### Lots of Features
 
@@ -325,12 +328,10 @@ powerful tool for increasing the number of entities the hardware can handle.
 
 ## Near-Term Roadmap
 
--   IK Utilities
-    -   Pending Characters in Free Parking
+-   EWBIK
 -   GPU Deformed Mesh Normals and Tangents Recalculation
 -   Blend Shape Animation Baking Helpers
 -   Forced Optimized Skeleton Baking from Exposed Game Objects
 -   Stats and Troubleshooting Diagnostics
 -   Cycle-Matching Utilities
--   Root Delta Sampling Helpers
 -   Blend Tree Helpers

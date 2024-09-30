@@ -1,8 +1,9 @@
 # ISystem Support
 
-The Latios Framework has ever-growing support for `ISystem` beginning with
-version 0.4.5. This page lists out the various features which are expected to
-work in `ISystem` and how to utilize them.
+The Latios Framework has great support for `ISystem` with utilities to provide
+the same capabilities as SubSystem, but for Burst-compatible systems. This page
+lists out the various features which are expected to work in `ISystem` and how
+to utilize them.
 
 ## OnNewScene and ShouldUpdateSystem
 

@@ -6,6 +6,8 @@ exposed skeleton. No code will be required.
 If you haven’t already done so, create a new DOTS project and add the Latios
 Framework as a package. Then, create one of the Standard Bootstraps.
 
+**Do not forget to create a bootstrap!**
+
 ## Importing a Character
 
 When importing a character, in the rig tab, the most important settings are
@@ -117,3 +119,9 @@ you may want to stop here.
 Or…
 
 [Explore Mecanim](../Mimic/Mecanim%20Runtime.md)
+
+Note: The Mecanim module has known issues and is not considered suitable for
+production. It is merely provided as a quick-start to get familiar with
+Kinemation and also serves as a potential learning resource for how to leverage
+Kinemation’s APIs. If you desire a production-ready Mecanim implementation and
+are willing to invest in its existence, please reach out!

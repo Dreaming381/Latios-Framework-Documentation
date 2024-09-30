@@ -6,6 +6,17 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic
 Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [0.11.0] – 2024-9-29
+
+Officially supports Entities [1.3.2]
+
+### Added
+
+-   *New Feature:* Added multi-layer queries which can be provided via a
+    `ReadOnlySpan<CollisionLayer>` and the corresponding layer can be obtained
+    via `LayerBodyInfo.layerIndex`
+-   Added multi-layer `FindObjects` for `foreach` enumeration
+
 ## [0.10.7] – 2024-8-25
 
 Officially supports Entities [1.2.1] – [1.2.4]

@@ -6,6 +6,60 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic
 Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [0.11.0] – 2024-9-29
+
+Officially supports Entities [1.3.2]
+
+### Added
+
+-   *New Feature:* Added *NetCode QVVS – Explicit Workflow* bootstrap template
+-   *New Feature:* Added `Qcp.Solve()` which can compute a rotation or
+    `RigidTransform` that minimizes the root-mean-square distance of a set of
+    to-be-transformed points to their corresponding set of target points in a
+    pair-wise manner
+-   Added `UnsafeIndexedBlockList` methods `LockIndexRenetrant()` and
+    `UnlockIndex()` to facilitate `SharedStatic` producer-consumer patterns
+-   Added `BootstrapTools.AddGroupAndAllNestedGroupsInsideToFilter<>()` which
+    can be used to gather a collection of `ComponentSystemGroup` types
+    underneath a key type to easily check if any other system type will be
+    injected into a system within the update span of the specified key group
+    type
+-   Added `LatiosWorld.LoadFromResourcesAndPreserve<>()` for systems that load
+    assets from Resources in `OnCreate()` and store them in `UnityObjectRef`, as
+    doing this can cause Unity to crash prior to 2022.3.43f1 and 6000.0.16f1
+-   Added `LatiosWorldUnmanaged.latiosWorld` property to retrieve the managed
+    `LatiosWorld` instance
+-   Added `Compatibility.UnityNetCode.InputDeltaUtilities` based on the Unity
+    Character Controller NetCode samples
+-   Added a new interface `ISpecifyDefaultVariantsBootstrap` which allows for
+    registering NetCode variants in the bootstrap rather than a custom system
+-   Added `Compatibility.UnityNetCode.NetCodeBootstrapTools` which provides
+    various NetCode-specific utilities for bootstrap code
+
+### Changed
+
+-   **Breaking:** By default, a client world will now always override the
+    `DefaultGameObjectInjectionWorld`
+-   NetCode standard injection bootstrap template has been updated to use phased
+    system initialization similar to the other bootstraps
+
+### Fixed
+
+-   Fixed NetCode compatibility with
+    `CoreBakingBootstrap.ForceRemoveLinkedEntityGroupOfLength1()` by always
+    preserving `LinkedEntityGroup` when `LinkedEntityGroupAuthoring` is present
+
+### Improved
+
+-   Added a small optimization when a system writes a Collection Component and
+    finishes with a `default` `JobHandle` for `Dependency` which avoids sending
+    superfluous updates to the job system
+
+### Removed
+
+-   Removed NetCode check in `CoreBootstrap.InstallSceneManager()`, as this is
+    now experimentally supported
+
 ## [0.10.7] – 2024-8-25
 
 Officially supports Entities [1.2.1] – [1.2.4]

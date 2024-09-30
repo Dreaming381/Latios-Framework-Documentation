@@ -6,6 +6,103 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic
 Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [0.11.0] – 2024-9-29
+
+Officially supports Entities [1.3.2]
+
+### Added
+
+-   *New Feature:* Added authoring `enum` `MeshDeformDataFeatures` which allows
+    specifying the use cases a `MeshDeformDataBlob` needs to support,
+    potentially greatly decreasing build size and runtime memory usage
+-   *New Feature:* Added support for packing LOD masks per material-mesh-submesh
+    and a LOD select inside `MaterialMeshInfo` so that multiple LODs can be
+    embedded in a single entity
+-   *New Feature:* Added *LOD1 Append* authoring and `MmiRange2LodSelect`
+    component for packing two LOD levels into a single entity with crossfade
+    support that will be evaluated automatically
+-   *New Feature:* Added `GraphicsUnmanaged,` `GraphicsBufferUnmanaged`, and
+    extension methods for `UnityObjectRef<ComputeShader>` which allow various
+    managed graphics operations to be invoked from Burst-compiled code
+-   *New Feature:* Added `RootMotionDeltaAccumulator` and `RootMotionTools` to
+    assist in sampling and blending root motion transforms
+-   Added `OverrideHierarchyRendererBase` that allows a baker for a
+    `GameObject`’s ancestor to override baking for descendant renderers, such as
+    combining all descendants into a single entity
+-   Added `RenderingBakingTools.IsOverridden()` to help determine if a Renderer
+    has an overriding authoring component that should be respected
+-   Added `lodMask` to `MeshMaterialSubmeshSettings` and
+    `RenderingBakingTools.ExtractMeshMaterialSubmeshes()`
+-   Added `RenderingBakingTools.GetDeformFeaturesFromMaterials()` which can
+    determine whether `VertexSkinning` or `Deform` feature flags are required by
+    the material based on the exposed shader properties
+-   Added `RenderingBakingTools.BakeLodMaskForEntity()` which is now responsible
+    for traditional LOD Group baking logic
+-   Added `LodCrossfade.ToComplement()` to compute a complementary crossfade
+    value for a given crossfade
+-   Added static class `LodUtilities` for performing common LOD calculations and
+    operations
+-   Added `UseMmiRangeLodTag` which tells culling to filter each
+    mesh-material-submesh by the LOD level stored in `MaterialMeshInfo`
+-   Added `MaterialMeshInfo` extension methods for getting and setting a LOD
+    select level
+-   Added `hasBindPoses` and `hasDeformBoneWeights` to `MeshSkinningBlob`,
+    `hasBlendShapes` to `MeshBlendShapesBlob`, `hasMeshNormalizationData` to
+    `MeshNormalizationBlob`, and `hasUndeformedVertices` to `MeshDeformDataBlob`
+-   Added `ICullingComputeDispatchSystem` and `CullingComputeDispatchData` for
+    assisting in writing unmanaged systems that operate in the round-robin super
+    systems
+-   Added `GenerateBrgDrawCommandsSystem.optimizeForMainThread` which slightly
+    improves main thread performance at the cost of reducing parallelism
+
+### Changed
+
+-   **Breaking:** All renderable entities now receive a
+    `ChunkPerDispatchCullingMask` which should be used instead of
+    `ChunkPerCameraCullingMask` for systems that update inside
+    `CullingRoundRobinEarly/LateExtensionsSuperSystems`
+-   **Breaking:** `CullingContext` fields
+    `globalSystemVersionOfLatiosEntitiesGraphics` and
+    `lastSystemVersionOfLatiosEntitiesGraphics` have been moved to a new
+    `DispatchContext` component
+-   **Breaking:** `GraphicsBufferBrokerReference` has been replaced by
+    `GraphicsBufferBroker`, which is now a struct `IComponentData` and returns
+    `GraphicsBufferUnmanaged` instances, making it fully Burst-compatible
+-   `SkeletonClip.SampleBone()` now sets `worldIndex` to `math.asint(1f)` to
+    assist with manual blending algorithms
+-   `MeshDeformDataBlob` can now have bindposes but no skinning weights, and it
+    can also have empty normalization data and an empty `undeformedVertices`
+    array depending on the `MeshDeformDataFeatures` it was created with
+-   Many `SubSystems` that performed compute shader dispatches have been changed
+    to Burst-compiled `ISystems`
+-   `LatiosSparseUploader` has been reworked to use the new unmanaged graphics
+    APIs
+
+### Fixed
+
+-   Fixed various edge cases with `LodCrossfade` values
+
+### Improved
+
+-   Improved culling performance across many systems as well as culling callback
+    setup and teardown by Burst-compiling more things
+-   Improved shadowmap culling performance significantly in Unity 6 by
+    aggregating compute dispatches using the new `OnFinishedCulling(`) callback
+-   Skinning now respects skinned entities that were explicitly enabled for
+    rendering by user code even if the skeleton did not pass frustum culling
+-   Extension method `TransformQvvs.NormalizeBone()` now explicitly ensures the
+    weight value is `1f `after normalization
+
+### Removed
+
+-   **Breaking:** Removed `lodSettings` from `MeshRendererBakeSettings` as the
+    functionality has been moved to
+    `RenderingBakingTools.BakeLodMaskForEntity()` instead
+-   **Breaking:** Removed shader subgraph URP14-LOD_Crossfade_Fix_Node as URP
+    now supports LOD Crossfade natively
+-   **Breaking:** Renamed `LodCrossfade` method `SetHiResOpacity()` to
+    `SetFromHiResOpacity()`
+
 ## [0.10.7] – 2024-8-25
 
 Officially supports Entities [1.2.1] – [1.2.4]

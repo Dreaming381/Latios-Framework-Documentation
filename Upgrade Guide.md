@@ -1,4 +1,4 @@
-# Upgrade Guide [0.9.4] [0.10.0]
+# Upgrade Guide [0.10.7] [0.11.0]
 
 Please back up your project in a separate directory before upgrading! You will
 likely need to reference the pre-upgraded project during the upgrade process.
@@ -10,97 +10,65 @@ See the changelogs of each module for a complete list of changes.
 
 ### New Unity Packages
 
-All Unity ECS Packages have been updated to 1.2.1 versions. You will need to
+All Unity ECS Packages have been updated to 1.3.2 versions. You will need to
 upgrade these packages, which may introduce some behavioral differences.
-
-You will need to add the `ENTITY_STORE_V1` scripting define to your project.
-
-### UnsafeParallelBlockList
-
-Auxiliary types such as `ElementPtr` and `Enumerator` now live in
-`UnsafeIndexedBlockList` instead.
-
-## Psyshock
-
-### CollisionLayer Backing
-
-CollisionLayer is now backed by NativeLists instead of NativeArrays, which can
-result in some safety errors at runtime that used to be perfectly safe.
-
-### FindPairs Changes
-
-`IFindPairsProcessor.BeginBucket()` returns a `bool`, which should be `true` to
-preserve previous behavior. Returning `false` lets further processing of the
-bucket context to be skipped.
-
-Additionally, `PhysicsComponentLookup` and similar types no longer accept the
-`SafeEntity` from a `ScheduleParallelUnsafe()` context. Use the normal lookup
-types with `[NativeDisableParallelForRestriction]` instead.
 
 ## Kinemation
 
-### LOD Group Rewritten
+### LOD Group Baking Override API
 
-If you worked with LOD Groups in code at all, you will have to rework that code
-because Kinemation has a brand new high-performance LOD Group algorithm which
-supports LOD Crossfade including SpeedTree Crossfade.
+If you used `MeshRendererBakeSettings` and specified a `lodSettings`, this field
+no longer exists. The logic for this has been refactored to
+`RenderingBakingTools.BakeLodMaskForEntity()`.
 
-If you only use LOD Group in the Editor, you shouldn’t be impacted.
+### New Culling and Dispatch
 
-`MeshRendererBakeSettings` and associated custom baking APIs are affected by
-this change. There’s a new `LodSettings` `struct` to replace `lodGroupEntity`
-and `lodGroupMask`.
+If you’ve done anything with the `GraphicsBufferBroker` or hooked into the
+culling API, some things have changed in order to facilitate the various
+performance improvements made with this release. Check the changelog to see the
+list of breaking changes.
 
-### New Bone Animation Weighting Scheme
+### MeshDeformDataBlob Use Case Data Stripping
 
-In 0.9, it was expected that when blending bones, the total weights accumulated
-to 1f for each bone. In 0.10, the accumulated weight is stored in the
-`worldIndex` of the `TransformQvvs` and is automatically written or added to
-when performing sampling. The accumulated weight can be any positive non-zero
-value for normalization to function correctly. But you should be wary of this in
-relevant code. A big motivation for this change was to simplify masked sampling
-support for additive and override layers.
-
-`BufferPoseBlender` APIs have changed as a result.
-
-## Calligraphics
-
-### New TextBaseConfiguration
-
-Calligraphics received a major overhaul, and the base text renderer
-configuration has many more options you will need to initialize. Additionally,
-some advanced code usages, such as reading the `FontBlob` directly, will require
-significant code changes.
+Lastly, it is no longer safe to assume specific attributes of
+`MeshDeformDataBlob` are populated. There are new has\* properties to help you
+determine whether data is correctly populated. In common cases, much of the
+blob’s data was never used, so feature flags are now used during baking to
+determine what gets populated. This can also result in the same mesh having
+multiple deriving `MeshDeformDataBlob` instances in incremental baking, though
+this should never happen in a full subscene bake.
 
 ## New Things to Try!
 
+### Compatibility
+
+Some new experimental compatibility improvements have been added for NetCode,
+including explicit system ordering workflow support and basic QVVS
+`WorldTransform` replication.
+
 ### Core
 
-`AddComponentsCommandBuffer` is here. People often request more of these
-high-performance command buffers. The motivation for implementing this one was
-to handle an edge case with cleanup components more elegantly.
-
-### QVVS Transforms
-
-GameObjectEntity is now supported for Unity Transforms.
+QCP is a powerful algorithm for aligning objects based on point pairs. It is
+similar to the Kabsch algorithm, but much faster.
 
 ### Psyshock Physics
 
-`UnitySim` now has all the APIs required to build a functional rigid body
-simulation based on Unity Physics solver. You will also want to leverage the new
-`PairStream`, `IForEachPairProcessor`, and `Physics.ForEachPair()` to build out
-your constraint solver with safety, flexibility, and full parallelism.
+All layer queries (`DistanceBetween()`, `Raycast()`, `ColliderCast()`, and
+`FindObjects()`) now have overloads which take a `ReadOnlySpan<CollisionLayer>`
+allowing multiple layers to be queried at once. The `layerIndex` corresponding
+to the index in the span can be found in the result.
 
 ### Kinemation
 
-Kinemation now has dual quaternion skinning, new APIs for sampling masked
-subsets of bones and parameters, and LOD Crossfade support.
+Add a *LOD1 Append* authoring component to any *Mesh Renderer* to turn it into a
+2-LOD group within a single entity at runtime. This saves all the headache of
+juggling child transforms, updating child world bounds, and frustum culling each
+LOD level. It can be an amazing performance boost for frequently-instantiated
+projectile entities.
 
-### Calligraphics
+There’s some new root motion utility APIs in the form of
+`RootMotionDeltaAccumulator` and `RootMotionTools` to help you sample and blend
+root motion transform deltas.
 
-Calligraphics received a major overhaul to its glyph generation engine,
-supporting many more features of TextMeshPro including many more rich text tags,
-base formatting options, and multi-font support.
-
-Additionally, Calligraphics has a new GPU-Resident option which allows for
-caching the generated glyphs on the GPU for text that changes infrequently.
+Doing anything with custom graphics? Check out `GraphicsUnmanaged` and
+`GraphicsBufferUnmanaged` to perform graphics operations in Burst-compiled code!

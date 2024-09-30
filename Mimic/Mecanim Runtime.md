@@ -3,14 +3,18 @@
 Mimic includes a Mecanim runtime as an addon, so that you can use the old
 familiar tools in your Latios Framework project.
 
-Note: Mecanim functionality is an **Addon** and is a community-contributed
-feature. Bugfixes cannot be guaranteed. Sovogal is the primary contributor.
+Note: The Mecanim module has known issues and is not considered suitable for
+production. It is merely provided as a quick-start to get familiar with
+Kinemation and also serves as a potential learning resource for how to leverage
+Kinemation’s APIs. If you desire a production-ready Mecanim implementation and
+are willing to invest in its existence, please reach out!
 
 ## Setup
 
 If you used one of the standard bootstraps, you will find the Mecanim installers
 present in the bootstrap but commented out. Uncomment these lines to start using
-Mecanim.
+Mecanim. There is a line in the `LatiosBakingBootstrap` as well as one in the
+`LatiosBootstrap` class.
 
 The Mecanim runtime will only take effect when an Animator is baked with a valid
 *Animator Controller*. If this field is left null, then it is assumed the

@@ -278,9 +278,9 @@ with statistics about the collision layer. This is also a Fluent API.
 ## Using Collision Layers
 
 Collision Layers can be passed into jobs as `[ReadOnly]` and queried. Many of
-the Physics query operations have overloads which take a `CollisionLayer` as an
-argument. For example, here’s the skeleton of a typical collide-and-slide
-algorithm used in character controllers:
+the Physics query operations have overloads which take a `CollisionLayer` or
+`ReadOnlySpan<CollisionLayer>` as an argument. For example, here’s the skeleton
+of a typical collide-and-slide algorithm used in character controllers:
 
 ```csharp
 [BurstCompile]
