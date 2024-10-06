@@ -6,6 +6,23 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic
 Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [0.11.1] – 2024-10-5
+
+Officially supports Entities [1.3.2]
+
+### Added
+
+-   Added `IBaker` extension methods `ShouldBakeSingleCollider()` and
+    `GetMultiColliderBakeMode()` to help identify baking rules when multiple
+    authoring colliders exist on a single `GameObject`, or when such colliders
+    are referenced by a parent `CustomColliderAuthoring`
+
+### Fixed
+
+-   Fixed `PairStream.ConcatenateFrom()` memory stomps
+-   Fixed `[WriteOnly]` safety error when attempting to read `PairStream.Pair`
+    properties created from a `PairStream.ParallelWriter`
+
 ## [0.11.0] – 2024-9-29
 
 Officially supports Entities [1.3.2]
