@@ -6,6 +6,22 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic
 Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [0.11.3] – 2024-10-13
+
+Officially supports Entities [1.3.2]
+
+### Fixed
+
+-   Fixed compile errors in
+    `ForceInitializeUninitializedOptimizedSkeletonsSystem` when using Unity
+    Transforms
+
+### Improved
+
+-   Runtime skinned meshes targeting a prefab or disabled skeleton will now
+    result in a failed binding with an explicit error message, rather than
+    throwing an obscure exception or crashing
+
 ## [0.11.2] – 2024-10-13
 
 Officially supports Entities [1.3.2]

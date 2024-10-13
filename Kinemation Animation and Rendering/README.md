@@ -6,7 +6,7 @@ Kinemation is an animation and rendering solution for Entities which aims to
 tightly integrate gameplay and animation for large-scale worlds. Kinemation is
 still under active development, and it has only laid down the foundations
 towards what it aims to achieve. Yet those foundations are already usable in
-projects. As of Unity Entities 1.2, no official Entities-based animation
+projects. As of Unity Entities 1.3, no official Entities-based animation
 solution exists.
 
 Check out the [Getting Started](Getting%20Started%20-%20Part%201.md) page!
@@ -325,13 +325,17 @@ powerful tool for increasing the number of entities the hardware can handle.
 -   When using Unity Transforms, Kinemation does not enforce that a skinned
     mesh’s local transform is set to identity after binding to a skeleton, which
     may result in incorrect rendering if this value is modified later
+-   In a NetCode project, if the skeleton entity is a prespawned ghost, the
+    skinned mesh will fail to bind to it as the skeleton will be disabled at
+    that time. The current workaround is to make the Game Object with the
+    Animator a child of the Game Object with the Ghost Authoring component.
 
 ## Near-Term Roadmap
 
 -   EWBIK
 -   GPU Deformed Mesh Normals and Tangents Recalculation
 -   Blend Shape Animation Baking Helpers
--   Forced Optimized Skeleton Baking from Exposed Game Objects
+-   Optimized Skeleton Editor Cache
 -   Stats and Troubleshooting Diagnostics
 -   Cycle-Matching Utilities
 -   Blend Tree Helpers
