@@ -6,6 +6,25 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic
 Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [0.11.2] – 2024-10-13
+
+Officially supports Entities [1.3.2]
+
+### Fixed
+
+-   Fixed rigid meshes that were also exported bones being treated as skinned
+    meshes when using Unity Transforms
+
+### Improved
+
+-   Fixed an internal collection component being gathered with read-write access
+    when it was only ever read, potentially resulting in unnecessary job
+    dependencies
+-   Added `ForceInitializeUninitializedOptimizedSkeletonsSystem` which updates
+    during the transform system update on optimized skeletons which have not yet
+    been processed by a sync point binding system, which fixes some common
+    issues encountered when spawning optimized skeletons
+
 ## [0.11.0] – 2024-9-29
 
 Officially supports Entities [1.3.2]

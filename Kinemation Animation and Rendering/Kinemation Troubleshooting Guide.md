@@ -81,7 +81,9 @@ Using `MeshDeformDataBlob`, you can size the blend shapes buffer using
 Optimized skeletons will not render correctly if their buffers are not
 initialized. But unlike the previous types, the issue can be resolved directly
 in the `OptimizedSkeletonAspect` API. Simply call `ForceInitialize()` and the
-aspect will be corrected and ready for use.
+aspect will be corrected and ready for use. Beginning in 0.11.2, this is invoked
+automatically if the transform systems see the optimized skeleton prior to
+`KinemationBindingReactiveSystem`.
 
 *If you encounter issues with initialization or struggle to apply the suggested
 fixes, feel free to discuss in the Latios Framework Discord. It is very likely
