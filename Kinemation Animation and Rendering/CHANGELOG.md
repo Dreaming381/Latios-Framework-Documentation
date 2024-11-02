@@ -4,6 +4,19 @@ All notable changes to this package will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [0.11.5] – 2024-11-2
+
+Officially supports Entities [1.3.5]
+
+### Fixed
+
+-   Fixed `KinemationPreTransformsBakingGroup` not actually updating before transforms, resulting in exposed bones not having QVVS motion history components in closed subscenes
+-   Fixed GPU corruption which could lead to the editor crashing when an exposed bone is missing motion history components in QVVS mode
+
+### Improved
+
+-   Added a check to prevent infinite allocations if more than 1024 culling passes are requested since the last `LatiosEntitiesGraphicsSystem` update
+
 ## [0.11.4] – 2024-10-19
 
 Officially supports Entities [1.3.5]
