@@ -105,10 +105,18 @@ those who need better compatibility with other offerings.
     subscenes.
 -   Some representations of Unity Transforms don’t map to QVVS cleanly in
     abstract APIs, and information may be discarded in both directions.
+-   If a Game Object Entity Host has a hierarchical ancestor with a Linked
+    Entity Group Authoring component in a subscene, it is nondeterministic and
+    likely that `SceneSectionStreamingSystem` will throw an exception for
+    `EntityManager.DestroyEntity(EntityQuery)` when the scene is unloaded. This
+    is due to a bug in Entities where an already destroyed entity with
+    outstanding cleanup components referenced by a `LinkedEntityGroup` will
+    trigger an entity-not-in-query error. A potential workaround is to remove
+    the host entity from the `LinkedEntityGroup`.
 
 ## Near-Term Roadmap
 
--   Improved NetCode support
+-   Fixed-Rate Transforms
 -   Custom hierarchy-aware job types
 -   Synchronous hierarchy modification APIs
 -   Uncached Transforms
