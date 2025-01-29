@@ -66,21 +66,23 @@ five types of animation:
     work.
 -   The Calligraphics shader suffers heavily from FXAA on the camera, and you
     should not use this anti-aliasing method when using Calligraphics.
-    Unfortunately, FXAA is the default in URP projects.
+    Unfortunately, FXAA is the default in some URP projects, so please check
+    your settings.
 -   While Calligraphics represents strings internally as UTF-8, it does not
     handle glyph generation mechanisms for all languages correctly. Feel free to
     get involved to help support your native language.
 
 ## Near-Term Roadmap
 
+-   Dynamic and System Fonts
+-   Font-Independent Materials
+-   Font Images and Vector Graphics
+-   Harfbuzz Text Shaping
 -   Diacritics
--   Sprites
+-   Custom Sprites
 -   Billboards
 -   9-Slice Panels
 -   Decals
--   Vector Graphics
-    -   3D Line Renderer
-    -   SVG Elements
 
 ## Not-So-Near-Term Roadmap
 

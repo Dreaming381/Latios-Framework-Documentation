@@ -1,8 +1,13 @@
 # Psyshock Physics
 
 Psyshock is a build-your-own-physics-engine toolkit with a powerful spatial
-query API and various simulation building blocks and utilities to provide
-complete control over all things spatial and physics.
+query API and various simulation building blocks to provide complete control
+over all things spatial and physics.
+
+While the API is lower-level than a typical physics engine, Psyshock allows you
+to sculpt a spatial query and/or physics engine suited for your project with
+better performance and gameplay ergonomics than a traditional game engine can
+provide.
 
 Check out the [Getting Started](Getting%20Started%20-%20Part%201.md) series!
 
@@ -22,13 +27,6 @@ For a more detailed comparison including the rant which used to be at the top of
 this page, look [here](Psyshock%20vs%20Unity%20Physics.md).
 
 ## Features
-
-*Disclaimer: Some of the details of the features listed in this section are not
-available yet but are planned for a near future release and have been heavily
-accounted for in the design. If a particular feature shows promise in solving a
-use case you are currently struggling with, please let me know so that I can
-prioritize it. Solving other people’s problems seems to give me some
-productivity buff. I don’t know. It’s probably some kind of fairy magic.*
 
 ### Mutable Colliders
 
@@ -54,18 +52,22 @@ makes them a lot more pleasant to work with.
 ### Transform Hierarchy Support
 
 The physics algorithms are able to capture world-space transforms from child
-entities in hierarchies. They will also be able to write back new transforms to
-these entities once simulation is supported.
+entities in hierarchies. Additionally, when using QVVS Transforms and the
+`UnitySim` APIs, you can use `TransformAspect` to commit rigid body world-space
+transforms to child entities.
 
 QVVS Transform features like scale and stretch are also supported and work
 automatically. For shapes which don’t have well-defined stretch algorithms, you
-can choose from one of several approximation methods.
+can choose from one of several approximation methods on a per-collider basis.
 
 ### Infinite Layers
 
+Do you want layers defined by entities matching queries rather than bitfields?
+You’ve come to the right place!
+
 Fun fact, Unity.Physics default `BuildPhysicsWorldSystem` doesn’t have one
 broadphase structure. It has two. One is for statics, and the other is for
-dynamics. It performs a Bipartite check between the two. So then if Bipartite
+dynamics. It performs a bipartite check between the two. So then if bipartite
 checks are cheaper than building the static world broadphase every frame, is
 there a reason why we don’t just build a broadphase structure for each group of
 colliders we care about?
@@ -76,20 +78,23 @@ Instead of building two large broadphase structures with layer masks and then
 untangling the results, you can build a [CollisionLayer](Collision%20Layers.md)
 per unique `EntityQuery` (or from arbitrary data from a job). Then you can ask
 for all collisions within a single layer or for the collisions between layers.
-You can also query against each layer separately.
+You can also query against each layer separately. This gives you fine-grain
+control over which sets of colliders test against each other, with very little
+overhead. And you can explicitly specify the interaction behavior using…
 
 ### FindPairs – A Multibox Broadphase
 
-What is so good about a multibox broadphase? Well for one, there’s no
-single-threaded initial step, which is one of Unity.Physics bottlenecks. But
-second, it’s a cheap pseudo-islanding solution.
+FindPairs lets you find candidate overlaps blazingly fast, and process pairs
+with your own logic with some powerful guarantees.
 
-And I know what you are wondering. How is that useful?
+In Psyshock, you call `Physics.FindPairs()` and first pass in one or two
+collision layers as arguments. Then you pass in a generic argument implementing
+`IFindPairsProcessor`. This is the struct that will hold your NativeContainers
+and other resources to handle the results.
 
-In Psyshock, you call `Physics.FindPairs()` and pass in one or two collision
-layers as arguments. However, there is an additional generic argument requesting
-an `IFindPairsProcessor`. This is the struct that will have your
-NativeContainers and stuff to handle the results.
+When scheduling with two layers, each pair will always result in the first pair
+entity coming from the first layer, and the second pair entity coming from the
+second layer. You’ll always know exactly what you’re getting!
 
 `Physics.FindPairs` can be scheduled as a parallel job, and when you do, the
 algorithm guarantees that both entities passed into the
@@ -97,32 +102,28 @@ algorithm guarantees that both entities passed into the
 components!
 
 Do you know how many people have asked about how to write in parallel to nearby
-enemies that should be damaged by an attack or some similar problem? Well here
-you just have to create a trigger collider with a large radius and run its layer
-against the layer with your enemies. Damage will stack as expected. Or you can
-set a bool that says future interactions with that enemy can’t happen anymore.
-And at the same time, you can do stuff on the attack trigger too, like record
-all the enemies it touched into a dynamic buffer.
+enemies that should be damaged by an attack or some similar problem? You don’t
+have to record events to some separate container and attempt to sort them by
+entity. You can simply write what you need right in the processor.
 
 It’s thread-safe. It’s parallel. It’s magic!
 
 Not entirely…
 
 You can still shoot yourself in the foot by trying to access an entity that
-isn’t one of the pair’s entities. That includes trying to access a parent
-entity, which is a common use case. You’ll have to be smart about how you go
-about that problem, or just avoid it by not using
-`[NativeDisableParallelForRestriction]`. There’s a `PhysicsComponentLookup` type
-that will help you follow the rules when writing to components.
+isn’t one of the found pair’s entities. To stay safe, you can use
+`PhysicsComponentLookup`, `PhysicsBufferLookup`, and `PhysicsAspectLookup` (all
+implicitly assignable from the Entities package counterparts) when you need
+write access to entities found by FindPairs.
 
-But even more importantly, you must ensure that **no entity can appear twice in
+The only other thing you must watch for, is that **no entity can appear twice in
 a participating CollisionLayer!** There is a check in place for this when safety
 checks are enabled. If this rule is a problem for you, use `ScheduleSingle()`
 instead.
 
-There’s still one more awesome thing about FindPairs. It is a broadphase. It
-reports AABB intersection pairs, not true collider pairs. Why is that a good
-thing? It means you get to choose what algorithm to follow up with.
+Another awesome thing about FindPairs is that it is a broadphase. It reports
+AABB intersection pairs, not true collider pairs. Why is that a good thing? It
+means you get to choose what algorithm to follow up with.
 
 -   Need all the contact manifold info?
     -   Cool!
@@ -130,6 +131,9 @@ thing? It means you get to choose what algorithm to follow up with.
     -   You can do that too.
 -   Do you want a cheap intersection check to keep the cost down?
     -   That’s a possibility as well.
+-   Or maybe your triggers involve fast-moving entities and you need a collider
+    cast for continuous collision detection?
+    -   Consider it solved.
 -   Do you want to check if the entities have some other component values before
     you do the expensive intersection checks?
     -   Also viable.
@@ -147,8 +151,9 @@ No OOP-like API here. All the queries are static methods in the static Physics
 class. Combined with the stack-creatable colliders, these methods can be quite
 useful for “What if?” logic.
 
-Also, you might see some more non-traditional queries pop up at some point if I
-find myself wanting parabolic and smoothstep trajectories again.
+The common APIs that deal with colliders are in the static `Physics` class. For
+more niche queries, the `QuickTests` class might just have what you are looking
+for.
 
 ### No Hacks
 
@@ -184,12 +189,12 @@ convenience method using public API). There are no systems (other than baking).
 
 Even the debug tools are static!
 
-Unity.Physics first and foremost tries to be an out-of-the-box solution and then
-slowly is working on exposing flexibility. However, this often comes at the cost
-of performance. For example, in Unity.Physics, triggers are determined by
-simulating a contact impulse, resulting in contacts being generated in
-situations where all you care about is whether or not a body entered some
-trigger volume.
+Unity.Physics first and foremost tries to be an out-of-the-box solution with all
+flexibility features being baked into the simulation logic. However, this often
+comes at the cost of performance. For example, in Unity.Physics, triggers are
+determined by simulating a contact impulse, resulting in contacts being
+generated in situations where all you care about is whether or not a body
+entered some trigger volume.
 
 In constrast, Psyshock tries to be a “Build your own solution” framework and is
 being designed inside-out. Over time, it will eventually achieve an
@@ -204,7 +209,7 @@ you want, or even worse, modify the code directly. In Psyshock, you own the
 engine. It is up to you whether or not you want to use the physical rules
 provided or make up your own. Do you want every object to experience its own
 rate of time? Such a concept would usually require a custom physics engine. But
-with Psyshock, this can be achieved with little effort.
+with Psyshock, this can be achieved with far less effort.
 
 Psyshock doesn’t come with an out-of-the-box constraint solver, but rather
 provides the constraint-solving algorithms and a powerful `PairStream` data
@@ -214,18 +219,18 @@ character controllers or magical forces.
 
 ## Known Issues
 
--   Compound Colliders use linear brute force algorithms and lack an underlying
-    acceleration structure. Try to keep the count of primitive colliders down to
-    a reasonable amount.
+-   Compound and TriMesh colliders do not use the most optimal runtime data
+    structures due to the prohibitive baking costs associated
 -   Compound Colliders do not support embedded Triangle, Convex, or TriMesh
     Colliders
--   Authoring is weak right now. That stuff takes me a while to get working.
 -   This Readme has too many words and not enough pictures.
 
 ## Near-Term Roadmap
 
+-   More QuickTests
 -   More Character Controller Utilities
 -   Motor Constraints
+-   Persistent Pair State
 -   FindPairs improvements
     -   Aabb-only layers
     -   Mismatched layers support

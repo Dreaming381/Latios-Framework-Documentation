@@ -10,25 +10,24 @@ that led to this divergence in the first place.
 | Query API                | Member methods                                                            | Static methods                                                                                                |
 | Collider Types           | Terrain                                                                   | More new types planned                                                                                        |
 | Collider Representation  | Blob Asset                                                                | Mutable struct which for some types may contain a Blob Asset                                                  |
-| Box Collider             | Convex Hull with GJK                                                      | Center and Extents with SAT                                                                                   |
 | Convex Collider          | Beveled for performance                                                   | Hard-Edged for performance                                                                                    |
 | Raycasts                 | Include inside hits                                                       | Ignore inside hits (use point queries instead)                                                                |
 | Raycast Optimizations    | Ignore convex bevels                                                      | No bevels to ignore                                                                                           |
 | Collider Casts           | Conservative Advancement with tolerance and max of 10 iterations          | Minkowski raycasts and MPR with precise results                                                               |
-| Layers                   | Based on masks                                                            | Based on EntityQueries or user-provided                                                                       |
-| Broadphase               | BVH with static and dynamic                                               | Multibox SAP with layer-self tests and layer vs layer tests                                                   |
+| Layers                   | Based on masks, max 32                                                    | Based on EntityQueries or user-provided, unlimited and independent                                            |
+| Broadphase               | BVH with static and dynamic trees                                         | Multibox SAP with layer-self tests and layer vs layer tests                                                   |
 | Collsion Events          | All hits stored in buffer iterated by ICollisionEventsJob single-threaded | User-invoked broadphase dispatches hits immediately to IFindPairsProcessor in parallel with pair write safety |
-| Pair Data                | No guarantees, requires filtering                                         | Strong archetype guarantees                                                                                   |
+| Pair Data                | No guarantees, requires filtering                                         | Strong guarantees based on the layers passed in                                                               |
 | Collision World          | Owned by singleton                                                        | Fully managed by user                                                                                         |
-| Children and hierarchies | Static only                                                               | Fully supported                                                                                               |
+| Children and hierarchies | Static only                                                               | Fully supported (especially with QVVS Transforms)                                                             |
 | Systems                  | Out-of-the-box systems                                                    | No out-of-the-box systems, no automatic performance cost                                                      |
-| Simulator Modification   | User callbacks or intermediate systems                                    | User drives each step from anywhere                                                                           |
+| Simulator Modification   | Intermediate systems and jobs                                             | User drives each step from anywhere                                                                           |
 | Collider Scaling         | Uniform Scale                                                             | Non-uniform stretch                                                                                           |
 | Integrator               | Built-in damping and gravity                                              | Utilities to aid user in writing their own                                                                    |
 | Forces                   | Explosion forces out-of-the-box                                           | Utilities for advanced drag and buoyancy for ballistics                                                       |
 | Contact Manifolds        | Reports first 32 contacts found per pair                                  | Reports area-maximized 32 contacts found per pair                                                             |
 | Collision Solver         | Self-contained loop                                                       | Loop controlled by user using Physics.ForEachPair                                                             |
-| Joints                   | Strictly-defined                                                          | User can fully customize sources and define own custom constraints                                            |
+| Joints                   | Strictly-defined                                                          | User can fully customize inputs and even define custom constraints                                            |
 | Motors                   | Several                                                                   | Planned                                                                                                       |
 
 ## The Rant
@@ -49,14 +48,15 @@ alert: It’s not. It’s very targeted at the use cases Unity is targeting.
 
 First, let me introduce you to the decisions that make no sense to me:
 
--   Collider shapes exist as immutable shared data structures
+-   Collider shapes exist as immutable shared data structures, including all
+    masks and material properties
 -   A simulation requires all steps to be ticked rather than allowing each step
     to be ticked manually by the user
--   Simulation callbacks are single-threaded
+-   Event processing jobs are single-threaded
 -   Physics is very decoupled from ECS, trashing the transform hierarchy and
     using layers rather than the superior ECS query system; yet simultaneously,
-    it is tightly coupled as colliders use blobs, `RigidBody` has an `Entity`
-    field, and all of its authoring uses baking
+    it is tightly coupled to ECS as colliders use blobs, `RigidBody` has an
+    `Entity` field, and all of its authoring uses baking
 
 Now, to understand why this is terrible for me, let me present to you a game
 idea a friend of mine and I came up with during a game jam:
@@ -96,21 +96,22 @@ So let’s examine how Unity.Physics stacks up:
 The first issue is we need to tell Unity what collides with what. Right now we
 can characterize that based on EntityQueries, because we are using Tags and
 unique component types for all of our other logic. But for Unity.Physics we need
-to encode all of that into a layer mask system. While annoying, it is doable.
+to encode all of that into a layer mask system. While annoying, it is doable
+(assuming you have enough layers).
 
 After having told Unity what collides with what, it generates a `NativeStream`
 to be processed in an `ITriggerEventsJob` giving us all of our collisions. That
 seems nice, except all of our resulting pairs are mixed together like a jar of
 jelly beans. Consequently each unique event handler needs to filter through the
 results and pick out the ones it cares for. That’s a lot of iterating through
-the events. We can use the new `EntityQueryMask` to speed this up, but still, it
-isn’t great. Instead, we might decide to bring our iteration count back down by
-having one job do all the filtering for all the different handlers to react to
-by creating a bunch of smaller collections of pairs. This works, but now the
-global filterer needs to know about every kind of pair interaction. You can try
-to generalize this, but it is just clunky. And also, this mega-filter algorithm
-has to run single-threaded. So this is a pretty bad bottleneck and
-simultaneously is tangling all our code together in stupid ways.
+the events. We can use `EntityQueryMask` to speed this up, but still, it isn’t
+great. Instead, we might decide to bring our iteration count back down by having
+one job do all the filtering for all the different handlers to react to by
+creating a bunch of smaller collections of pairs. This works, but now the global
+filterer needs to know about every kind of pair interaction. You can try to
+generalize this, but it is just clunky. And also, this mega-filter algorithm has
+to run single-threaded. So this is a pretty bad bottleneck and simultaneously is
+tangling all our code together in stupid ways.
 
 What, you thought that was bad? It only gets worse.
 
@@ -122,7 +123,7 @@ play to sort all of the collision events to the proper handlers from a single
 thread? We have to do the same thing again for the contacts, the jacobians, and
 pretty much any stage of the simulation. This time we only care about a small
 fraction of these events, but we still have to sift through all of them. That’s
-a pretty lame performance tax. All of the Unity.Physics callbacks suffer from
+a pretty lame performance tax. All of the Unity.Physics event jobs suffer from
 this.
 
 Unity.Physics feels like a simulator, not a real physics engine for gameplay.
@@ -152,6 +153,11 @@ to the instantiated prefabs? More slow cooking.
 What if I want to make an active ragdoll with rigid bodies for bones on an
 animated character? Unity Physics will break apart the entire hierarchy which
 will probably break animations.
+
+What if I’m making a simple game and I just want simple triggers? Unity Physics
+will compute contacts for all the trigger collisions because it relies on
+speculative contacts for continuous collision detection (which is false-positive
+prone for trigger use cases anyways).
 
 More often than not, I find myself fighting with Unity.Physics (and
 Havok.Physics) thinking backwards about my problems trying to not pay the cost

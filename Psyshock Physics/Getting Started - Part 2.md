@@ -15,9 +15,10 @@ Collision layers do NOT have any relationship with Game Object layers, and are
 never created automatically.
 
 A collision layer is composed of flat arrays in which the elements are grouped
-in intervals called “buckets”. The collision layer has a course fixed grid
-within an axis-aligned bounding box. In PhysX, this is referred to as a
-“multi-box”. Each “cell” within this grid corresponds to a bucket.
+in intervals called “buckets”. The collision layer has a low-resolution fixed
+grid within an axis-aligned bounding box. In PhysX, this is referred to as a
+“multi-box”. Each “cell” within this grid corresponds to a bucket. Each bucket
+contains its own nested acceleration structure.
 
 The configuration for the bounding box and its subdivisions are specified by the
 `CollisionLayerSettings`:
@@ -76,7 +77,8 @@ Here’s some examples:
 -   A massive space battle
     -   (1, 12, 12) or similar
 
-The default collision layer settings use (2, 2, 2) centered at the origin.
+The default collision layer settings use (2, 2, 2) centered at the origin,
+effectively defining a cell for each octant in the world.
 
 ## A Note About Job-Scheduling APIs
 
@@ -94,8 +96,8 @@ You can create collision layers from entity queries, or from your own list of
 colliders. Collision layer construction uses a Fluent API.
 
 You start the Fluent chain by calling `Physics.BuildCollisionLayer()`. There are
-a couple of variants based on whether you want to build from an `EntityQuery` or
-`NativeArray`s.
+a couple of variants based on whether you want to build from an `EntityQuery`,
+`NativeArray`s, or `NativeList`s.
 
 If you build from an `EntityQuery`, the `EntityQuery` must have the `Collider`
 component and the appropriate world-space transform for the transform system you
@@ -113,8 +115,8 @@ colliders. This is useful if you want to expand the bounds to account for
 motion.
 
 Next in the fluent chain, you can optionally provide custom settings and
-options. With `WithSettings()`, can customize the `CollisionLayerSettings` for
-better performance.
+options. With `WithSettings()`, you can customize the `CollisionLayerSettings`
+for better performance.
 
 *Important:* `worldAabb` *and* `worldSubdivisionsPerAxis` *MUST match when
 performing queries across multiple* `CollisionLayer`*s (more on that in Part 3).
@@ -129,14 +131,11 @@ schedulers:
 -   .ScheduleSingle – Run on a worker thread with Burst.
 -   .ScheduleParallel – Run on multiple worker threads with Burst.
 
-*Feedback Request: Anyone have a better name for
-PatchQueryForBuildingCollisionLayer?*
-
 ### Sharing a Collision Layer Between Systems
 
 If you only need the Collision Layer within the same system you build it, it is
 usually best to allocate it using `WorldUpdateAllocator`. However, if you wish
-for other systems to use it, a great way option is to store it on the
+for other systems to use it, a great option is to store it on the
 `sceneBlackboardEntity` as a collection component. Use the `OnNewScene()`
 callback to add the collection component the first time and avoid a sync point.
 
@@ -273,7 +272,9 @@ cross-bucket. If too many of your colliders are white, you may want to consider
 changing your `CollisionLayerSettings`.
 
 You can also use `PhysicsDebug.LogBucketCountsForLayer()` to get a console log
-with statistics about the collision layer. This is also a Fluent API.
+with statistics about the collision layer. This is also a Fluent API. The log
+will show the element counts for each bucket. If all elements are in one or two
+buckets, some operations may use fewer threads than are available to the system.
 
 ## Using Collision Layers
 
@@ -331,7 +332,7 @@ partial struct FindNearbyFoodJob : IJobEntity
         int bestFood = 0;
 
         var searchRegion = new Aabb { min = transform.position - 10f, max = transform.position + 10f };
-        foreach (ref readonly FindObjectsResult candidate in Physics.FindObjects(searchRegion, foodLayer))
+        foreach (var candidate in Physics.FindObjects(searchRegion, foodLayer))
         {
             var candidateFoodAmount = foodLookup[candidate.entity].amount;
             if (candidateFoodAmount > bestFood)

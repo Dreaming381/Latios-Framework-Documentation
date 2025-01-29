@@ -2,15 +2,20 @@
 
 Psyshock is an ever-growing kit of tools and algorithms for spatial queries and
 physics simulations. You have likely never encountered a physics package like
-Psyshock, and consequently, the learning curve may be a little steep. The basic
-premise is that you have near complete control over your data as well as what
-happens and when. There’s no engine. Just engine parts for you to assemble your
-own.
+Psyshock, and consequently, the learning curve may be a little steep (especially
+for rigid body simulation if you need that). The basic premise is that you have
+near complete control over your data as well as what happens and when it
+happens. There’s no engine. Just engine parts for you to assemble your own.
 
 While the learning curve is steep, it will be easier than writing your own
-physics engine from scratch though. And if you considered writing your own
-physics engine, you may be able to save time and debugging using Psyshock’s
-low-level APIs instead.
+physics engine from scratch. And if you considered writing your own physics
+engine, you may be able to save time and debugging using Psyshock’s low-level
+APIs instead.
+
+If you are just looking for spatial queries, the first time experience will be
+similar to learning Unity’s ECS with an OOP background, it is a very different
+philosophy. But stick with it, ask questions, and experiment, and eventually it
+will “click”.
 
 This Getting Started series is broken up into multiple parts. This first part
 will introduce the basics of colliders. Colliders are the basic building blocks
@@ -21,12 +26,12 @@ triggers, sensors, volumes, and even as debug gizmos.
 
 Currently Psyshock uses the classical Physx components for authoring
 [colliders](Colliders.md). Attach a Sphere Collider, Capsule Collider, Box
-Collider, or Mesh Collider to the GameObject you wish to convert.
+Collider, or Mesh Collider to the GameObject you wish to convert. And add
+multiple sphere, capsule, and box colliders to a single GameObject to create a
+compound collider.
 
-There’s one exception. I added support for Compound Colliders and this uses the
-new component found at *Latios -\> Physics (Psyshock) -\> Custom Collider*. But
-you can also create them by attaching more than one Physx collider component to
-a Game Object.
+If you want to form a compound collider out of descendent GameObjects, use
+*Latios -\> Physics (Psyshock) -\> Custom Collider*.
 
 ## Only Your Code Matters
 
@@ -35,10 +40,9 @@ you. No collision detection happens unless your code asks for it. No motion or
 gravity happens either.
 
 Unlike with Unity Physics, you are in complete control of the simulation from
-start to finish. Psyshock simply provides a toolbox of powerful tools to help
-you along the way. You get all the benefits of a custom physics engine for your
-game (especially performance) without having to know all the math and algorithm
-details.
+start to finish. Psyshock simply provides a toolbox to help you along the way.
+You get all the benefits of a custom physics engine for your game (especially
+performance) without having to know all the math and algorithm details.
 
 This is great power that comes with some responsibility. Using the tools wrong
 will almost certainly result in poor performance. If you plan to dive deep into
@@ -58,7 +62,7 @@ var sphere = new SphereCollider(float3.zero, 1f);
 Collider collider = sphere;
 
 //Step 3: Attach the Collider to an entity
-EntityManager.AddComponentData(sceneGlobalEntity, collider);
+EntityManager.AddComponentData(sceneBlackboardEntity, collider);
 
 //How to extract sphere collider
 
@@ -157,8 +161,9 @@ custom component or additional entity.*
 ## On to Part 2
 
 Colliders and basic queries are already a powerful and practical arsenal in
-DOTS. And maybe, that’s all your game needs. But most likely, you also wish to
-query entire collections of colliders scattered across your game world. In the
-next part, we’ll explore *collision layers*, which can do just that.
+DOTS. And maybe that’s all your game needs. But most likely, you also wish to
+query entire collections of colliders scattered across your game world without
+brute-force. In the next part, we’ll explore *collision layers*, which can do
+just that.
 
 [Continue to Part 2](Getting%20Started%20-%20Part%202.md)

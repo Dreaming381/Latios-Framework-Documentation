@@ -6,6 +6,20 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic
 Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [0.12.0] – 2025-2-?
+
+Officially supports Entities [1.3.9]
+
+### Changed
+
+-   Altered the authoring UI to be compatible with Unity 6
+
+### Improved
+
+-   Changed authoring menu items to be more obvious they come from Calligraphics
+-   Updated shaders to target Unity 6, which will hopefully decrease the chance
+    of shader errors
+
 ## [0.11.0] – 2024-9-29
 
 Officially supports Entities [1.3.2]
