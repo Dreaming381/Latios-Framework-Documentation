@@ -43,7 +43,7 @@ state.Dependency = Physics.FindPairs(ourCollisionLayer, new LogPairsProcessor())
 ```
 
 Just like when building a collision layer, FindPairs also uses a fluent API.
-FindPairs has five scheduling modes:
+FindPairs has six scheduling modes:
 
 -   .RunImmediate – Run without scheduling a job. You can call this from inside
     a job.
@@ -56,9 +56,9 @@ FindPairs has five scheduling modes:
 ## Parallel Write Access
 
 FindPairs has a superpower. When scheduling using `ScheduleParallel()`, the two
-entities provided in the `FindPairsResult` are deterministically thread-safe
-writeable. That means you can safely read and write to any component or buffer
-on either entity in the pair without any kind of race condition or concern about
+entities provided in the `FindPairsResult` are deterministically thread-safe for
+writing. That means you can safely read and write to any component or buffer on
+either entity in the pair without any kind of race condition or concern about
 order of operations. The only rule for this is that an entity can only be
 referenced by a single `ColliderBody` in a `CollisionLayer`.
 
@@ -67,9 +67,8 @@ Thus, more buckets often mean more opportunities for parallelism. But a
 heavily-populated cross-bucket can interfere with that. That’s because FindPairs
 dispatches in two phases, first for each of the buckets, and then again to test
 the cross-bucket against all the cell buckets. The second phase is
-single-threaded (dual-threaded in the editor as an extra thread is dispatched to
-validate no entity is repeated in the `CollisionLayer`). You can see these
-phases in the timeline view of the profiler.
+single-threaded (dual-threaded in the editor for entity validation). You can see
+these phases in the timeline view of the profiler.
 
 So yeah, FindPairs has awesome thread-safety guarantees. But if you try to write
 to the components of the entity pairs using `ComponentLookup`, you will still
@@ -77,7 +76,8 @@ get safety errors. That’s because Unity’s job system doesn’t know this is 
 You could get around this with the `[NativeDisableParallelForRestriction]`
 attribute, but Psyshock provides a safer alternative. In your
 `IFindPairsProcessor`, simply replace your `ComponentLookup` with
-`PhysicsComponentLookup`.
+`PhysicsComponentLookup`. There’s also `PhysicsBufferLookup` and
+`PhysicsAspectLookup`.
 
 Here's an example where two ship entities take damage when they collide.
 FindPairs reports pairs where the AABBs are overlapping, so the
@@ -109,7 +109,7 @@ struct DamageCollidingShipsProcessor : IFindPairsProcessor
 ```
 
 Unlike with `ComponentLookup`, `PhysicsComponentLookup` requires the entity
-passed in be a `SafeEntity`. The `FindPairsResult` properties `entityA` and
+passed in to be a `SafeEntity`. The `FindPairsResult` properties `entityA` and
 `entityB` are of this type. `SafeEntity` can be implicitly casted to a normal
 Entity, but you can’t go the other way. Additionally, if safety checks are
 enabled, an exception will be thrown when a `SafeEntity` is used in a
@@ -127,8 +127,9 @@ var processor = new DamageCollidingShipsProcessor
 };
 ```
 
-Similar to `PhysicsComponentLookup`, there is also a `PhysicsBufferLookup` type
-for dynamic buffers.
+If you only need to read components, it is recommended to use the non-physics
+lookups as shown in the examples above. You don’t need to restrict yourself to
+`SafeEntity` values for read-only lookups.
 
 ## FindPairs with Two Collision Layers
 
@@ -149,6 +150,11 @@ suffix comes from `layerA`, and everything with the `B` suffix comes from
 FindPairs with two layers will use two threads (three when safety is enabled)
 for the second phase.
 
+When using two layers, FindPairs offers a sixth scheduling mode,
+`ScheduleParallelByA()`. In this mode, thread-safety is only ensured for the
+entities in `layerA`, effectively making `layerB` exclusively read-only. It
+provides a little more parallelism for a very common use case.
+
 ## Modifying ColliderBody Data
 
 FindPairs always treats the `CollisionLayers` you pass in as `[ReadOnly]`. You
@@ -158,9 +164,7 @@ doesn’t mean you can’t work around this.
 The data stored in the `CollisionLayer` is a copy of the source data, and does
 not automatically synchronize. Therefore, you can choose to use the actual
 source data instead. For example, you could use a
-`PhysicsComponentLookup<Collider>` instead of the stored collider. For
-transforms, you can obtain mutable access to the `TransformAspect` via
-`PhysicsTransformAspectLookup`.
+`PhysicsComponentLookup<Collider>` instead of the stored collider.
 
 **Warning: FindPairs will NOT update AABBs in the middle of a FindPairs
 operation. If you intend to modify your colliders and transforms mid-search, you
@@ -173,31 +177,30 @@ still wish to use it for its performance benefits or clean API structure even
 when you don’t need write-access to both entities involved in a pair. FindPairs
 has more to offer even in these scenarios.
 
-You can disable safe write access to `layerB` entirely in a two-layer FindPairs
-by using `ScheduleParallelByA()`. This variant can do all of its work in a
-single phase. Or for complete parallelism, you can disable write safety
-completely via `ScheduleParallelUnsafe()`. This one is useful if all you need to
-do are force `bool` values or `IEnableableComponent` in a specific direction.
-You can also use this for command buffers using `FindPairsResult.jobIndex`. And
-you can write to a `PairStream.ParallelWriter` in this mode using
-`FindPairsResult.pairStreamKey`.
+As mentioned before, you can disable safe write access to `layerB` entirely in a
+two-layer FindPairs by using `ScheduleParallelByA()`. This variant can do all of
+its work in a single phase. But for complete parallelism, you can disable write
+safety completely via `ScheduleParallelUnsafe()`. This one is useful if all you
+need to do are force `bool` values or `IEnableableComponent` in a specific
+direction. You can also use this for writing to structural change command
+buffers using `FindPairsResult.jobIndex`. And you can write to a
+`PairStream.ParallelWriter` in this mode using `FindPairsResult.pairStreamKey`
+(more on this in Part 4).
 
 For even more advanced use cases, `IFindPairsProcessor` has two default methods
 you can override. They are `BeginBucket()` and `EndBucket()`. These give you a
 `FindPairsBucketContext` which provide access to all the layer elements that
 would be processed for the specific `jobIndex`. Combined with
-`Physics.FindPairsJobIndexCount()`, you can use these to populate a
-`NativeStream` or configure other caches.
+`Physics.FindPairsJobIndexCount()`, you can use these to begin and end indices
+in a `NativeStream` or configure other caches.
 
-## What’s Next
+## On to Part 4
 
-Psyshock has a novel approach to physics, being inside-out in its design and
-leaving you in control over your data. There are plenty of additional APIs to
-explore, such as a player input integrator for smoother player motion, ballistic
-utilities for particle physics, and ForEachPair using `PairStreams` to cache
-data with entity pairs and process them multiple times later. For full rigid
-body simulation, you can check out [UnitySim](UnitySim.md).
+With FindPairs, you can easily test thousands of elements against each other
+with great efficiency. However, what if you want to cache those results and
+revisit them later on? And what if you want to store additional data alongside
+each pair you find? And of course you want to revisit the pairs in parallel with
+the same thread-safety you got with FindPairs, right? Psyshock has a tool for
+this called `PairStreams`, which we’ll cover next.
 
-Psyshock can be intimidating. No question is too stupid and you are encouraged
-to reach out to the community on Discord if you want help making things work or
-would like to get more performance out of your use case.
+Continue to [Part 4](Getting%20Started%20-%20Part%204.md).
