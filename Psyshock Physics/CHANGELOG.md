@@ -27,6 +27,15 @@ Officially supports Entities [1.3.9]
 -   `UnitySim.MotionExpansion` has been updated to support a custom
     `collisionTolerance`, and the default has been decreased from 0.05 to 0.01
 
+### Fixed
+
+-   Fixed `Physics.BuildCollisionLayer().ScheduleSingle()` using an
+    `EntityQuery` throwing an exception due to a missing `AsDeferredJobArray()`
+    on a `NativeList`
+-   Fixed missing safety checks for `PairStream` APIs that involve copying a
+    Pair from another `PairStream`
+-   Fixed baking of convex and TriMesh collider blob assets for prefab entities
+
 ### Improved
 
 -   Changed Custom Collider’s menu item to be more obvious it comes from

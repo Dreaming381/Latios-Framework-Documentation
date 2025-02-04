@@ -5,6 +5,9 @@ Unity Transforms and are simply trying to make sense of the `TransformQvvs` type
 in the APIs of other modules, this guide will attempt to provide some intuition
 as to what QVVS transforms are and how they work.
 
+You can also explore the examples in [this
+project](https://github.com/Dreaming381/LatiosFrameworkMiniDemos/tree/main/FeatureSamples/Assets/QVVS/Tutorial).
+
 ## Getting a Feel for QVVS Transforms
 
 QVVS Transforms is the default transform system included with the Latios

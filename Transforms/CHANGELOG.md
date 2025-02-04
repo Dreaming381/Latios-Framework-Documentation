@@ -6,6 +6,20 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic
 Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [0.12.0] – 2025-2-?
+
+Officially supports Entities [1.3.9]
+
+### Added
+
+-   *New Feature:* Added shader library for `TransformQvvs` operations
+-   Added `[System.Serializable]` attribute to `TransformQvvs` and
+    `TransformQvs`
+
+### Changed
+
+-   Moved `MotionHistoryUpdateSuperSystem` to `PostSyncPointGroup`
+
 ## [0.11.0] – 2024-9-29
 
 Officially supports Entities [1.3.2]

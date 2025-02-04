@@ -9,6 +9,12 @@
 -   Vector – stretch
 -   Scalar – uniform scale
 
+### Some other framework APIs seem to use TransformQvvs, but I’m using Unity Transforms. Does that mean those features only support QVVS Transforms?
+
+`TransformQvvs` is just a struct that contains transform information. It is not
+an ECS component. You can map that to and from Unity Transforms however you
+like.
+
 ### Isn’t stretch just a simplified PostTransformMatrix?
 
 No. Stretch influences the positions of children.
