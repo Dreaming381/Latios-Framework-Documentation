@@ -6,6 +6,22 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic
 Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [0.12.0] – 2025-2-?
+
+Officially supports Entities [1.3.9]
+
+### Added
+
+-   Added Myri editor managed driver, which when enabled via the edit menu,
+    bypasses the infinite domain reload editor bug many users encountered
+
+### Improved
+
+-   Changed Myri’s authoring component menu items to be more obvious they come
+    from Myri
+-   Added additional validation to audio clip baking
+-   Improved audio clip baking performance by using Unity 6 `Span` APIs
+
 ## [0.10.3] – 2024-6-30
 
 Officially supports Entities [1.2.1] – [1.2.3]

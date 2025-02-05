@@ -31,9 +31,10 @@ demo.
 ### Voice Combining
 
 Myri can detect when several audio sources are playing the same clip in unison
-and combine them to save processing power without losing spatial information.
-This feature is in stark contrast to Unity’s FMOD implementation where sources
-are omitted when too many are played at once.
+and combine them to save processing power and reduce cacophony of ambient sounds
+without losing spatial or intensity information. This feature is in stark
+contrast to Unity’s FMOD implementation where sources are omitted when too many
+are played at once.
 
 The mechanism Myri uses for this is inspired by the Megacity demo. But unlike
 the demo, Myri can also combine one-shot sources.
@@ -109,11 +110,14 @@ Unity!
     DSPGraph and job system bug related to scheduling, and does not appear to
     have any adverse effects currently.
 -   Sometimes DSPGraph will hang editor shutdown or domain reload. This tends to
-    affect some projects more than others, with no known explanation other than
-    that the stall occurs within engine code.
+    affect some computers but not others, and only happens when Myri is used
+    with engine-imported audio clips. Beginning with 0.12.0, an option in the
+    Edit menu allows for enabling a managed audio driver, which works around the
+    issue but alters the behavior slightly compared to what happens in a build.
 
 ## Near-Term Roadmap
 
+-   Unified runtime representation for one-shot and looping sources
 -   Effect Stacks Overhaul
     -   Exposed limiter controls per listener and master
     -   Source and listener layer masks

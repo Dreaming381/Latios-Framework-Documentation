@@ -1,18 +1,34 @@
 # Getting Started with Myri Audio
 
-This is the eighth preview version released publicly. It currently supports
-simple use cases appropriate for game jams, experiments, and maybe even some
-commercial projects. However, it likely lacks the necessary control features
-required to deliver a final product. I unfortunately lack the expertise to
-implement this, and so I will require the help of you and the community to take
-Myri to that level.
+Myri in its current form is an audio solution which drew inspiration from the
+Megacity 2019 demo. It currently supports simple use cases appropriate for game
+jams, experiments, and maybe even some commercial projects. However, it lacks
+the necessary control features required to deliver a final product in this
+release. A major overhaul is planned for a future release which will lay the
+foundation of something much more suitable.
 
-With that said, I do believe that at the time of writing, Myri is the closest to
-a production-ready ECS audio solution for Unity Engine proper. So I hope you
-enjoy trying it out and feel free to send feedback!
+With that said, I do believe that at the time of writing, Myri is still the
+closest to a production-ready ECS audio solution for Unity Engine proper. Many
+of the concepts discussed here will survive through the new overhaul. So I hope
+you enjoy trying it out and feel free to send feedback!
 
-**Note: Some common Myri features are very unstable in Unity versions prior to
-2022.3.13f1.**
+## Setting up the Managed Driver
+
+Many people encounter an issue with domain reload freezing when using Myri
+out-of-the-box, forcing a restart of the editor to continue progress. If you
+encounter this, you can go to the edit menu and select *Latios -\> Use Myri
+Editor Managed Driver*. This setting is unique per computer per project.
+Enabling this has two side-effects.
+
+First, it requires a Unity Engine Audio Listener attached to the main camera.
+This is the only time a Unity Engine audio component is ever used in Myri.
+
+Second, the managed driver will always attach the Mono runtime and garbage
+collector to the mixing thread. Normally, this doesn’t happen.
+
+With these two alterations, the managed driver will typically have different
+behavior in the editor when switching scenes or doing any other custom loading
+compared to what will happen in a build.
 
 ## Playing Your First Sound
 
@@ -21,12 +37,12 @@ Create a new Unity Project with the Latios Framework installed. Then add the
 
 Create a subscene, and add two empty Game Objects to it with their positions set
 to the world origin (0, 0, 0). On one of the Game Objects, in the *Add
-Component* *Menu*, select *Latios -\> Audio (Myri) -\> Audio Listener*. Leave
-all the settings at default.
+Component* *Menu*, select *Latios -\> Myri -\> Audio Listener (Myri)*. Leave all
+the settings at default.
 
 Next, import an audio source with the *Load Type* set to *Decompress On Load*
 and *Preload Audio Data* checked. Then, on the non-listener Game Object, add a
-*Latios -\> Audio (Myri) -\> Audio Source* component. Drag your clip into the
+*Latios -\> Myri -\> Audio Source (Myri)* component. Drag your clip into the
 *Clip* field. Now enter play mode. You should hear your clip playing.
 
 Now that you’ve heard your clip, the next thing to do is to start playing around
@@ -46,28 +62,37 @@ Now that you understand the absolute basics of getting audio to play, let’s go
 through the available options:
 
 Myri provides three components for authoring audio. They can all be found in
-*Latios-\>Audio (Myri)* in the *Add Component Menu*.
+*Latios -\> Myri* in the *Add Component Menu*.
 
 ### Audio Source
 
-The *Audio Source* component provides all the settings available to an
+The *Audio Source (Myri)* component provides all the settings available to an
 audio-emitting entity. When the listener is inside the *Inner Range*, it will be
 heard at max volume. Myri uses inverse-square falloff, so at twice the *Inner
 Range*, the audio source will be heard at quarter volume. The *Range Fade
 Margin* provides a range inside the *Outer Range* where the volume will
 interpolate to zero.
 
+An important thing to keep in mind is that audio volume and perceptual volume
+are two very different scales. Myri’s authoring presents everything in raw audio
+scales. Which means to make something perceptually half as loud, you’d multiply
+the volume by 0.1, and to make something a quarter as loud, you’d multiply it by
+0.01 (yes, it is very extreme).
+
 For *Looping* sources, *Voices* is the number of unique audio sources that will
 play with the same clip. Each unique source will be played with a unique offset.
 The offsets are evenly distributed. All sources sharing the same clip will be
 assigned one of these offsets, and sources sharing the same offset will be
 combined. Voices are synchronized with the application time independent of when
-the source was created. If you would like to play a source from the beginning
+the source was created. You would typically use these for looping ambient
+sources scattered across your game world. Too many different offsets at once can
+result in cacophony. If you instead want to play a source from the beginning
 when it is created, check the *Play From Beginning At Spawn* checkbox. In this
 case, the *Voices* parameter does nothing.
 
 One-shot sources will be combined if they begin playing at the same time (the
-same audio frame).
+same audio frame). This is purely a performance optimization, and the resulting
+mix is identical to what would happen if the sources were sampled separately.
 
 If *Use Cone* is checked, then the audio source receives an additional
 directional attenuation factor. Listeners within the *Inner Angle* from the
@@ -133,13 +158,14 @@ In that case, *Audio Frames Per Update* can help mitigate this problem by
 sending multiple audio frames in less frequent batches, effectively reducing the
 audio framerate proportionally. This comes at a performance cost as well as less
 “responsive” audio relative to the simulation, and some projects may prefer to
-accept the occasional first audio frame drops and leave *Audio Subframes Per
-Frame* at *1*.
+accept the occasional first audio frame drops and leave *Audio Frames Per
+Update* at *1*.
 
-For scenarios where the main thread framerate outpaces the audio framerate, but
-sampling consumes a large amount of time, it may instead be preferred to begin
-sampling an audio frame earlier than normal. Setting *Lookahead Audio Frames* to
-a value of 1 or greater will accomplish this.
+For scenarios where the main thread framerate outpaces the audio framerate
+slightly, but sampling consumes a large amount of time, it may instead be
+preferred to begin sampling an audio frame earlier than normal. Setting
+*Lookahead Audio Frames* to a value of 1 or greater will accomplish this. While
+this increases audio latency, it does not introduce a performance cost.
 
 ### Optimizing Clips for Performance
 
@@ -158,7 +184,9 @@ kHz being converted to 48 kHz.
 ## IComponentData
 
 Myri’s entire API is exposed as Burst-friendly `IComponentData` that can be
-interacted with inside jobs.
+interacted with inside jobs. Note that much of this API is likely to change in a
+future release. The components will be divided up differently, but the
+individual fields in the components will persist.
 
 ### AudioSourceLooped and AudioSourceOneShot
 
@@ -177,8 +205,7 @@ different from the previous value.
 
 A reset state will not be initialized until the next `AudioSystem` update, so
 you do not have to call `ResetPlaybackState()` after copying instances that have
-already been reset, instances that came from prefabs, or instances newly
-constructed through code.
+already been reset, or came from prefabs, or were constructed through code.
 
 To mute an audio source, set the volume to zero. This will trigger a fast-path
 that avoids sampling the source.
@@ -296,11 +323,9 @@ listener component, use the `IBaker` extension method
 ## Custom DSP
 
 Custom DSP processing is currently not supported in Myri. The underlying
-DSPGraph is not exposed in any way. For a long time, it has been an unsolved
-problem how to expose an API for custom DSP logic that is safe and intuitive.
-Now with source generators, a solution is coming in the form of Effect Stacks!
-It is a big overhaul of Myri, so if you want this feature, make sure to request
-it to help get it prioritized.
+DSPGraph is not exposed in any way. A solution to this problem is coming soon in
+the form of Effect Stacks, which will overhaul Myri and add a much more
+customizable and controllable API surface.
 
 In the meantime, you can procedurally generate audio clips at bake time using
 the Smart Blobber API.
