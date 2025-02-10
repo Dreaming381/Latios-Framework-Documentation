@@ -4,9 +4,9 @@ Smart Blobbers provide a powerful, streamlined, and user-friendly workflow for
 generating data-intense Blob Assets during Baking. Any authoring logic can
 request a Blob Asset from a Smart Blobber and receive a handle. That handle can
 later be used to retrieve the Blob Asset after the Smart Blobber has executed.
-The Smart Blobber generates blobs in parallel, using Burst if possible. This can
-drastically speed up baking times while keeping the logic for generating blob
-assets unified and consistent.
+The Smart Blobber generates blobs in parallel in baking systems, using Burst if
+possible. This can drastically speed up baking times while keeping the logic for
+generating blob assets unified and consistent.
 
 ## Converting a Blob Asset using an Authoring MonoBehaviour
 
@@ -73,11 +73,11 @@ it.
 which can process a blob asset input request structure. However, most Smart
 Blobbers provide custom extension methods of the same name but with explicit
 arguments as a convenience. In this example, there is an overload that takes an
-Animator and a `NativeArray<SkeletonClipConfig>`. The method returns a
+`Animator` and a `NativeArray<SkeletonClipConfig>`. The method returns a
 `SmartBlobberHandle`.
 
-`Bake()` returns a `bool`. If you return a value of false, the bake item will be
-discarded from further operations. This is useful if your logic conditionally
+`Bake()` returns a `bool`. If you return a value of `false`, the bake item will
+be discarded from further operations. This is useful if your logic conditionally
 decides whether it needs to request a blob asset at all. Other operations
 performed with baker will still be applied.
 
@@ -90,10 +90,12 @@ Smart Baker. In this method, you can resolve any `SmartBlobberHandle` as a
 point.
 
 While the `EntityManager` argument passed in lets you do many different things,
-it is strongly recommended you only use `Get/Set(Shared)Component` and
+it is **strongly recommende**d you only use `Get/Set(Shared)Component` and
 `Get/SetBuffer` APIs on either the entity argument or additionally created
-entities applied to the Smart Baker and only work with types directly added in
-`Bake()`.
+entities applied to the Smart Baker. You should only work with types **directly
+added** in `Bake()`. Not following these rules will introduce hidden incremental
+baking bugs that will silently drive you insane by not applying updates
+intuitively.
 
 Lastly, you need to define the `SmartBaker` type by subclassing `SmartBaker` and
 specifying both the authoring component and the `ISmartBakeItem` type as generic
@@ -108,7 +110,7 @@ baking systems. To avoid making users write custom baking systems, Smart Bakers
 automatically generate the code for each step, and provide a stateful “bake
 item” to retain context between steps. The “bake item” is actually an
 `IComponentData` decorated with `[TemporaryBakingType]` which is added to a
-Baking-Only Entity created by the Smart Baker. By making temporary entities,
+baking-only entity created by the Smart Baker. By making temporary entities,
 each authoring component can have its own bake item.
 
 The Smart Baker will also generate a baking system which queries for the
@@ -124,7 +126,8 @@ do that too. Simply store the `SmartBlobberHandle` in a custom-defined
 `ISmartPostProcessItem` is similar to `ISmartBakeItem`, except you create
 instances of these inside bakers and explicitly add them for post-processing.
 These can be useful for when you need to add Smart Blobber requests from utility
-methods.
+methods or are working with your own complex baking framework built on top of
+bakers.
 
 *Tip: It is safe to store native containers allocated with Allocator.Temp inside
 of ISmartBakeItem and ISmartPostProcessItem.*
@@ -226,8 +229,8 @@ a `NativeArray<int>` instead of a managed `int[]`. In such a scenario, it is
 best practice to allow any native container inputs to be allocated with
 `Allocator.Temp`.
 
-At this point, we now have the code in place to receive a blob request, and set
-up a special `blobBakingEntity` to hold our filtered inputs. Now we need to
+At this point, we now have the code in place to receive a blob request, and have
+set up a special `blobBakingEntity` to hold our filtered inputs. Now we need to
 actually generate our blob asset inside a baking system. Every
 `blobBakingEntity` that passes the filter will have the following component
 added where you should store your generated blob asset:
@@ -249,17 +252,12 @@ system, and use `IJobEntity` for computing our blob assets.
 public partial struct DigitsSmartBlobberSystem : ISystem
 {
     [BurstCompile]
-    public void OnDestroy(ref SystemState state)
-    {
-    }
-
-    [BurstCompile]
     public void OnUpdate(ref SystemState state)
     {
         new Job().ScheduleParallel();
     }
 
-    [WithEntityQueryOptions(EntityQueryOptions.IncludeDisabledEntities | EntityQueryOptions.IncludePrefab)]
+    [WithOptions(EntityQueryOptions.IncludeDisabledEntities | EntityQueryOptions.IncludePrefab)]
     [BurstCompile]
     partial struct Job : IJobEntity
     {
@@ -276,9 +274,8 @@ public partial struct DigitsSmartBlobberSystem : ISystem
 }
 ```
 
-First, notice the `[WithEntityQueryOptions]`. This is a general requirement of
-all queries in baking systems, but is an easy thing to forget so it is worth
-reiterating.
+First, notice the `[WithOptions]`. This is a general requirement of all queries
+in baking systems, but is an easy thing to forget so it is worth reiterating.
 
 Second, notice that the system is updated in the `SmartBlobberBakingGroup`. This
 is really important, because the magic happens shortly after this point. There
@@ -300,11 +297,11 @@ type so that these systems are aware of it. This must be done inside
 To summarize the steps:
 
 1.  Define components to store the input data for blob asset generation
-2.  Use an ISmartBlobberRequestFilter and the generic
-    RequestCreateBlobAsset\<\>() extension to configure the blobBakingEntity
+2.  Use an `ISmartBlobberRequestFilter` and the generic
+    `RequestCreateBlobAsset<>()` extension to configure the `blobBakingEntity`
     with the input data
 3.  Use baking systems to compute blobs and write the results to
-    SmartBlobberResult
+    `SmartBlobberResult`
 4.  Register the blob type
 
 And that’s it. Here is the complete code:
@@ -432,10 +429,16 @@ public partial struct DigitsSmartBlobberSystem : ISystem
 }
 ```
 
+One last thing to note is that while the framework will take care of
+deduplicating your generated blob asset, it will not deduplicate your inputs. If
+you want to deduplicate inputs to decrease bake times, you should handle that in
+your baking system that generates the blob assets. How you go about this largely
+depends on the nature of your inputs.
+
 ### Why not just use Baker.AddBlobAsset()?
 
 For trivially computed blob assets (including our example), using a Smart
-Blobber is likely overkill. The overhead of preparing the blobBakingEntity
+Blobber is likely overkill. The overhead of preparing the `blobBakingEntity`
 outweighs the cost of creating the blob immediately. But often, blob assets are
 not so trivial to compute. In such cases, Smart Blobbers offer several
 advantages.
@@ -445,14 +448,19 @@ more going on than just copying data to `BlobArray<>` fields.
 `BlobBuilder.CreateBlobAssetReference()` does a non-trivial amount of work to
 organize the relative offsets of the blob asset and put everything together.
 This cost can become significant as the blob asset increases in complexity. The
-mehtod also hashes the entire blob data near the end of generation.
+method also hashes the entire blob data near the end of generation.
 
 The second advantage is that a Smart Blobber can reason about multiple blob
 assets at once to further reduce the cost. This is especially useful when
 populating a subscene with many copies of a prefab. But it can also be useful
 when different types of blob assets can share resources. For example, many of
 Kinemation’s Smart Blobbers leverage a “shadow hierarchy” which describes the
-hierarchy information of an optimized Animator.
+hierarchy information of an optimized Animator. Baker’s cannot reason about
+this, because while they can hash an asset, common hashing strategies won’t
+determine the asset changed on disk. With smart blobbers, true input
+deduplication using `UnityObjectRef<>` and other tricks can be performed without
+worrying about whether the hash aliases with a previous serialization of the
+same asset.
 
 The third advantage is that input transformations can be reasoned about in an
 ECS fashion. It may help break down the problem for extremely complex blob
@@ -460,5 +468,23 @@ assets.
 
 And lastly, using `BlobAssetStore` directly in a baking system can expose many
 pitfalls that are present at the time of writing this, like lack of Burst
-support without internal access, or double dispose bugs. Smart Blobbers deal
+support without internal access, or double-dispose bugs. Smart Blobbers deal
 with this for you.
+
+## Are Smart Blobbers Really the Best?
+
+No. They are just the best option based on what we have with Unity ECS right
+now. But with a considerable rework of baking and the job system, I think there
+could be a much better option. One useful feature would be to have a per-bake
+hash that is not preserved between bakes as part of the baker API. This would
+ensure correct deduplication in more scenarios, and significantly improve input
+deduplication in bakers such that baking systems might not be as necessary.
+Additionally, an `async` API that allows some aspects of blob generation to be
+deferred to worker threads would complement this workflow. Such an API would
+also be much more familiar and intuitive to developers.
+
+However, Unity would need to provide an “asset changed since last bake” query
+API to bakers along with a “blobs generated last time” cache if we truly wanted
+to persist blobs across bakes. Or perhaps the future will involve baking blobs
+at import time? There’s lots of ways to improve the situation. My goal with
+smart blobbers was first and foremost correctness and second being performance.

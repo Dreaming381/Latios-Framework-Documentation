@@ -15,30 +15,21 @@ its internal dependency storage.
 
 To do this, special internal `LatiosWorldUnmanaged` methods must be called
 before and after every system update. The method before the update checks for
-errors and then adds the system to the stack of currently executing systems. The
-method after the update then records the `SystemState.Dependency` and processes
-all the dependencies. Then it pops the executing system off the stack.
+errors and then adds the system to the stack of currently executing systems.
+During the update, any accesses to a collection component will look at the top
+of the stack and fetch the system’s `SystemState.Dependency`, merging any
+tracked JobHandles into it. The method after the update then records the
+`SystemState.Dependency` and processes all the dependencies. Finally it pops the
+executing system off the stack.
 
-These special systems are called automatically by the following:
-
--   Directly in the `ComponentSystemGroup` `OnUpdate()`
-    -   SuperSystem
-    -   RootSuperSystem
-    -   FixedSimulationSystemGroup
-    -   LatiosWorldSyncGroup
-    -   PreSyncPointGroup
--   Via Custom IRateManagers
-    -   InitializationSystemGroup
-    -   SimulationSystemGroup
-    -   PresentationSystemGroup
--   Before and after `OnNewScene()` callbacks
--   Manually via user via `SuperSystem.UpdateSystem()`
+These special methods are called automatically by any `ComponentSystemGroup`
+update inside a `LatiosWorld` and when performing `OnNewScene()` callbacks.
 
 Prior to the first of these methods being called, all accesses to collection
 components and the sync point are untracked. This allows setup in `OnCreate()`
 on the main thread to work without any extra overhead.
 
-Accesses in all other contexts are tracked via `LatiosWorldUnmanaged`, but a
+Accesses outside of these systems are detected via `LatiosWorldUnmanaged`, but a
 `JobHandle` will not be automatically fetched for these dependencies. It is up
 to the user to provide `JobHandles` in these contexts, or else errors will
 occur.
@@ -72,11 +63,7 @@ thread.
 
 If you get an error inside the update of a system, it may be that the
 `LatiosWorldUnmanaged` doesn’t know that the system is executing in its stack.
-This can easily happen if you update your system in a custom
-`ComponentSystemGroup`. In such situations, prefer to change that
-`ComponentSystemGroup` into a `SuperSystem`. If the system is a Unity or
-third-party system, put your custom system inside a `RootSuperSystem` inside the
-`ComponentSystemGroup`.
+This can happen if you update a system manually via its `SystemHandle`.
 
 ### Accessing Inside of a System that Updates Other Systems
 

@@ -6,6 +6,84 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic
 Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [0.12.0] – 2025-2-?
+
+Officially supports Entities [1.3.9]
+
+### Added
+
+-   *New Feature:* Added `IBaker` extension methods for getting components by
+    interface with correct incremental baking dependency registration
+-   *New Feature:* Added `Bits` for packing bitfields and small `enum`s into
+    various integer data types
+-   *New Feature:* Added `ComponentBroker` for sending a large amount of
+    arbitrary component types into a job which can be accessed generically
+-   *New Feature:* Added `TempQuery` and associated enumerators which allow
+    iterating entities from a temporary entity query while in a job
+-   *New Feature:* Added ShaderLibrary hlsl files for working with `quaternion`
+    and `RigidTransform` types featured in the Unity Mathematics package
+-   Added `ParallelDetector` which is a safety checks container that tries to
+    detect if the job is a parallel job, though it has some caveats for
+    `IJobFor`
+-   Added `GetCurrentPtr()` to `UnsafeIndexedBlockList` enumerator types
+-   Added `CoreBootstrap.InstallNetCodePreSpawnEnableInEditorSystem()` which
+    enables all pre-spawned ghosts in the editor world
+-   Added `LatiosWorldUnmanaged.CompleteAllTrackedJobs()` to complete all jobs
+    registered with collection components
+-   Added `TypePack` which can be constructed with less boilerplate than
+    `ComponentTypeSet` and implicit cast into one or a
+    `FixedList128Bytes<ComponentType>`
+-   Added extension methods to `EntityManager`, `EntityCommandBuffer`, and
+    `BlackboardEntity` for adding multiple components specified as generic
+    arguments
+-   Added `PostSyncPointGroup` for scheduling jobs after the sync point but
+    before simulation or rendering
+-   Added `SystemState` extension `GetLiveBakeSafeLastSystemVersion()` because
+    incremental baking will silently clobber data without triggering change
+    filters
+-   Added `IBaker` extension method `GetAuthoringGameObjectWithoutDependency()`
+-   Added `ArchetypeChunk` extension method `GetBufferAccessor<T>()` which
+    accepts a `DynamicComponentTypeHandle`
+-   Added various extension methods for `EntityArchetype` to extract interesting
+    metadata about the archetype
+-   Added `DynamicHashMap` attributes to help make elements more
+    inspector-friendly for debugging
+
+### Changed
+
+-   **Breaking:** `ICustomEditorBootstrap` has been reworked such that it is now
+    responsible for creating the original editor world
+-   Havok systems are now injected in `BootstrapTools.InjectUnitySystems()`
+-   Moved the Restart Editor World edit menu option under a Latios category
+-   Specified in the documentation that reactive systems in
+    `LatiosWorldSyncGroup` should now use `OrderLast = true` while systems
+    responsible for spawning and despawning should not
+-   Removed authoring namespace from extension method
+    `UnityEngine.Object.DestroySafelyFromAnywhere()`
+
+### Fixed
+
+-   Added a baking system to properly rewind `WorldUpdateAllocator` so that it
+    can be used properly during incremental baking without constantly allocating
+    new data on rebakes
+-   Fixed smart blobber memory leak where multiple identical blobs generated in
+    the same baking pass would not all be disposed
+-   Fixed issue where the non-Latios default editor world would pick up systems
+    using the Latios Framework, causing brief error messages before the editor
+    world would be replaced by the one in `ICustomEditorBootstrap`
+-   Fixed missing safety check in
+    `LatiosWorldUnmanaged.UpdateCollectionComponentMainThreadAccess<T>()`
+-   Fixed various `DynamicHashMap` bugs
+-   Fixed source generators to compensate for IL2CPP change where code stripping
+    began stripping methods from cleanup components
+
+### Improved
+
+-   Changed Core’s authoring component menu items to be more obvious they come
+    from Latios Core
+-   Source generators will now add missing `[BurstCompile]` attributes to
+    containing types of collection components
+
 ## [0.11.3] – 2024-10-13
 
 Officially supports Entities [1.3.2]

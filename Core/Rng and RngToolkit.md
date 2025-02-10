@@ -6,9 +6,8 @@ functions for mapping `uint` values to other types and ranges.
 
 ## Using Rng
 
-The simplest way to explain `Rng` is by example. So let’s assume we have a tag
-component called `RandomizeTag`. Our goal is to write a system that randomizes
-the `Translation` and `Rotation` of all entities with that tag.
+The simplest way to explain `Rng` is by example. So let’s assume we need to
+generate an array of 1 million random positions and rotations each update.
 
 The first step is to create our `Rng` instance as a private field in the system.
 
@@ -17,7 +16,7 @@ Rng m_rng;
 ```
 
 Next, we need to seed our instance. We could have seeded it when we declared it,
-but for extra determinism we will seed it at the start of every seed. This seed
+but for extra determinism we will seed it at the start of every scene. This seed
 should be hardcoded, but we want to make sure it is different for every system.
 To help detect copy and paste errors, a string can be passed in instead of a
 `uint`. A good practice is to pass in the name of the system.
@@ -26,94 +25,41 @@ To help detect copy and paste errors, a string can be passed in instead of a
 public override void OnNewScene() => m_rng = new Rng("RandomizeTransformSystem");
 ```
 
-In our `OnUpdate()`, we copy the instance into a local variable so it can be
-captured in our `Entities.ForEach()` lambda.
-
-```csharp
-var rng = m_rng;
-```
-
-Our `Entities.ForEach()` will be a parallel job, so we need to ensure each
-entity gets unique random results. We do this by calling `GetSequence()` which
-returns an `RngSequence` instance.
-
-```csharp
-Entities.WithAll<RandomizeTag>().ForEach((int entityInQueryIndex, ref Translation translation) =>
-{
-    var random = rng.GetSequence(entityInQueryIndex);
-```
+We will need to define a job to perform our randomization. Our job is a parallel
+job, so we need to ensure each entity gets unique random results. We do this by
+calling `GetSequence()` which returns an `RngSequence` instance.
 
 With this sequence, we can make consecutive calls to its random functions. The
 API matches `Unity.Mathematics.Random`.
 
 ```csharp
-    var direction     = random.NextFloat3Direction();
-    var magnitude     = random.NextFloat(0f, 100f);
-    translation.Value = direction * magnitude;
-}).ScheduleParallel();
+struct Job : IJobFor
+{
+    public Rng rng;
+    public NativeArray<RigidTransform> transforms;
+
+    public void Execute(int i)
+    {
+        var random = rng.GetSequence(i);
+        var position = random.NextFloat3Direction() * random.NextFloat(0f, 100f);
+        var rotation = random.NextQuaternionRotation();
+        transforms[i] = new RigidTransform(rotation, position);
+    }
+}
 ```
 
 `Rng` does not allocate any memory. That means if we were to pass it to another
 job and make the same calls, we would get the same results. To avoid this, we
 call `Shuffle()` to get new sequences for corresponding indices. For
-convenience, this method also returns itself after the update.
+convenience, this method also returns itself after the update. We’ll assign this
+returned result to job when scheduling.
 
 ```csharp
-rng = m_rng.Shuffle();
+state.Dependency = new Job { rng = m_rng.Shuffle() }.ScheduleParallel(1000000, 32, state.Dependency);
 ```
 
-Now we can use it in our second `Entities.ForEach()` job like so:
-
-```csharp
-Entities.WithAll<RandomizeTag>().ForEach((int entityInQueryIndex, ref Rotation rotation) =>
-{
-    var random     = rng.GetSequence(entityInQueryIndex);
-    rotation.Value = random.NextQuaternionRotation();
-}).ScheduleParallel();
-```
-
-Finally, we call `Shuffle()` one last time so that the next frame we get more
-new random values.
-
-```csharp
-m_rng.Shuffle();
-```
-
-Altogether, the code looks like this:
-
-```csharp
-struct RandomizeTag : IComponentData { }
-
-public class RandomizeTransformsSystem : SubSystem
-{
-    Rng m_rng;
-
-    public override void OnNewScene() => m_rng = new Rng("RandomizeTransformSystem");
-
-    protected override void OnUpdate()
-    {
-        var rng = m_rng;
-
-        Entities.WithAll<RandomizeTag>().ForEach((int entityInQueryIndex, ref Translation translation) =>
-        {
-            var random        = rng.GetSequence(entityInQueryIndex);
-            var direction     = random.NextFloat3Direction();
-            var magnitude     = random.NextFloat(0f, 100f);
-            translation.Value = direction * magnitude;
-        }).ScheduleParallel();
-
-        rng = m_rng.Shuffle();
-
-        Entities.WithAll<RandomizeTag>().ForEach((int entityInQueryIndex, ref Rotation rotation) =>
-        {
-            var random     = rng.GetSequence(entityInQueryIndex);
-            rotation.Value = random.NextQuaternionRotation();
-        }).ScheduleParallel();
-
-        m_rng.Shuffle();
-    }
-}
-```
+We would call `Shuffle()` again for each new job we schedule in the same system,
+so that each job gets a new set of random number sequences.
 
 ## Using SystemRng
 

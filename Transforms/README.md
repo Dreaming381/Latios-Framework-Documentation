@@ -113,6 +113,7 @@ those who need better compatibility with other offerings.
     outstanding cleanup components referenced by a `LinkedEntityGroup` will
     trigger an entity-not-in-query error. A potential workaround is to remove
     the host entity from the `LinkedEntityGroup`.
+-   Motion History for motion vectors don’t work correctly with n – 1 rendering.
 
 ## Near-Term Roadmap
 

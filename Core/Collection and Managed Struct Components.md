@@ -14,8 +14,8 @@ not part of the archetype. Instead, they “follow” an** `ExistComponent`
 ## Creating Component Types
 
 Creating a custom collection component or managed struct component requires
-first declaring a struct that implements one of the following interfaces:
-`ICollectionComponent` or `IManagedStructComponent`.
+first declaring a `partial struct` that implements one of the following
+interfaces: `ICollectionComponent` or `IManagedStructComponent`.
 
 The next step is to create the fields of the struct. These are created just like
 any normal struct.
@@ -25,12 +25,14 @@ will be able to fill in the missing pieces.
 
 For `IManagedStructComponent` types, your custom component is ready to go. But
 for `ICollectionComponent` types, there’s still one final step. You must
-implement the `JobHandle TryDispose(JobHandle inputDeps)` method.
+implement the `JobHandle TryDispose(JobHandle inputDeps)` method. Notice the
+“Try” part. Sometimes this method may be called on instances that haven’t been
+properly allocated yet. You will need to check for this.
 
 Examples:
 
 ```csharp
-public struct PlanetGenerationWorld : IManagedStructComponent
+public partial struct PlanetGenerationWorld : IManagedStructComponent
 {
     public LatiosWorld world;
 }
@@ -40,7 +42,7 @@ public struct Pipe : IComponentData
     public float timeUntilNextEmission;
 }
 
-public struct PipeEmissionQueue : ICollectionComponent
+public partial struct PipeEmissionQueue : ICollectionComponent
 {
     public NativeQueue<Entity> disabledEntityQueue;
     public NativeList<Entity>  entitiesToEnable;
@@ -66,9 +68,6 @@ In direct mode, you operate on the `ICollectionComponent` and
 `IManagedStructComponent` types directly. Removing a collection component will
 invoke `TryDispose()` on the stored collection component.
 
-When using the direct mode API, the contents of a collection component may or
-may not be allocated. You must check for this in the `TryDispose()` method.
-
 You can find the add and remove methods on the `LatiosWorldUnmanaged` or
 `BlackboardEntity`. You may also find them as extensions to `EntityManager`, but
 these extensions require an additional lookup and are consequently less
@@ -87,10 +86,10 @@ When adding one of these components indirectly via the `ExistComponent`, the
 component will be default-initialized. For collection components, this means
 none of its Native Containers will be allocated.
 
-When removing the `ExistComponent` to an entity, a collection component will not
-have its `TryDispose()` called immediately. Instead, it will be disposed on the
-next frame. The exact timing of this will be after the `SceneManagerSystem` and
-`MergeBlackboardsSystem` but before other custom systems in
+When removing the `ExistComponent` from an entity, a collection component will
+not have its `TryDispose()` called immediately. Instead, it will be disposed on
+the next frame. The exact timing of this will be after the `SceneManagerSystem`
+and `MergeBlackboardsSystem` but before other custom systems in
 `LatiosInitializationSystemGroup`. The system which performs this is called
 `CollectionComponentsReactiveSystem`. Other lifecycle tricks like this also
 exist, but are hidden from the user.
@@ -101,7 +100,7 @@ As collection components and managed struct components are not real components,
 they must be fetched indirectly by their Entity. To query for these components,
 query for the nested `ExistComponent` of the specific component type you are
 looking for. This is a zero-sized component, and it is safe to query it as
-read-only, even if you intend to write the collection component or managed
+read-only, even if you intend to write to the collection component or managed
 struct component.
 
 Collection components and managed struct components can be fetched or set
@@ -157,18 +156,14 @@ different access restrictions. You can define a collection aspect via
 implementing the `ICollectionAspect<T>` interface where `T` is your custom
 collection aspect type.
 
-You can retrieve an Collection Aspect from an entity via
+You can retrieve a collection aspect from an entity via
 `LatiosWorldUnmanaged.GetCollectionAspect<T>()`.
 
 ## Collection Component Dependency Management
 
 Collection components have an intrinsic understanding of the `Dependency`
-property of systems, similar to lambda jobs. This means that **by default**,
-dependency management is **automatic**!
-
-*Note: This only works if the system is updated via a Latios Framework system
-updater. The default system groups and all Latios Framework ComponentSystemGroup
-types will handle this correctly.*
+property of systems, similar to `IJobEntity` jobs. This means that **by
+default**, dependency management is **automatic**!
 
 ### ReadOnly and ReadWrite per Instance
 
@@ -190,51 +185,18 @@ component value, not when querying the* `ExistComponent`*.*
 
 However, unlike Unity’s ECS, each instance is tracked per entity. Taking from
 the example above, this means a job writing to `EntityA`’s `PipeEmissionQueue`
-can run simultaneously with a job writing to `EntityB`’s `PipeEmissionQueue`.
+can run simultaneously with a job writing to `EntityB`’s `PipeEmissionQueue`,
+even if scheduled from separate systems.
 
 ### How the Dependencies are Updated
 
-Before the `OnUpdate` of the system executes, the system dispatcher registers it
-with the `LatiosWorld` as the active running system. From there, the
+Before the `OnUpdate()` of the system executes, the system dispatcher registers
+it with the `LatiosWorld` as the active running system. From there, the
 `LatiosWorld` forwards all `Dependency` updates to that system and also records
 a list of all `Entity`-`ICollectionComponent` pairs which have been accessed and
 need their internal `JobHandle`s updated. After the `OnUpdate` finishes, the
 system dispatcher passes the final `Dependency` to the `LatiosWorld` which then
 commits the `Dependency` to the internal storage.
-
-**Warning:** Be careful when iterating through collection components in an
-`Entities.ForEach` loop like the following:
-
-```csharp
-Entities.WithAll<FactionTag>().ForEach((Entity entity) =>
-{
-    var shipLayer = EntityManager.GetCollectionComponent<FactionShipsCollisionLayer>(entity, true).layer;
-    Dependency = Physics.FindPairs(bulletLayer, shipLayer, processor).ScheduleParallel(Dependency);
-}).WithoutBurst().Run();
-```
-
-This will complete Dependency at the start of the `Entities.ForEach`, which may
-include jobs for components you may be trying to run new jobs on inside your
-loop that interact with your collection components.
-
-To avoid such a sync point, you can do something like this:
-
-```csharp
-var backup = Dependency;
-Dependency = default;
-
-Entities.WithAll<FactionTag>().ForEach((Entity entity, int entityInQueryIndex) =>
-{
-    if (entityInQueryIndex == 0)
-        Dependency = backup;
-
-    var shipLayer = EntityManager.GetCollectionComponent<FactionShipsCollisionLayer>(entity, true).layer;
-
-    Dependency = Physics.FindPairs(bulletLayer, shipLayer, processor).ScheduleParallel(Dependency);
-}).WithoutBurst().Run();
-```
-
-API to handle this scenario more conveniently may come in a future release.
 
 ### Fine-Grained Dependency Control
 
@@ -258,4 +220,5 @@ collection components attached to `worldBlackboardEntity` and calling
 `UpdateCollectionComponentDependency<T>()` on those collection components while
 not touching `Dependency`, the `JobHandle`s will be automatically managed by the
 Latios Framework’s automatic dependency management system but not Unity ECS’s
-automatic dependency management system.
+automatic dependency management system. This will prevent Unity’s sync points
+from completing those jobs.

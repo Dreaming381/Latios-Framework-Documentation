@@ -23,4 +23,5 @@ provide better performance.
 
 It is only once all expirable components on an entity are disabled that the
 entity will be destroyed. Expirable entities with a `LinkedEntityGroup` will
-remove all other expirable entities in the group upon destruction.
+remove all other expirable entities in the group upon destruction, so that the
+other expirable entities will live on until they properly expire.

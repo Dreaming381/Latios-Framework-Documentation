@@ -1,9 +1,9 @@
 # ISystem Support
 
 The Latios Framework has great support for `ISystem` with utilities to provide
-the same capabilities as SubSystem, but for Burst-compatible systems. This page
-lists out the various features which are expected to work in `ISystem` and how
-to utilize them.
+the same capabilities as `SubSystem`, but for Burst-compatible systems. This
+page lists out the various features which are expected to work in `ISystem` and
+how to utilize them.
 
 ## OnNewScene and ShouldUpdateSystem
 
@@ -18,10 +18,10 @@ method.
 
 ## Latios World
 
-You can get a subset of the `LatiosWorld` API by calling
+You can get a Burst-compatible subset of the `LatiosWorld` API by calling
 `SystemState.GetLatiosWorldUnmanaged()`. It is recommended you do this during
 `OnCreate()` and cache the returned instance in a member field for later use.
-Acquiring the `LatiosWorld` can be Burst-compiled.
+Acquiring the `LatiosWorldUnmanaged` can also be Burst-compiled.
 
 ## Blackboard Entities
 
@@ -38,11 +38,10 @@ static methods just like any other native container.
 ## Collection Components
 
 Collection components can be accessed from `LatiosWorldUnmanaged`. If one of the
-associated methods is called from within a system updated by a `SuperSystem`
-method (which is true for root-level `ComponentSystemGroup`s as well as all
-Latios Framework-defined `ComponentSystemGroup` types), automatic dependency
-management is performed using the `Dependency` property of `SystemState`. All
-collection component operations are fully Burst-compatible.
+associated methods is called from within a system updated by a
+`ComponentSystemGroup`, automatic dependency management is performed using the
+`Dependency` property of `SystemState`. All collection component operations are
+fully Burst-compatible.
 
 The `ExistComponent` is supported by `SystemAPI` methods only if the
 `ICollectionComponent` is defined in a separate assembly from the system.

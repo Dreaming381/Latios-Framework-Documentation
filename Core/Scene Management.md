@@ -10,21 +10,21 @@ scene management performed by Latios.Core operates on scenes. The two systems
 are complimentary.
 
 -   Load requests
-    -   In Unity, you call `SceneSystem.LoadSceneAsync()` to load a new scene or
+    -   In Unity, you call `SceneSystem.LoadSceneAsync()` to load a new
         subscene, which generates a `RequestSceneLoaded` component
     -   In Latios, you attach a `RequestLoadScene` (note the slightly different
         name) component to any entity (disabled and prefab entities are ignored)
 -   Unloading
-    -   In Unity, you must use `SceneSystem.UnloadScene()` to unload the scene
-        or subscene, unless you load a GameObject scene non-additively
+    -   In Unity, you must use `SceneSystem.UnloadScene()` to unload the
+        subscene
     -   In Latios, the current scene is unloaded when you load a new scene
 -   Async
     -   In Unity, subscenes are loaded asynchronously, and only GameObject
         scenes can be loaded synchronously
     -   In Latios, the scene is loaded using the synchronous API and a pause
-        frame, and all subscenes are forced to load synchronously by default as
-        well, though this can be changed via *Subscene Load Options* authoring
-        component
+        frame, and all subscenes set to automatically load are forced to load
+        synchronously by default as well, though this can be changed via
+        *Subscene Load Options* authoring component
 -   Destroyed entities
     -   In Unity, only the entities that were contained within the subscene are
         destroyed

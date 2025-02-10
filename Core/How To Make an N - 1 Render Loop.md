@@ -46,7 +46,7 @@ BootstrapTools.AddWorldToCurrentPlayerLoopWithDelayedSimulation(world);
 Then, add the following three `SuperSystems` somewhere in your project:
 
 ```csharp
-[UpdateInGroup(typeof(InitializationSystemGroup), OrderLast = true)]
+[UpdateInGroup(typeof(PostSyncPointGroup), OrderFirst = true)]
 public class PreRenderTransformSuperSystem : RootSuperSystem
 {
     protected override void CreateSystems()
@@ -80,9 +80,8 @@ Every system typically performs one kind of action. Depending on that action,
 there is likely a home for it. Follow these guidelines in order to determine the
 likely best fit for your system.
 
-1.  If your system performs structural change operations using `EntityManager` –
-    IE: `Entities.WithStructuralChanges().ForEach` – Place the system in
-    `LatiosWorldSyncGroup`.
+1.  If your system performs structural change operations using `EntityManager`,
+    place the system in `LatiosWorldSyncGroup`.
 2.  If your system modifies `TransformAspect`, place the system in
     `PreTransformSuperSystem`.
 3.  If your system reads input, place the system in `PreTransformSuperSystem`

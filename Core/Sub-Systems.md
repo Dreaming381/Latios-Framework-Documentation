@@ -6,7 +6,7 @@ as you would a `SystemBase`, and frequently you will want to do just that.
 However, there are some additional features to take advantage of.
 
 Nearly all `SubSystem` features are [extended](ISystem%20Support.md) to
-`ISystem`.
+`ISystem`. `ISystem` is the preferred system type for performance.
 
 ## Fluent Queries
 

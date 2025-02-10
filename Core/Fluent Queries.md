@@ -108,12 +108,8 @@ conflicts. However, there are still some cases that are impossible to resolve.
 ## Fluent Queries vs Unity Query Builders
 
 Fluent Queries were created before the modern implementation of
-`EntityQueryBuilder` and `SystemAPI.QueryBuilder`. At the time of writing,
-Entity Queries don’t have full combination coverage within the API. As such,
-work has not been done yet to rectify differences in the APIs. The following
-table outlines the differences and discrepancies. The “Any” flavor APIs are
-equivalent to “All” flavors for the purpose of this comparison unless explicitly
-tabulated.
+`EntityQueryBuilder` and `SystemAPI.QueryBuilder`. The vocabulary between APIs
+are a bit different, and some APIs don’t have equivalents yet.
 
 | EntityQueryBuilder                       | Fluent                      |
 |------------------------------------------|-----------------------------|

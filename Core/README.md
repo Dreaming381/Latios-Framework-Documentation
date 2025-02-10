@@ -47,13 +47,6 @@ too.
 
 See more: [Super Systems](Super%20Systems.md)
 
-### EntityDataCopyKit
-
-Ever want to copy a component from one Entity to another using its
-`ComponentType`, perhaps obtained by comparing two entities’ archetypes? I did,
-so I wrote this. It uses asmref internal access hacks to implement the features
-not possible by the public API (Shared Components).
-
 ### Conditional System Updates
 
 Unity does this thing where it tries to look at your Entity Queries and decide
@@ -73,6 +66,8 @@ performance.
 See more: [Super Systems](Super%20Systems.md)
 
 ### Blackboard Entities
+
+I despise Unity’s singletons. They are a hack with way too much baggage.
 
 Unity’s solution to singletons is to create an `EntityQuery` every time you want
 a new one and also make every singleton component live in its own 16 kB mansion.
@@ -94,7 +89,8 @@ convenient API for getting and setting components directly on them.
 But the best part is that there’s no `EntityQuery` associated with them, so if
 you want to make a hundred backups of these entities to track your state over
 time, or have a component represent the “Active” option from a pool of entities
-containing “viable” options, well you can do those things here.
+containing “viable” options, well you can do those things here. Or maybe you
+just like using `[RequireMatchingQueriesForUpdate]` like me.
 
 Wait, no. That wasn’t the best part. The best part is the authoring workflow!
 Simply attach a `BlackboardEntityData` component to automatically have all the
@@ -114,6 +110,29 @@ Blackboard entities can be accessed as properties of `LatiosWorld`,
 See more: [Blackboard Entities](Blackboard%20Entities.md) and [Blackboard
 Entities vs Singletons](Blackboard%20Entities%20Vs%20Singletons.md)
 
+### Collection Components
+
+Why in the world does Unity think that collections only belong on systems or
+singletons? Did they not watch the Overwatch ECS talks?
+
+I don’t like singletons, and I also don’t like tracked collections on entities
+being exclusive to special entities, so I made my own solution for storing and
+managing collections on entities. Collection components are structs that
+implement `ICollectionComponent`.
+
+**Warning: Collection components are not real components. The real component is
+the** `ExistComponent` **nested type defined by source generators.**
+
+You can query for the `ExistComponent` in your own code to find entities with a
+collection component. You can then access the collection component using the
+`LatiosWorldUnmanaged` methods.
+
+Collection components have this nice feature of automatically updating their
+dependencies if you use them in a system.
+
+See more: [Collection and Managed Struct
+Components](Collection%20and%20Managed%20Struct%20Components.md)
+
 ### Scene Management
 
 Remember the good-old-days in `MonoBehaviour` land where by default when you
@@ -127,8 +146,8 @@ to *(hopefully)*.
 
 You can request a new scene using the `RequestLoadScene` component, and you can
 get useful scene info from the `CurrentScene` component attached to the
-`worldBlackboardEntity`. All subscenes loaded are forced to load synchronously,
-ensuring that settings entities are present right away.
+`worldBlackboardEntity`. All subscenes loaded are forced to load synchronously
+by default, ensuring that settings entities are present right away.
 
 If you want an entity to stick around (besides the `worldBlackboardEntity` which
 always sticks around), you can add the `DontDestroyOnSceneChangeTag`.
@@ -140,59 +159,11 @@ scenes use ECS is totally a thing you can do, especially since you can check
 `CurrentScene` inside `ShouldUpdateSystem`. For all you out there trying to
 shoehorn ECS into your Mono game, shoehorn no more!
 
-*This feature is no longer enabled by default for any bootstrap except the
+*This feature is not enabled by default for any bootstrap except the
 DreamingBootstrap. It is also not compatible with NetCode and may require tweaks
 to work correctly with systems that rely on singletons, such as Unity Physics.*
 
 See more: [Scene Management](Scene%20Management.md)
-
-### Collection Components
-
-Why in the world does Unity think that collections only belong on systems or
-singletons? Did they not watch the Overwatch ECS talks?
-
-All joking aside, they support them in three different ways:
-
--   Class components implementing `IDisposable`, which works but allocates GC
--   Collections which you have to be extra careful using to avoid memory leaks
-    and don’t provide automatic dependency management
--   Singletons which only provide dependency management for contained
-    collections (which is really bizarre)
-
-I wasn’t really satisfied with these solutions, so I made my own. They are
-structs that implement `ICollectionComponent`.
-
-**Warning: Managed components and collection components are not real components.
-The real component is the ExistComponent nested type defined by source
-generators.**
-
-You can query for the ExistComponent in your own code to find entities with a
-collection component. You can then access the collection component using the
-`LatiosWorldUnmanaged` methods.
-
-Collection components have this nice feature of automatically updating their
-dependencies if you use them in a system.
-
-See more: [Collection and Managed Struct
-Components](Collection%20and%20Managed%20Struct%20Components.md)
-
-### Managed Struct Components
-
-So you got some SOs or some Meshes and Materials or something that you want to
-live on individual entities, but you don’t want to use Shared Components and
-chop your memory and performance into gravel. You also don’t want to use class
-`IComponentData` because that’s GC allocations every time you instantiate a new
-entity and you know how to reference data on other entities using Entity fields.
-Really, you just want GC-free structs that can store shared references. You
-can’t use them in jobs, but that’s not the concern.
-
-Meet `IManagedStructComponent`. It is a struct that can hold references. You can
-get and set them using `LatiosWorldUnmanaged.Get/SetManagedStructComponent` and
-friends. They work essentially the same as `ICollectionComponent` except without
-the automatic dependency management because there’s no dependencies to manage.
-
-See more: [Collection and Managed Struct
-Components](Collection%20and%20Managed%20Struct%20Components.md)
 
 ### Math
 
@@ -201,19 +172,11 @@ Overly-used algorithms and some SIMD stuff are here. Help yourself!
 
 See more: [Math](Math.md)
 
-### Extensions and Exposed
-
-Sometimes Unity is missing API for no good reason other than DOTS still being
-under development. And sometimes, I need this missing API. Sometimes this can be
-fixed using an extension method. Sometimes this requires extending the package
-directly using asmrefs. The former can be found in the Utilities folder, and the
-latter shows up in the `Unity.Entities.Exposed` namespace.
-
 ### Fluent Queries
 
 Fluent syntax for expressing EntityQueries was a big improvement. However, every
-iteration so far has lacked a way to extend it. This implementation not only
-provides clean Fluent syntax for building EntityQueries, but it is also
+iteration so far has lacked a good way to extend it. This implementation not
+only provides clean Fluent syntax for building EntityQueries, but it is also
 extensible so that library authors can write patch methods for their
 dependencies.
 
@@ -237,25 +200,21 @@ See more: [Fluent Queries](Fluent%20Queries.md)
 
 `EntityCommandBuffer` is a powerful tool, but it has some limitations.
 
-First, it has no equivalent for `EntityManager.SetEnabled()` in parallel jobs.
-While this can be replicated by attaching or detaching the Disabled component
-directly, one would also have to manage the `LinkedEntityGroup`, which could
-change between command recording and playback.
+The biggest is that it plays back commands one-by-one, which can be quite slow
+and doesn’t take advantage of cache efficiencies. In many cases, your ECB is
+only doing one kind of operation, such as destroying entities, or instantiating
+them along with a fixed set of components.
 
-Enter `EnableCommandBuffer` and `DisableCommandBuffer`. They are quite limited
-in that they can only handle one type of command each, but they do it right!
+Enter custom command buffers!
 
-The second issue comes when instantiating new entities. Often times, the entity
-does not just need to be instantiated, but also have some of its components
-initialized. This is done one-by-one in the `EntityCommandBuffer` which can be
-slow.
-
-Enter `InstantiateCommandBuffer`. You can use this command buffer to instantiate
-entities and initialize up to 5 components. You can also add an additional 15
-components on top. It uses batch processing for increased speed.
-
-Lastly, there’s a `DestroyCommandBuffer`. This command buffer may provide a
-speedup in some circumstances.
+These command buffers focus on specific operations, and offer improved playback
+performance as a result. `EnableCommandBuffer` and `DisableCommandBuffer` can
+optimally enable and disable entities and their `LinkedEntityGroup` buffers.
+`DestroyCommandBuffer` can destroy entities en masse. `InstantiateCommandBuffer`
+can instantiate entities and initialize several components in one go. And
+`AddComponentsCommandBuffer` is especially well-suited for adding cleanup
+components, since it can detect destroyed entities and create temporary entities
+for cleanup systems to process.
 
 All of these command buffers can be played back by the `SyncPointPlaybackSystem`
 (which can play back `EntityCommandBuffers` too). You can fetch this using
@@ -305,9 +264,9 @@ are supposed to do with it? Do you instantiate it? Do you manipulate it? Do you
 read from it? Maybe the name might give you a clue, but we all know naming
 things is hard.
 
-So instead, use `EntityWith<T>` and `EntityWithBuffer<T>` instead! They work
-just like normal `Entity` references, except you can gather additional context
-about them. An `EntityWith<Prefab>` should probably be instantiated. An
+So instead, use `EntityWith<T>` and `EntityWithBuffer<T>`! They work just like
+normal `Entity` references, except you can gather additional context about them.
+An `EntityWith<Prefab>` should probably be instantiated. An
 `EntityWith<Disabled>` needs to be enabled at the right moment. An
 `EntityWith<LocalToWorld>` is a transform to spawn things at or attach things
 to.
@@ -319,18 +278,19 @@ expensive computation and generate blobs in parallel via baking systems. And
 what if multiple bakers want to leverage this caching and parallel baking, but
 do something custom with the results?
 
-Smart Blobbers solve this problem and make blob asset baking simpler, especially
-for large projects with complex baking dependencies. They provide a built-in
-mechanism for Bakers to request blobs to be built. Those requests can later be
-resolved into real `BlobAssetReference<>` values. Smart Bakers provide a
-mechanism to propagate bake context beyond a Baker’s scope so that blob assets
-can be resolved correctly without having to write custom baking systems.
+Smart Blobbers solve this problem by establishing patterns and adding guardrails
+around baking systems, so that you can bake your blobs in parallel safely. They
+provide a built-in mechanism for Bakers to request blobs to be built, and those
+requests can later be resolved into real `BlobAssetReference<>` values. Smart
+Bakers and Smart Post-Processors provide a mechanism to propagate bake context
+beyond a Baker’s scope so that blob assets can be resolved correctly without
+having to write custom baking systems.
 
 The design outlines a pattern you can follow that allows you to extend the Smart
 Blobber mechanisms to your own blob types. The process is thoroughly documented
 and all APIs contain detailed XML documentation. You can obtain fully parallel
 and Burst-compiled blob asset generation without having to worry about Unity’s
-convoluted blob asset conversion APIs.
+`BlobAssetStore` caching and deduplication.
 
 See more: [Smart Blobbers](Smart%20Blobbers.md)
 
@@ -354,6 +314,48 @@ This is a wrapper around a `DynamicBuffer` that provides hashmap-like
 functionality. Unlike other implementations, this implementation can correctly
 handle serialization of Entity and blob asset references.
 
+### Baking Interface Methods
+
+You know how with Game Objects you can call `GetComponent<ISomeInterface>()` but
+you can’t with `IBaker.GetComponent<ISomeInterface>()`?
+
+I fixed that for ya.
+
+### ComponentBroker and TempQuery
+
+Do you ever have function pointers or maybe a massive collection of static or
+helper methods and wanted to use `EntityManager` or evaluate entity queries in
+those methods while in a job?
+
+`ComponentBroker` provides a mechanism to specify a number of component types to
+send to a job, and then while in a job, you can access them via generic methods.
+You don’t have to pass a bunch of different type handles or lookups to your
+methods. You can instead pass around the `ComponentBroker` by ref, keeping your
+method arguments clean. Meanwhile, `TempQuery` allows you to evaluate an entity
+query on-the-spot in the job and iterate over chunks and entities. It isn’t as
+performant as cached entity queries created on the main thread, but it can still
+be handy.
+
+These features are especially useful for mods or scripting solutions such as
+Unika.
+
+### Extensions, Exposed, and ECS Cleanups
+
+Sometimes Unity is missing API for no good reason other than DOTS still being
+under development. And sometimes, I need this missing API. Sometimes this can be
+fixed with extension methods. Sometimes this requires extending the package
+directly using asmrefs. The former can be found in the Utilities folder, and the
+latter shows up in the `Unity.Entities.Exposed` namespace.
+
+There are also situations where Unity’s package just does really dumb things
+that you probably weren’t aware of. For example, all prefabs will allocate on
+the heap when instantiated because of an included `LinkedEntityGroup`, even if
+they have no children. Or baking systems that use `WorldUpdateAllocator` will
+continuously allocate until the baking world is destroyed.
+
+I keep finding ways to mitigate bugs and missing APIs, and most of that ends up
+in Core.
+
 ## Known Issues
 
 -   `IManagedComponent` and `ICollectionComponent` are not true components. They
@@ -367,7 +369,10 @@ handle serialization of Entity and blob asset references.
 ## Near-Term Roadmap
 
 -   `ThreadStackAllocator` `AllocatorManager` support
--   More NetCode utilities
+-   Blob prolonged retention system
+-   Entity create/change/destroy pipeline
+-   Subscene loading world bootstraps
+-   Fixed rate time management
 -   Bootstrap Profiles
     -   Allow multiple bootstraps per project for samples and tests
 -   More custom command buffer types

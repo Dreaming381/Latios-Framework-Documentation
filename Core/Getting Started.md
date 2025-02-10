@@ -61,16 +61,15 @@ After the bootstrap is created, it can be
 -   [LatiosWorldUnmanaged](ISystem%20Support.md) – a struct which provides a
     subset of the `LatiosWorld` API for Burst-compiled unmanaged systems
 -   [SubSystem](Sub-Systems.md) – a `SystemBase` subclass with Latios Framework
-    API conveniences
+    API conveniences, though most systems should be written with
+    [ISystem](ISystem%20Support.md)
 -   [SuperSystem](Super%20Systems.md) – a `ComponentSystemGroup` subclass that
     supports Latios Framework features
 -   [RootSuperSystem](Super%20Systems.md) – a `SuperSystem` subclass designed to
-    be auto-injected into non-Latios `ComponentSystemGroup`s
--   [IManagedStructComponent](Collection%20and%20Managed%20Struct%20Components.md)
-    – a struct type component that can store reference types
+    be auto-injected even when using explicit system ordering
 -   [ICollectionComponent](Collection%20and%20Managed%20Struct%20Components.md)
-    – a struct type component that can store NativeCollection types and keeps
-    associated dependencies
+    – a struct type component that can store NativeCollection types with an
+    entity and tracks job dependencies automatically
 -   [BlackboardEntity](Blackboard%20Entities.md) – an Entity with extensions to
     apply `EntityManager` operations on it
 -   [Rng](Rng%20and%20RngToolkit.md) – a struct with a powerful thread-safe,
@@ -98,6 +97,9 @@ After the bootstrap is created, it can be
 -   [CurrentScene](Scene%20Management.md) – This component is attached to the
     `worldBlackboardEntity` and contains the current scene, previous scene, and
     whether the scene just changed. Do not add, set, or remove this component!
+-   [IAutoDestroyExpirable](Auto-Destroy%20Expirables.md) – This is an interface
+    for components and buffers that allow for negotiated destruction of entities
+    by independent systems
 
 ## Conventions
 

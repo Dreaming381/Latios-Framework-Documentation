@@ -1,27 +1,30 @@
 # Customizing the Bootstraps
 
 Latios.Core requires using an `ICustomBootstrap` in order to instantiate a
-`LatiosWorld` as the default `World` instance. However, aside from this
-requirement, the framework does not impose any restrictions on the
-`ICustomBootstrap` implementation. It is possible to modify the generated
+`LatiosWorld` as the default `World` instance in order to enable special
+automatic features such as collection component dependency management. However,
+aside from this requirement, the framework does not impose any restrictions on
+the `ICustomBootstrap` implementation. It is possible to modify the generated
 bootstrap from the templates or write a custom one from scratch. Additional
 utilities are provided in the static class `BootstrapTools`.
 
 A `LatiosWorld` populates itself with an `InitializationSystemGroup`, a
-`SimulationSystemGroup`, and a `PresentationSystemGroup`, each with a special
-`IRateManager`. It further populates `InitializationSystemGroup` with necessary
-framework systems. For more details, see [LatiosWorld in
+`SimulationSystemGroup`, and optionally a `PresentationSystemGroup`. It further
+populates `InitializationSystemGroup` with necessary framework systems and a
+custom `IRateManager`. For more details, see [LatiosWorld in
 detail](LatiosWorld%20in%20Detail.md).
 
-For NetCode projects, you there is a `NetCodeBootstrapTools` as well as a
+For NetCode projects, there is a `NetCodeBootstrapTools` as well as a
 `LatiosClientServerBootstrap`.
 
 ## Customizing Features
 
-Many features come as optional components which can be installed via the three
+Many features come as optional behaviors which can be installed via the
 bootstrap interfaces `ICustomBootstrap`, `ICustomBakingBootstrap`, and
-`ICustomEditorBootstrap`. These installers inject systems into their respective
-worlds and may also disable existing systems which they intend to replace.
+`ICustomEditorBootstrap`. In NetCode projects, additional bootstraps are
+provided for each type of world. These installers inject systems into their
+respective worlds and may also disable existing systems which they intend to
+replace.
 
 Installers can be found in the following static classes:
 
@@ -31,14 +34,18 @@ Installers can be found in the following static classes:
     -   Latios.Myri.MyriBootstrap
     -   Latios.Kinemation.KinemationBootstrap
     -   Latios.Calligraphics.CalligraphicsBootstrap
+    -   Latios.LifeFX.LifeFXBootstrap
+    -   Latios.Unika.UnikaBootstrap
 -   Baking World
     -   Latios.Core.Authoring.CoreBakingBootstrap
     -   Latios.Transforms.Authoring.TransformsBakingBootstrap
     -   Latios.Psyshock.Authoring.PsyshockBakingBootstrap
     -   Latios.Kinemation.Authoring.KinemationBakingBootstrap
+    -   Latios.Unika.Authoring.UnikaBakingBootstrap
 
 `ICustomBakingBootstrap` also provides granular control for enabling and
-disabling Baker types.
+disabling Baker types. This can be useful for disabling specific bakers in
+3rd-party packages.
 
 ## Customizing Explicit System Ordering
 
@@ -49,7 +56,7 @@ takes over. Either before or after calling
 useful functions:
 
 -   `InjectUnitySystems()` - injects the systems from the type list which are
-    Unity systems
+    Unity or Havok systems
 -   `InjectSystemsFromNamespace()` - injects the systems from the type list
     whose namespace contains the passed-in string
     -   This is especially useful for third-party systems
@@ -68,6 +75,7 @@ common use-cases.
     context is the Unity Engine’s `FixedUpdate` and not the Entities
     `FixedUpdate`.
 -   `AddWorldToCurrentPlayerLoopWithDelayedSimulation()` - This runs the
-    `SimulationSystemGroup` after rendering. This may be useful in removing a
-    sync point or a `TransformSystemGroup` update depending on how your logic is
-    structured. This is also referred to as *N – 1 Rendering*.
+    `SimulationSystemGroup` after rendering. This can sometimes be useful for
+    eliminating logical artifacts (such as intersecting geometry) by ensuring
+    structural changes (like entity destruction) happen before rendering. This
+    is also referred to as *N – 1 Rendering*.

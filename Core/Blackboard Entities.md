@@ -6,7 +6,7 @@ purposes of attaching arbitrary components to centralized entities or
 
 ## SceneBlackboardTag and WorldBlackboardTag
 
-Every world maintains two global entities.
+Every world maintains two blackboard entities.
 
 -   The `sceneBlackboardEntity` has the `SceneBlackboardTag` component attached.
 -   The `worldBlackboardEntity` has the `WorldBlackboardTag` component attached.
@@ -39,12 +39,13 @@ public void OnUpdate(ref SystemState state)
 
 ## BlackboardEntity Type
 
-`BlackboardEntity` is a struct type which holds an `Entity` and an
-`EntityManager`. The struct provides convenient methods for operating directly
-on the entity as well as an implicit cast to the `Entity` type. The
-`EntityManager` is private, so you can pass a `BlackboardEntity` to a function
-without access to an `EntityManager` and expect that the function will only ever
-be able to modify the `BlackboardEntity` and no other entity.
+`BlackboardEntity` is a struct type which holds an `Entity` and an unmanaged
+reference to the world it belongs to. The struct provides convenient methods for
+operating directly on the entity as well as an implicit cast to the `Entity`
+type. The underlying `EntityManager` access is hidden, so you can pass a
+`BlackboardEntity` to a method without access to an `EntityManager` and expect
+that the method will only ever be able to modify the `BlackboardEntity` and no
+other entity.
 
 You can access `sceneBlackboardEntity` and `worldBlackboardEntity` properties in
 the following ways:
@@ -75,8 +76,7 @@ public partial struct UnmanagedSystem : ISystem
     {
         latiosWorld = state.GetLatiosWorldUnmanaged();
     }
-    [BurstCompile]
-    public void OnDestroy(ref SystemState state) { }
+
     [BurstCompile]
     public void OnUpdate(ref SystemState state)
     {
@@ -130,10 +130,10 @@ its authoring equivalent:
 
 ![](media/66f6dfe6742192bcd39b47de654e593f.png)
 
-In the `LatiosInitializationSystemGroup`, the `MergeBlackboardsSystem` will
-iterate through each entity with the `BlackboardEntityData` component and copy
-the entity’s other components to one of the blackboard entities based on the
-following settings:
+In the `LatiosWorldSyncGroup`, the `MergeBlackboardsSystem` will iterate through
+each entity with the `BlackboardEntityData` component and copy the entity’s
+other components to one of the blackboard entities based on the following
+settings:
 
 -   Blackboard Scope – The target entity to copy the components to
     -   Scene – Copy the components to the `sceneBlackboardEntity`
