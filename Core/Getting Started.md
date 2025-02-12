@@ -76,6 +76,8 @@ After the bootstrap is created, it can be
     deterministic, fire-and-forget workflow for random number generation
 -   [Smart Blobber](Smart%20Blobbers.md) – a specialized baking API used for
     generating blob assets
+-   [Component Broker](Component%20Broker.md) – a specialized type for accessing
+    lots of component types generically in jobs
 
 ### Components
 

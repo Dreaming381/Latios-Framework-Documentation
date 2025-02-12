@@ -339,6 +339,8 @@ be handy.
 These features are especially useful for mods or scripting solutions such as
 Unika.
 
+See more: [Component Broker](Component%20Broker.md)
+
 ### Extensions, Exposed, and ECS Cleanups
 
 Sometimes Unity is missing API for no good reason other than DOTS still being
