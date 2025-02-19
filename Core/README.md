@@ -339,7 +339,8 @@ be handy.
 These features are especially useful for mods or scripting solutions such as
 Unika.
 
-See more: [Component Broker](Component%20Broker.md)
+See more: [Component Broker](Component%20Broker.md) and [Temp
+Queries](Temp%20Queries.md)
 
 ### Extensions, Exposed, and ECS Cleanups
 

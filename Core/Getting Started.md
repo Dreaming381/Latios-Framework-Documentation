@@ -78,6 +78,8 @@ After the bootstrap is created, it can be
     generating blob assets
 -   [Component Broker](Component%20Broker.md) – a specialized type for accessing
     lots of component types generically in jobs
+-   [Temp Query](Temp%20Queries.md) – a type that represents a temporary entity
+    query created on the spot in a job
 
 ### Components
 

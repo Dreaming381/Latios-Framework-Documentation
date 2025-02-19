@@ -18,6 +18,8 @@ Officially supports Entities [1.3.9]
 
 ### Changed
 
+-   **Breaking:** Fixed API typo in `IBaker` extension method from
+    `AddHiearchyModeFlags()` to `AddHierarchyModeFlags()`
 -   Moved `MotionHistoryUpdateSuperSystem` to `PostSyncPointGroup`
 
 ## [0.11.0] – 2024-9-29

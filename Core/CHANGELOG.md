@@ -48,6 +48,8 @@ Officially supports Entities [1.3.9]
     metadata about the archetype
 -   Added `DynamicHashMap` attributes to help make elements more
     inspector-friendly for debugging
+-   Added `EntityManager` extension method `CompleteDependencyBeforeRO()` which
+    accepts a `TypeIndex` parameter
 
 ### Changed
 

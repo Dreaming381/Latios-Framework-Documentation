@@ -35,6 +35,8 @@ Officially supports Entities [1.3.9]
 -   Fixed missing safety checks for `PairStream` APIs that involve copying a
     Pair from another `PairStream`
 -   Fixed baking of convex and TriMesh collider blob assets for prefab entities
+-   Fixed NaNs in point vs capsule and sphere vs capsule queries when the
+    capsule has degenerated to a sphere
 
 ### Improved
 
