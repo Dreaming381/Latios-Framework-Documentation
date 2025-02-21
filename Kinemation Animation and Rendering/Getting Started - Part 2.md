@@ -3,7 +3,7 @@
 In this part, we’ll bake a Skinned Mesh Renderer into an entity and use an
 exposed skeleton. No code will be required.
 
-If you haven’t already done so, create a new DOTS project and add the Latios
+If you haven’t done so already, create a new DOTS project and add the Latios
 Framework as a package. Then, create one of the Standard Bootstraps.
 
 **Do not forget to create a bootstrap!**
@@ -20,8 +20,8 @@ The *Avatar Definition* must be set to *Create From This Model* (for this
 example only). *Skin Weights* is dependent on which skinning algorithm you plan
 to use. If you use *Vertex Skinning* (Vertex Shader), you must set it to
 *Standard (4 Bones)* as shown above. For *Deform Skinning* (Compute Shader), you
-can change it to custom with a max weights set up to 256. Leave *Optimize Game
-Objects* unchecked (for this example only).
+can change it to custom with a *max weights* set up to a maximum of 256. Leave
+*Optimize Game Objects* unchecked (for this example only).
 
 Lastly, turn **off** compression of animation clips.
 
@@ -88,12 +88,15 @@ Quaternion Skinning* checkbox:
 
 ![](media/9f4934c5bae8734acd11b9e871c2a420.png)
 
+Dual quaternion skinning is more expensive than matrix skinning. Use it only if
+deformations look better.
+
 ## Baking the Entity
 
 Now, drag your character into a subscene. Assign it the new materials, and make
 sure it has an *Animator* component attached. The *Animator* doesn’t need to be
-configured with anything. It just serves as a marker so Kinemation converts it
-to a skeleton.
+configured with anything. It just serves as a marker so Kinemation bakes it to a
+skeleton.
 
 ![](media/9be6de904e3dc9e73410fc9762c0a304.png)
 
@@ -115,13 +118,3 @@ some code to play some animation. If you aren’t familiar with writing DOTS cod
 you may want to stop here.
 
 [Continue to Part 3](Getting%20Started%20-%20Part%203.md)
-
-Or…
-
-[Explore Mecanim](../Mimic/Mecanim%20Runtime.md)
-
-Note: The Mecanim module has known issues and is not considered suitable for
-production. It is merely provided as a quick-start to get familiar with
-Kinemation and also serves as a potential learning resource for how to leverage
-Kinemation’s APIs. If you desire a production-ready Mecanim implementation and
-are willing to invest in its existence, please reach out!

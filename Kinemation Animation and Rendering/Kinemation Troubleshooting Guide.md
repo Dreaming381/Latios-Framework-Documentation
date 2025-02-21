@@ -10,6 +10,11 @@ resolution.
 Very frequently someone reports that Kinemation isn’t rendering. There could be
 a variety of causes. Here are the initial steps to help diagnose the problem.
 
+If this happened after installing the Latios Framework Bootstrap into an
+existing project and your subscenes are closed, reimport them. For some reason,
+Unity doesn’t recognize the subscenes need to be rebaked sometimes. If that’s
+not your issue, read on.
+
 Before you do anything else, make sure there are no warnings or errors during
 baking or runtime. Any issue, even on an unrelated object, could potentially
 corrupt the caches used in rendering. If you do get an error, you may wish to
@@ -28,7 +33,7 @@ look for this component:
 ![](media/46388f3f82312c2489fd12b1b7305a08.png)
 
 Every ECS chunk has up to 128 entities. Lower is a bitmask of the first 64
-entities, and Upper is the second. Copy these values into an integer-\>binary
+entities, and Upper is the second 64. Copy these values into an integer-\>binary
 converter to see which entities have a ‘1’. Those entities were ones Kinemation
 chose to render in the last frame. If your entity has a ‘1’, then your issue is
 almost certainly one of three things:

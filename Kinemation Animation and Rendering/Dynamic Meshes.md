@@ -25,7 +25,7 @@ a *deformed mesh*.
 
 ## Baking a Dynamic Mesh
 
-First, create an authoring component that inherits OverrideMeshRendererBase.
+First, create an authoring component that implements `IOverrideMeshRenderer`.
 This action will disable default Mesh Renderer baking.
 
 ```csharp
@@ -37,7 +37,7 @@ public struct TestDynamicMeshData : IComponentData
     public float  amplitude;
 }
 
-public class TestDynamicMeshAuthoring : OverrideMeshRendererBase
+public class TestDynamicMeshAuthoring : MonoBehaviour, IOverrideMeshRenderer
 {
     public float2 meshRelativeCenter;
     public float  frequency;
@@ -168,9 +168,9 @@ Kinemation includes a static class called `SkinningAlgorithms` to help deform
 more complex objects. Meshes often have multiple vertices that share the same
 position, but may have different normals or tangents (tangents are derived from
 UVs). If you only care to deform the unique positions of a mesh, you can use
-ExtractUniquePositions() to get the unique positions to modify. Once you are
-done, call ApplyPositionsWithUniqueNormals() followed by NormalizeMesh() to get
-the final mesh with updated normals and tangents. The following job shows an
+`ExtractUniquePositions()` to get the unique positions to modify. Once you are
+done, call `ApplyPositionsWithUniqueNormals()` followed by `NormalizeMesh()` to
+get the final mesh with updated normals and tangents. The following job shows an
 example:
 
 ```csharp
@@ -218,9 +218,11 @@ also be used to identify all skinned mesh entities bound to the skeleton entity.
 
 ## Particle Tricks
 
-*Note: This section describes using Dynamic Meshes for CPU particles. A better
-solution for this use case will be provided in LifeFX. Calligraphics RenderGlyph
-types may also provide a better temporary solution.*
+*Note: This section describes using Dynamic Meshes for CPU particles with
+automatic motion vector support. There are multiple ways to do particles in
+Kinemation, and the technique presented here may not be best for your project.
+It is provided to simply give you an idea of how Kinemation’s features can be
+used in creative ways.*
 
 When working with Dynamic Meshes as particles, you’ll still need a base mesh to
 work from. While any mesh of sufficient size will do, you must make sure that

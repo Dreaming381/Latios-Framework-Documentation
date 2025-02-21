@@ -46,8 +46,8 @@ First, the bones in the skinned mesh have different indices compared to the
 skeleton. For example, *Leg.1.L* is at index 81 in the skinned mesh, but index
 11 in the skeleton.
 
-Second, there almost always are bones in the skeleton than the skinned mesh (not
-visible in the image above).
+Second, usually there are more bones in the skeleton than in the skinned mesh
+(not visible in the image above).
 
 Third, the skinned mesh paths omit the root bone, which in the image above would
 be *ImpIK*. The skeleton does not omit this. There are a couple of reasons for
@@ -84,6 +84,11 @@ instantiate a clone and then “deoptimize” the clone. It will then use the cl
 to extract the bone paths, as well as bone hierarchy relationships and animation
 clip samples. These clones are referred to as “Shadow Hierarchies” in Kinemation
 and are managed behind-the-scenes through the Smart Blobber APIs.
+
+Beginning in 0.12.0, you can also get a cached version of this extraction via
+the *Optimized Skeleton Cache* component. If for some reason you reimport the
+original prefab again, you may need to regenerate the cache using the
+component’s menu option.
 
 ### Mesh Bones Referring to the Root
 
@@ -197,7 +202,8 @@ parenting the mesh to the armature.
 
 And third, the skinned mesh’s local transform in ECS should remain identity.
 QVVS Transforms enforce this. But Unity Transforms provide no such mechanism and
-will only correct the transform once on binding.
+will only correct the transform once on binding (except in the Editor to
+counteract live baking stomping this value).
 
 If you want to further modify the transform of the skinned mesh independent of
 the rest of the skeleton, use the `PostProcessMatrix` component. Kinemation uses
@@ -230,20 +236,19 @@ boneLocalToSkeleton \* bindpose
 is often referred to as the “skin matrix”. In vanilla Entities Graphics, Unity
 assigns a dynamic buffer of these skin matrices to each skinned mesh primary
 entity. It is then up to whatever animation solution exists to drive these
-buffers for every skinned mesh attached to the animated skeleton. And then each
-of these buffers is uploaded to the GPU.
+buffers for every skinned mesh attached to the animated skeleton. Afterwards
+each of these buffers is uploaded to the GPU.
 
-Kinemation instead opts to store the bindposes and the binding resulting bone
-indices in the skeleton within persistent GPU buffers. That way, Kinemation only
-has to upload all the bones’ local-to-skeleton transforms to the GPU once. The
-GPU is then responsible for converting the QVVS transforms into matrices and
-computing the skin matrices for each mesh. This saves a bunch of CPU processing
-power and CPU-to-GPU bandwidth at the cost of adding a tiny (for the GPU)
+Kinemation instead opts to store the bindposes and the bone binding indices in
+the skeleton within persistent GPU buffers. That way, Kinemation only has to
+upload all the bones’ local-to-skeleton transforms to the GPU once for all
+skinned meshes. The GPU is then responsible for converting the QVVS transforms
+into matrices and computing the skin matrices for each mesh. This saves a bunch
+of CPU processing power and CPU-to-GPU bandwidth at the cost of adding a tiny
 workload to the GPU.
 
 What this difference means is that Kinemation is impacted much less by skinned
 meshes that are split up into multiple different parts. If a character is
 composed of modular parts, and those modular parts are reused by multiple
 characters, you may get better instancing performance and reduced GPU memory
-usage by keeping the meshes split. It also is easier to implement at runtime in
-Kinemation due to Kinemation’s binding mechanism.
+usage by keeping the meshes split.

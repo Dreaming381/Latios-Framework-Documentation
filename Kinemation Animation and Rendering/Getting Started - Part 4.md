@@ -10,14 +10,15 @@ We can do so by checking this box.
 
 ![](media/9b9ac7015305136fcf73d455ff2cd183.png)
 
-Of course, if we wanted to have additional exported bones to attach weapons or
-accessories, we could do that with the dropdown below it.
+Of course, if we wanted to have additional sockets to attach weapons or
+accessories, we might do that with the dropdown below it. We could also set it
+up with *Socket* authoring components later.
 
 ## Sampling an Entire Pose at Once
 
 Unlike exposed skeletons which rely on the entity transform system, optimized
-skeletons maintain their own root-space hierarchy in Dynamic Buffers and Blob
-Assets. Due to this complexity, it is not recommended to work with the raw
+skeletons maintain their own root-space hierarchy in dynamic buffers and blob
+assets. Due to this complexity, it is not recommended to work with the raw
 components. Instead, we will be using `OptimizedSkeletonAspect`.
 
 ```csharp

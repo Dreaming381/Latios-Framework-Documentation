@@ -8,7 +8,7 @@ skeletons.
 
 ## Defining our Clip Player Component
 
-First, we will need add the following namespace:
+First, we will add the following namespace:
 
 ```csharp
 using Latios.Kinemation;
@@ -128,7 +128,9 @@ animation data to that, we would lose our world-space position and rotation. Our
 animation does not have root motion, so the character would be snapped to the
 origin. However, if our animation did have root motion, we would want to compare
 it to the previous frame’s sample and* **add** *the difference to our
-Translation.*
+Translation, accounting for looping of course. You can use a*
+`RootMotionDeltaAccumulator` *to compute this for you, and you can apply it
+using* `RootMotionTools.ConcatenateDeltas()`*.*
 
 Let’s add our new authoring component to our character and give it a clip.
 
@@ -140,12 +142,13 @@ And now when we press play…
 
 ## Playing the Clip Using BoneOwningSkeletonReference
 
-Our first approach was fine, but we had to run it single-threaded because of the
-`GetAspect<TransformAspect>()` calls. Using `TransformAspect` and
-`WithNativeDisableParallelForRestriction()` might work, but perhaps it would be
-a little cleaner if we iterated using bone entities instead. To do that, we’ll
-use the `BoneOwningSkeletonReference` to find our skeleton and get the animation
-clip and the `BoneIndex` to sample the right bone.
+Our first approach was fine, but we had to run it single-threaded on the main
+thread because of the `GetAspect<TransformAspect>()` calls. Using
+`TransformAspect.Lookup` and `[NativeDisableParallelForRestriction]` might work,
+but perhaps it would be a little cleaner if we iterated using bone entities
+instead. To do that, we’ll use the `BoneOwningSkeletonReference` to find our
+skeleton and get the animation clip, and we’ll use the `BoneIndex` to sample the
+right bone.
 
 ```csharp
 [UpdateBefore(typeof(TransformSuperSystem))]

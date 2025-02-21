@@ -1,12 +1,10 @@
 # Getting Started with Kinemation – Part 1
 
-This is the sixth preview version released publicly. As such, there’s still more
-to come. For simple use cases, it is easy to get started. But for advanced
-production workflows, some of that burden may fall on the user.
-
-It will be up to you, a member of the community, to help guide Kinemation’s
-continual development to meet the needs of real-world productions. Please be
-open and loud on your journey. Feedback is critical.
+Kinemation sits at the intersection between gameplay, animation, and graphics.
+Naturally, a lot is happening across multiple different concerns and
+disciplines. This guide mainly focuses on character animation, although it will
+touch on other aspects. I intend to rewrite it completely with something more
+digestible when I have the time and resources.
 
 This Getting Started series is broken up into multiple parts. This first part
 covers the terminology and runtime structure. It is okay if you do not
@@ -78,7 +76,8 @@ Entities Graphics will only bake entities to use this format if a particular
 scripting define is enabled. Thus, Entities Graphics builds entity hierarchies
 like this:
 
--   If single material or scripting define set and not skinned
+-   If single material or scripting define set and renderer is not a skinned
+    mesh
     -   primaryEntity – all rendering components
 -   Otherwise
     -   primaryEntity – no rendering components
@@ -104,15 +103,65 @@ setup and distribution of entities. You can find a comprehensive set of API in
 OverrideMeshRendererBaker.cs and there’s an example of its usage for [dynamic
 meshes](Dynamic%20Meshes.md).
 
-Renderer entities can also be given the `RendererVisibilityFeedbackFlag` which
-is an `IEnableableComponent` that is enabled if the renderer was visible in the
+Renderers are invalid if they do not have the appropriate world-space transform
+component for the transform system in use (`WorldTransform` for QVVS and
+`LocalToWorld` for Unity Transforms).
+
+### Renderer Extras
+
+Renderer entities can be given the `RendererVisibilityFeedbackFlag` which is an
+`IEnableableComponent` that is enabled if the renderer was visible in the
 previous frame, and disabled otherwise. Renderer entities can also be given
 `PostProcessMatrix` and `PreviousPostProcessMatrix` for applying shear and other
-visual matrix transform effects to the entities for rendering.
+visual matrix transform effects to the entities for rendering. If a renderer
+entity uses procedural vertex shader animation, its culling bounds can be
+increased via the `ShaderEffectRadialBounds` component.
 
-Renderers are invalid if they do not have the appropriate world-space transform
-component for the transform system in use (WorldTransform for QVVS and
-LocalToWorld for Unity Transforms).
+### LODs
+
+Renderer entities can belong to a LOD Group. Unlike in Entities Graphics,
+Kinemation does not bake the LOD Group Game Object as an entity, and does not
+add any components for it. Instead, Kinemation bakes each Renderer as a LOD
+independently, and assumes all renderers in the LOD Group have the same
+position. If you have a use case that breaks this assumption, please report it.
+Kinemation supports LOD Crossfade (which also needs to be enabled in Shader
+Graph shaders), but does not support animated crossfades.
+
+At runtime, `LodHeightPercentages` or `LodHeightPercentagesWithCrossfadeMargins`
+hold the LOD range parameters. `LodCrossfade` holds the crossfade value. And
+`SpeedTreeCrossfadeTag` enables speedtree-style crossfades which blends the
+higher-res mesh vertices towards the lower-res mesh.
+
+As an alternative to LOD Group, Kinemation provides LOD Pack, which allows
+packing up to 3 LOD levels in a single entity with crossfades (the last level
+can be empty for a fade-out effect). LOD Pack is an authoring component that
+should be attached to any Mesh Renderer not part of a LOD Group. LOD Pack is
+often more performant, especially for dynamic entities as it avoids the need for
+child entities. At runtime, such entities have `LodCrossfade`,
+`UseMmiRangeLodTag`, and either `MmiRange2LodSelect` or `MmiRange3LodSelect`.
+
+### Unique Meshes
+
+Renderer entities can be set up with a Unique Mesh. This is a mesh pooled at
+runtime that uniquely belongs to an entity, and is fed its contents from dynamic
+buffers. To create one, simply add the `UniqueMeshConfig` component. This
+component should be enabled whenever the mesh needs to be updated from the
+buffers. You can optionally add any of the following buffers:
+
+-   `UniqueMeshPosition`
+-   `UniqueMeshNormal`
+-   `UniqueMeshTangent`
+-   `UniqueMeshColor`
+-   `UniqueMeshUv0xy`
+-   `UniqueMeshUv3xyz` (typically used for motion vectors)
+-   `UniqueMeshIndex` (vertex indices in triangles)
+-   `UniqueMeshSubmesh`
+
+If your Unique Mesh uses submeshes, you will need to use the renderer baking
+override API to configure the submesh IDs and materials, and you must add the
+`OverrideMeshInRangeTag` component. You can use
+`RendererBakingTools.uniqueMeshPlaceholder` as the mesh and disable submesh
+clamping when extracting `MeshMaterialSubmeshSettings`.
 
 ## Deforming Renderers
 
@@ -121,17 +170,18 @@ Deforming renderers are *renderer* entities (that is, they have the
 components used for deformation. Common examples would be
 `CurrentMatrixVertexSkinningShaderIndex` or `CurrentDeformShaderIndex`. The
 primary entity is given a copy of all deforming material properties of
-additional entities. And each additional entity is given a
-`CopyDeformFromEntity` component which points back to the primary entity. This
-component will cause the entity to receive the culling status and copy all
-material properties of the primary entity in the culling loop, rather than rely
-on its own culling status.
+additional entities. And any additional entity is given a `CopyDeformFromEntity`
+component which points back to the primary entity. This component will cause the
+entity to receive the culling status and copy all material properties of the
+primary entity in the culling loop, rather than rely on its own culling status.
 
 Deforming renderers are automatically created from baking skinned mesh
 renderers, but can also be created by setting `isDeforming` to `true` in
 `MeshRendererBakeSettings`.
 
-## Bound Mesh Deforming Renderers
+**Deforming renderers are NOT compatible with Unique Mesh nor LOD Pack!**
+
+### Bound Mesh Deforming Renderers
 
 Building on top of *deforming renderers*, *bound mesh deforming renderers*
 additionally contain the `MeshDeformDataBlobReference` component. At runtime,
@@ -146,7 +196,7 @@ material properties each frame during the culling loop.
 You will also notice the internal `ChunkDeformPrefixSums` component added to
 Bound mesh entities at runtime.
 
-## Dynamic Meshes
+### Dynamic Meshes
 
 *Dynamic meshes* are a type of *bound mesh deforming renderer* which contain
 components used for deforming the mesh each frame on the CPU. They contain the
@@ -168,7 +218,7 @@ between frames.
 
 Dynamic meshes are explained in more detail [here](Dynamic%20Meshes.md).
 
-## Blend Shape Meshes
+### Blend Shape Meshes
 
 *Blend shape meshes* are *bound mesh deforming renderers* that use blend shape
 deformations. They contain two components `DynamicBuffer<BlendShapeWeight>` and
@@ -181,13 +231,13 @@ Blend shapes are applied in a compute shader on the GPU for visible entities
 inside the culling loop. If the entity is also a *dynamic mesh*, the blend
 shapes are applied additively on top of dynamic mesh vertices. This can be
 disabled by adding the `DisableComputeShaderProcessingTag` component to the
-entity.
+entity, in case you wish to apply blend shapes on the CPU instead.
 
 A weight value of 0 will skip application of a blend shape, while a weight value
 of 1 will apply the blend shape at full strength. Weight values outside the
 range of [0, 1] are allowed for exaggeration of the shape.
 
-## Skinned Meshes
+### Skinned Meshes
 
 *Skinned meshes* are *bound mesh deforming renderers* that use a skeleton to
 drive the deformations. They are created via the presence of a
@@ -206,9 +256,10 @@ not commonly used.
 A large number of changes are made to skinned mesh entities at runtime during
 the binding phase. The skinned mesh entity is reparented directly to the
 skeleton entity and given the `CopyParentWorldTransformTag` component. In Unity
-Transforms, the `LocalTransform` is also set to `Identity` and modification will
-result in undefined behavior. The entity will also be given the internal cleanup
-component `SkeletonDependent` and the chunk component `ChunkSkinningCullingTag`.
+Transforms, the `LocalTransform` is also set to `Identity` and further
+modification of it by the user will result in undefined behavior. The entity
+will also be given the internal cleanup component `SkeletonDependent` and the
+chunk component `ChunkSkinningCullingTag`.
 
 The skinned mesh entity will go through a skeleton binding phase where an
 attempt is made to compute bone indices for the bind poses. If this operation
@@ -250,7 +301,7 @@ entity:
 A skeleton entity is not valid by itself. It must additionally be one of two
 specialized archetypes, exposed or optimized.
 
-## Exposed Skeletons
+### Exposed Skeletons
 
 An *exposed skeleton* is a *skeleton* entity where each bone within the skeleton
 is a separate entity. An exposed skeleton has a `DynamicBuffer<BoneReference>`
@@ -266,13 +317,13 @@ part of the skeleton at runtime), you will need to add and enable the
 At runtime, the internal component `ExposedSkeletonCullingIndex` will be added
 to the exposed skeleton entity.
 
-## Exposed Bones
+### Exposed Bones
 
 **Note: What Unity’s Rig tab in the model importer refers to as “exposed bones”
-are consequently referred to as “exported bones” in Kinemation. This name better
-suits the behavior of such bones as their transform data SHOULD NOT be modified
-by user code. “Exposed bones” in Kinemation refer to bones whose transforms CAN
-be modified by user code, and such modifications will be reflected in attached
+are consequently referred to as “sockets” in Kinemation. This name better suits
+the behavior of such bones as their transform data SHOULD NOT be modified by
+user code. “Exposed bones” in Kinemation refer to bones whose transforms CAN be
+modified by user code, and such modifications will be reflected in attached
 Skinned Meshes. When discussing Kinemation issues, try to stick to the
 Kinemation nomenclature.**
 
@@ -322,7 +373,7 @@ using Unity Transforms and Unity Physics to drive a ragdoll character.
 **Warning:** If an *exposed skeleton* references an invalid exposed bone, the
 resulting behavior is undefined, and usually pretty bad.
 
-## Optimized Skeletons
+### Optimized Skeletons
 
 An *optimized skeleton* is a *skeleton* entity that stores its bones directly
 inside dynamic buffers and blob assets. It is defined by the presence of the
@@ -350,7 +401,10 @@ At runtime, additional components are added to optimized skeleton entities:
 -   `OptimizedSkeletonWorldBounds`
 -   `ChunkOptimizedSkeletonWorldBounds`
 
-### OptimizedSkeletonAspect
+Optimized skeletons typically perform much better at scale, as they offer better
+cache locality for updating their transform hierarchy and culling bounds.
+
+#### OptimizedSkeletonAspect
 
 `OptimizedSkeletonAspect` contains many features to help manipulate the bones in
 an optimized skeleton. Some of these features are exclusive to optimized
@@ -358,8 +412,8 @@ skeletons.
 
 Optimized skeletons require an initialization step. This typically happens in
 `MotionHistoryUpdateSystem`, but if the entity was instantiated after this point
-in the frame, you may need to initialize the entity manually via the
-`ForceInitialize()` method.
+in the frame (sometime during SimulationSystemGroup), you may need to initialize
+the entity manually via the `ForceInitialize()` method.
 
 An optimized skeleton can either be in a synced or unsynced state. Accessing
 `rawLocalTransformsRW`, sampling poses from skeleton clips (more on that in a
@@ -379,7 +433,7 @@ be used if no blending were applied. You can start an inertial blend with
 `InertialBlend()`. It is safe to interrupt an inertial blend with a new inertial
 blend.
 
-### OptimizedRootDeltaROAspect
+#### OptimizedRootDeltaROAspect
 
 The root bone of an optimized skeleton typically contains the root motion delta
 when sampling from animation clips. However, Unity’s source generators sometimes
@@ -392,26 +446,28 @@ an optimized skeleton to assist with root motion operations. Root motion can be
 computed in one job using `OptimizedSkeletonAspect`, and applied in another
 using `OptimizedRootDeltaROAspect`.
 
-## Exported Bones
+#### Sockets
 
-An *exported bone* is an entity that copies the root-space
-`OptimizedBoneTransform` QVVS of an *optimized skeleton* bone and assigns it to
-its own `LocalTransform` and `WorldTransform` (the latter for stretch, QVVS
-only). When parented directly to the *optimized skeleton* entity, it effectively
-mimics the transform of the optimized bone along with all the optimized bone’s
-animations. This is often used for rigid character accessories like weapons or
-hats.
+A *socket* (formerly known as “exported bone”) is an entity that copies the
+root-space `OptimizedBoneTransform` QVVS of an *optimized skeleton* bone and
+assigns it to its own `LocalTransform` and `WorldTransform` (the latter for
+stretch, QVVS only). When parented directly to the *optimized skeleton* entity,
+it effectively mimics the transform of the optimized bone along with all the
+optimized bone’s animations. This is often used for rigid character accessories
+like weapons or hats.
 
-Any entity can become an exported bone simply by adding
-`BoneOwningSkeletonReference` and `CopyLocalToParentFromBone` components and
-setting their values appropriately. Bakers will automatically do this for bones
-made available in the *Rig* tab of the optimized skeleton’s import settings.
+Any entity can become a socket simply by adding `BoneOwningSkeletonReference`
+and `Socket` components and setting their values appropriately. Bakers will
+automatically do this for bones made available in the *Rig* tab of the optimized
+skeleton’s import settings. You can also use the *Socket* authoring component on
+a child Game Object of the *Animator* to set up sockets in a nondestructive
+workflow.
 
-*Exported bones* update during either `TransformSuperSystem` or
-`TransformSystemGroup` depending on which transform system you use. The
-*optimized skeleton* does not know about nor care about *exported bones*, which
-means you can have multiple *exported bones* track the same optimized bone. Be
-careful though, because *exported bones* can be relatively costly to update.
+Sockets update during either `TransformSuperSystem` or `TransformSystemGroup`
+depending on which transform system you use. The *optimized skeleton* does not
+know about nor care about sockets, which means you can have multiple sockets
+track the same optimized bone. Be careful though, because sockets can be
+relatively costly to update.
 
 ## On to Part 2
 
