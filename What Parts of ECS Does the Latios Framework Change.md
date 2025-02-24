@@ -2,8 +2,7 @@
 
 This is a common question that circulates around. And unless you talk to someone
 who uses the framework in the [Latios Framework
-Discord](https://discord.gg/DHraGRkA4n), you will likely hear misinformation
-about it.
+Discord](https://discord.gg/DHraGRkA4n), you may hear misinformation about it.
 
 1.  **No** feature requires a change in workflow, except to the functionality it
     directly pertains to.
@@ -33,7 +32,7 @@ manipulate your entities in jobs such as `IJobEntity`. And learn to use things
 like `NativeHashMap` and `ComponentLookup` to express relationship operations.
 
 If you are at that level, you are well-equipped to start leveraging the Latios
-Framework. And never hesitate to ask questions on our discord to keep you moving
+Framework. Don’t hesitate to ask questions on our discord to keep you moving
 forward.
 
 With that said, if you are the kind of person to jump off the deep end right
@@ -59,11 +58,14 @@ specific Latios Framework features being used (none are yet) and then return
 back to the normal Unity way of doing things.
 
 Nearly all Latios Framework systems use the `[DisableAutoCreation]` attribute,
-so they won’t be around.
+so they won’t be around. The exceptions are some baking systems and a
+`ProcessAfterLoad` system for Unika.
 
 Features made available in this state include:
 
 -   Smart Blobber and Smart Bakers
+-   `IBaker` extension methods for interfaces
+-   Baking system `WorldUpdateAllocator` memory leak fix
 -   `BootstrapTools` functionality
 -   Math and `Rng` Extensions and utilities
 -   Collections and Custom Command Buffers (user-invoked playback only)
@@ -72,21 +74,25 @@ Features made available in this state include:
 -   `EntityWith<>` and `EntityWithBuffer<>`
 -   `DynamicHashMap`
 -   `ThreadStackAllocator`
+-   `TempQuery`
+-   `ComponentBroker`
+-   `TypePack`, `Bits`, and other extensions
 -   The `TransformQvvs` type and operations
 -   All static runtime methods of Psyshock (Psyshock at runtime is system-free)
 -   NetCode Bootstrap and utility APIs (when NetCode package is installed)
 -   Kinemation’s `GraphicsUnmanaged` and `GraphicsBufferUnmanaged` APIs
+-   Unika, with the exception of not having the default entity remap systems
 -   Various other extension methods
 
 It is very rare for people to only go this far. But it might make sense if you
 are solely looking to benefit from using both Psyshock and Unity Physics in the
-same project.
+same project, or if you just want Unika.
 
 ## Changes When Adding the Bootstrap Unity Transforms – Injection Workflow
 
-This is the most popular way to use the framework at the time of writing. It
-preserves compatibility with the Unity ecosystem, while still offering many of
-the benefits Kinemation has to offer (plus modules like Myri and Calligraphics).
+This is a popular way to use the framework. It preserves compatibility with the
+Unity ecosystem, while still offering many of the benefits Kinemation has to
+offer (plus modules like Myri and Calligraphics).
 
 Adding the bootstrap is what activates the hooks and turns on many of the core
 features of the framework. However, these core features do not break any
@@ -101,13 +107,13 @@ That last bullet point will cause the Latios Framework to show up in all system
 update callstacks. But besides that, this change preserves the existing ECS
 workflow and sequence of operations 100% and shouldn’t affect you in any way.
 
-Besides that, the bootstrap itself breaks one particular thing in ECS. You
-cannot use `[CreateBefore]` on a custom system referencing a Unity system. Unity
-systems are always created first, then framework systems, and then your systems.
+However, the bootstrap itself breaks one particular thing in ECS. You cannot use
+`[CreateBefore]` on a custom system referencing a Unity system. Unity systems
+are always created first, then framework systems, and then your systems.
 
 This is done to allow you to specify in the bootstrap which framework features
-you want added to the world, and then to safely inject your own systems into the
-`ComponentSystemGroups` those features create.
+you want added to the world via installers, and then to safely inject your own
+systems into the `ComponentSystemGroups` those features create.
 
 An exception exists for systems that update in `DefaultVariantSystemGroup` in a
 NetCode project.
@@ -126,6 +132,7 @@ Features installed by default in this bootstrap:
 -   Myri
 -   Kinemation
 -   Calligraphics
+-   Unika default entity remap systems
 
 ### Myri
 
@@ -165,10 +172,14 @@ Or, with submesh sharing defined, it might bake it like this:
     TransparentE
 
 The former is a lot of entities, and the latter hurts batching of opaque
-materials. Kinemation does this instead:
+materials, as each material will receive its own draw call. Kinemation does this
+instead:
 
 -   Baked Entity – OpaqueA, OpaqueB, OpaqueD
     -   Additional depth-sorted Entity – TransparentC, TransparentE
+
+Here, the opaque materials will be drawn using instancing, while the transparent
+materials will receive their own draw calls.
 
 If you need a different layout, Kinemation allows you to override baking of
 individual Mesh Renderers. You can also use this API to bake procedural meshes.
@@ -179,6 +190,8 @@ skin matrices at all (these are computed on the GPU). And they are dynamically
 parented to the skeleton entity at runtime.
 
 But regarding material properties, they use the same scheme as Mesh Renderers.
+You can set up override material properties. And you can use runtime meshes and
+materials via `MaterialMeshInfo`.
 
 While Kinemation swaps out many of Entities Graphics systems, aside from skinned
 meshes and LODs, these changes only expose new features, enhance performance,
@@ -195,9 +208,12 @@ highlighting functions as normal.
 
 Features and improvements made available with Kinemation include:
 
+-   F and Shift + F for runtime entities (and closed subscenes) support
 -   LOD Crossfade support
--   LOD1 Append which allows packing a LOD0 and LOD1 into a single entity with
-    crossfade for extreme performance
+-   LOD Pack which allows packing up to 3 LOD levels (the last level can be an
+    empty fade-out) into a single entity with crossfade for even better
+    performance than LOD Group
+-   Unique Meshes (easy runtime-generated meshes)
 -   Exposed skeletons which automatically deform meshes based on bone entity
     transforms
 -   Optimized skeletons which keep bones in buffers for fast manipulation
@@ -237,16 +253,35 @@ Features made available include:
 -   Animated properties and rich text tags
 -   Changing text at runtime
 
+### Unika Default Entity Remapping Systems
+
+When entity references in Unika scripts are loaded from subscenes or when an
+entity with scripts is instantiated, scripts need to explicitly serialize entity
+references to a separate buffer so Unity can remap them, and then deserialize
+the references afterwards. The default entity remapping systems will look for
+enabled `UnikaEntitySerializationController` instances and serialize such
+entities at the beginning of `InitializationSystemGroup` and deserialize them at
+the end of `InitializationSystemGroup`.
+
+## Changes When Enabling LifeFX
+
+LifeFX is disabled by default with the installers commented out in the
+bootstrap, because it introduces a partial sync point at the end of
+`PresentationSystemGroup`. This is because VFX Graph updates between
+`PresentationSystemGroup` and rendering and buffers need to be fully synced with
+the main thread before that point.
+
 ## Changes When Enabling GameObjectEntity
 
 Several additional systems will be added to support binding GameObjects with
 entities at runtime and synchronizing their transforms.
 
-## Changes When Using the NetCode Standard Bootstrap
+## Changes When Using the NetCode Standard Injection Bootstrap
 
-This bootstrap brings all the same changes as the previous bootstrap. In
-addition, you need to replace all static method calls to `ClientServerBootstrap`
-to instead use the `LatiosClientServerBootstrap` equivalents.
+This bootstrap brings all the same changes as the Unity Transforms Injection
+bootstrap. In addition, you need to replace all static method calls to
+`ClientServerBootstrap` to instead use the `LatiosClientServerBootstrap`
+equivalents.
 
 Features made available include:
 
@@ -256,8 +291,9 @@ Features made available include:
 ## Changes When Switching to an Explicit Workflow Bootstrap
 
 This changes how systems are injected and ordered in the world. Attribute
-ordering is reserved for your top-level groups, which then explicitly specify
-the systems and groups they update and the order they update them.
+ordering is reserved for Unity systems and your top-level groups
+(`RootSuperSystems`), which then explicitly specify the systems and groups they
+update and the order they update them.
 
 This is an opinionated feature that some people like and some don’t. A big
 misconception is that you have to use it. You don’t. The framework works with or
@@ -272,30 +308,19 @@ prevent further error spam.
 
 It can be a useful debugging feature.
 
-## Changes When Enabling Mimic Mecanim
+## Changes When Enabling LinkedEntityGroup Length 1 Removal
 
-You’ll find the installers for Mimic’s Mecanim addon commented out across
-several lines in the bootstrap. Uncomment them to get runtime systems that can
-play baked-out Animator Controllers in native ECS. Note that there are known
-issues with animation timing code with the Mecanim implementation, which may or
-may not affect your character.
-
-Features made available include:
-
--   The Animator Controller state machine with parameters
--   Parameters influencing time values
--   All blend tree types
--   Ordered interruptions (uses inertial blending instead of a static pose
-    crossfade)
--   Events buffer
--   On-demand crossfades
--   Root motion
+Most bootstrap templates have this line commented out in the baking bootstrap.
+But it is usually safe to enable. When enabled, prefabs which don’t have
+children or other linked entities will have `LinkedEntityGroup` removed, unless
+they were baked with `LinkedEntityGroupAuthoring`.
 
 ## Changes When Enabling Psyshock Bakers
 
-This is another commented-out line of code in the bootstrap you can uncomment to
-enable. This will cause Unity Engine colliders to be automatically baked into
-Psyshock’s collider types. These can co-exist with Unity Physics colliders.
+This is another commented-out line of code in the baking bootstrap you can
+uncomment to enable. This will cause Unity Engine colliders to be automatically
+baked into Psyshock’s collider types. These can co-exist with Unity Physics
+colliders.
 
 Besides fattening your archetypes, there’s no real workflow differences with
 this feature.
@@ -339,9 +364,9 @@ parenting, and a cached `Child` buffer. However, when writing transforms, you
 always want to use `TransformAspect`, because it keeps local and world
 transforms in-sync.
 
-Early experimental NetCode support for QVVS Transforms has been added in 0.11.0,
-and you are invited to suggest further compatibility improvements for future
-releases.
+Early experimental NetCode support for QVVS Transforms was added in 0.11.0, and
+slightly improved for 0.12.0. However, development will likely not continue due
+to NetCode’s botched interpolation management.
 
 Features and improvements made available include:
 
@@ -350,7 +375,7 @@ Features and improvements made available include:
 -   Motion History
 -   Hierarchy Update Modes (lock world-space attributes on children)
 -   World-space persistence when deparenting
--   CopyParentWorldTransformTag
+-   `CopyParentWorldTransformTag`
 -   Greatly improved chunk occupancy for root entities
 -   Extreme Transforms mode for high entity count optimization
 -   Parenting and reparenting system jobification optimizations
@@ -389,8 +414,8 @@ Features made available include:
 -   Automatically resets the `sceneBlackboardEntity`
 -   Automatically invokes `ISystemNewScene` callbacks
 
-New in 0.10, there are methods to allow specifying some subscenes to load
-asynchronously. You can use this to force essentials to load first, but then
+Since 0.10, there are methods to allow specifying some subscenes to load
+asynchronously. You can use these to force essentials to load first, but then
 stream non-essentials in later.
 
 ## Frequently Asked Questions
@@ -414,4 +439,6 @@ everything else without it. It is purely a preference.
 *Q: How much of the framework works in Unity Transforms mode?*
 
 Nearly all of it. What doesn’t work tends to be very specialized features. But
-you will also miss out on some of the optimizations QVVS Transforms offers.
+you will also miss out on some of the optimizations and ergonomics QVVS
+Transforms offers. Even still, many people find the Latios Framework with Unity
+Transforms worthwhile.
