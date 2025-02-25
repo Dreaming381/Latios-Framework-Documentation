@@ -36,6 +36,9 @@ of problems and pitfalls we need to watch out for.
 
 ## A Race Condition in the Wild
 
+**Note: The issue discussed in this section has been fixed in Entities 1.3.10,
+but this section is left in as it provides useful insight.**
+
 I’ve often criticized Unity’s Transforms as being full of race conditions and
 being non-deterministic. I think a lot of people just skim past these remarks
 and never take the time to ask or try to understand what I mean. I could write
