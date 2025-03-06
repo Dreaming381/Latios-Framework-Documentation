@@ -99,9 +99,9 @@ To solve our dilemma, we will create a `PairStream`, and write all our pairs to
 it. `PairStream` has several constructors, all of which are simply different
 ways to provide it with the number of buckets the `CollisionLayers` use. We can
 pass a `CollisionLayer` directly (even if it is being used in a job), or we can
-pass its settings, or some raw settings values. Similar to other containers, we
-can call `AsParallelWriter()` to get something we can write to in a parallel
-FindPairs operation.
+pass its settings, or even some raw settings values. Similar to other
+containers, we can call `AsParallelWriter()` to get something we can write to in
+a parallel FindPairs operation.
 
 ```csharp
 var pairStream = new PairStream(playerLayer, state.WorldUpdateAllocator);
@@ -196,7 +196,7 @@ pairs for different zones it is within.
 PairStream has a lot more capabilities than just remembering entity pairs. It
 can remember additional data associated with each pair.
 
-To illustrate this, lets suppose that instead of dividing the points in a zone
+To illustrate this, let’s suppose that instead of dividing the points in a zone
 evenly amongst the players within, we instead want to distribute the points
 weighted by how close each player is to the center. Instead of totaling player
 counts, the zone will total inverse distances to each player. This means that we
@@ -278,11 +278,11 @@ at the center. These focal points have bias factors that dictate how much of the
 zone’s points should be accredited to their influence. And players are evaluated
 against all focal points.
 
-Now, we need to optionally be able to store inverse distances for each focal
-point within a pair. When we add a pair, we get back the Pair instance as an out
-parameter. We can call `Pair.Allocate<T>()` to allocate a `StreamSpan<T>` which
-we can store in a custom struct in our root pair object. In our case, we can
-also just use this directly as our root type.
+Now, we need to sometimes store inverse distances for each focal point within a
+pair. When we add a pair, we get back the Pair instance as an out parameter. We
+can call `Pair.Allocate<T>()` to allocate a `StreamSpan<T>` which we can store
+in a custom struct in our root pair object. In our case, we can also just use
+this directly as our root type.
 
 `StreamSpan` can be converted into a `System.Span`, but you can also index it
 directly. It is effectively a nested array inside a `PairStream`, and you should
@@ -391,7 +391,7 @@ Hopefully this example has provided a foundational understanding of what
 aware of.
 
 For example, the `Pair` can additionally provide whether each entity in the pair
-was granted write-access. Additionally, a Pair provides the `streamIndex` it
+was granted write-access. Additionally, a `Pair` provides the `streamIndex` it
 belongs to at present. The `streamIndex` can be used for writing to command
 buffers, similar to the `jobIndex` in `FindPairsResult`. However, it has little
 other correlation, and pairs are allowed to be moved between streams between
@@ -408,8 +408,8 @@ There are also APIs to add pairs using passed-in `Pair` instances. The primary
 use case for this is to forward a pair you are currently processing in a
 ForEachPair operation into a new `PairStream`. However, if you simply wish to
 filter pairs, you can instead choose to disable them. Each pair has an enabled
-state, and disabled pairs by default are excluded from the ForEachPair
-operation. Although you can specify to include the disabled pairs at schedule
+state, and disabled pairs are excluded from the ForEachPair operation by
+default. Although you can specify to include the disabled pairs at schedule
 time.
 
 If two `PairStreams` were created with the same configuration and same
@@ -423,10 +423,11 @@ all pairs in a `foreach` block. Disabled pairs are included in this enumeration.
 
 ## Up Next
 
-There’s still plenty more to explore in the Psyshock API. We haven’t even
-covered any of the UnitySim or other simulation APIs. But until I get around to
-expanding this series, feel free to explore them on your own.
+With PairStream, you now have a powerful tool to create complex spatial trigger
+event processing pipelines that can be executed fully multi-threaded. But as
+said at the beginning, this feature was mainly designed for physics simulation
+solvers. Which means we need to start exploring simulation. In the next part,
+we’ll cover basic particle and rigid body motion, including the treacherous
+details of rigid body rotation.
 
-Psyshock can be intimidating. No question is too stupid and you are encouraged
-to reach out to the community on Discord if you want help or would like to get
-more performance out of your use case.
+Continue to [Part 5](Getting%20Started%20-%20Part%205.md).
