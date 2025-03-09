@@ -6,6 +6,21 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic
 Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [0.12.1] – 2025-3-8
+
+Officially supports Entities [1.3.9]
+
+### Added
+
+-   Added scripting define `LATIOS_DISABLE_ACL` which allows the Latios
+    Framework to be built for platforms which don’t have a valid ACL plugin as
+    long as ACL-backed animation is not used by the project
+
+### Fixed
+
+-   Fixed use of `stackalloc` in a loop in `Ewbik.Solve()` which could result in
+    stack out-of-memory errors with high solver iteration counts
+
 ## [0.12.0] – 2025-2-23
 
 Officially supports Entities [1.3.9]

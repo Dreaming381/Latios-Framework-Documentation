@@ -79,7 +79,9 @@ following platforms:
 -   Android (including Meta Quest headsets)
 
 Other platforms are possible, but will require compiling a required [native
-plugin](https://github.com/Dreaming381/AclUnity) for the platform.
+plugin](https://github.com/Dreaming381/AclUnity) for the platform. You can also
+add the scripting define `LATIOS_DISABLE_ACL` to disable all usage of the native
+plugin if your project doesn’t need it and you’d like to target other platforms.
 
 In addition, if building for IL2CPP, you might need to set the code generation
 mode to *Faster (Smaller) Builds*.

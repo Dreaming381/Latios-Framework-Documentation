@@ -6,6 +6,25 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic
 Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [0.12.1] – 2025-3-8
+
+Officially supports Entities [1.3.9]
+
+### Added
+
+-   Added static `BuildBlob()` method to `ConvexColliderBlob` and
+    `TriMeshColliderBlob` to allow for runtime blob creation
+
+### Changed
+
+-   Renamed `UnitySim.ApplyImpulseAtWorldPoint()` parameter
+    `inertialSpaceWorldTransform` to `inertialPoseWorldTransform` to match
+    standard terminology
+
+### Improved
+
+-   Improved the safety error messages for improper access of `SafeEntity`
+
 ## [0.12.0] – 2025-2-23
 
 Officially supports Entities [1.3.9]
