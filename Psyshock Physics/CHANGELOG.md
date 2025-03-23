@@ -6,6 +6,20 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic
 Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [0.12.2] – 2025-3-22
+
+Officially supports Entities [1.3.9]
+
+### Fixed
+
+-   Fixed an issue that would result in queries against `CollisionLayers` and
+    TriMesh colliders performing far more tests than required if the query
+    `Aabb.min.x` was negative
+
+### Improved
+
+-   Slightly improved the performance of building `CollisionLayers`
+
 ## [0.12.1] – 2025-3-8
 
 Officially supports Entities [1.3.9]

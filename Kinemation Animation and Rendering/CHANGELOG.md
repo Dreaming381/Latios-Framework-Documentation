@@ -6,6 +6,25 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic
 Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [0.12.2] – 2025-3-22
+
+Officially supports Entities [1.3.9]
+
+### Fixed
+
+-   Fixed baking skeletons where one of the authoring entities has the
+    `BakingOnlyEntityAuthoring` component
+-   Fixed adding and removing `EntitiesGraphicsChunkInfo` to all prefabs and
+    disabled entities every frame
+
+### Improved
+
+-   Structural change operations inside
+    `LatiosUpdateEntitiesGraphicsChunkStructureSystem` are now Burst-compiled
+-   Improved a potential single-threaded job bottleneck in scenes with a large
+    number of LOD Crossfade entities by splitting the job into two and
+    parallelizing one of them
+
 ## [0.12.1] – 2025-3-8
 
 Officially supports Entities [1.3.9]
