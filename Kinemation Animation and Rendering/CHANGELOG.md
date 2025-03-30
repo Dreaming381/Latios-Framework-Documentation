@@ -6,6 +6,20 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic
 Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [0.12.3] – 2025-3-29
+
+Officially supports Entities [1.3.9]
+
+### Added
+
+-   Added `OptimizedSkeletonAspect.IsFinishedWithInertialBlend()`
+
+### Fixed
+
+-   Fixed an issue during skinning where if a skeleton has multiple skinned
+    meshes that require both current and previous transforms, the transform
+    types would get mixed up
+
 ## [0.12.2] – 2025-3-22
 
 Officially supports Entities [1.3.9]
