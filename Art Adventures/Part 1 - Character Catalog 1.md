@@ -91,7 +91,7 @@ Which means I’m going to need a lot of characters.
 In the game dev world, people will usually say something similar to the
 following:
 
->   If you can’t make it yourself, just use someone else’s.
+If you can’t make it yourself, just use someone else’s.
 
 That means the first place to start is to simply look for characters to use on
 the internet. And fortunately, there are tons of royalty-free characters out
@@ -382,6 +382,41 @@ Next, there’s the Animal pack.
 
 There’s nothing particularly special about these animals. They are too low poly
 for any soft physics potential, so they are added to the rigid category.
+
+A relatively new addition is the Universal Animation Library. This pack comes in
+3 versions: Standard (Free), Pro, and Source. All are CC0, but we’ll stick to
+the free version for the character catalog.
+
+![](media/b990116d8122a5cd5eb380e8979a340c.png)
+
+This one is interesting, because it comes with a dedicated FBX export for Unity.
+Inside Unity, I had to check the “Bake Axis Conversion” checkbox to make it work
+correctly. Also, this character is fully humanoid compatible with all the
+animations, so it will be possible to retarget these animations. Nice!
+Apparently this asset was a collaborative project, which is why it uses a
+different rig.
+
+The root motion import settings may need to be cleaned up though before they can
+be used. For now, I will leave them as is.
+
+Moving on, there’s the Animated Mech Pack.
+
+![](media/221a00e0947005d4e5dbaa320ca2d760.png)
+
+Yes, these have textures, which is atypical from Quaternius. In fact, each mech
+has 5 different color variations. The mechs also have names. They use the
+traditional Quaternius skeleton though, so they aren’t humanoid-compatible
+out-of-the-box.
+
+So far, we’ve covered character packs, but Quaternius also does themed packs
+that include characters and environment. One such involves this explorer in the
+Ultimate Modular Ruins Pack.
+
+![](media/7116af8af120c7a7a6909f8a0b9d4f53.png)
+
+We are back to standard Quaternius style of single color materials and generic
+skeletons. The hair has sufficient polygon density that this character falls
+into the soft category.
 
 ## To Be Continued…
 
