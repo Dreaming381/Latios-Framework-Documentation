@@ -6,6 +6,25 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic
 Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [0.12.4] – 2025-4-5
+
+Officially supports Entities [1.3.9]
+
+### Added
+
+-   Added `ClipEvents.GetEventIndicesInRange()` which can be used in a `foreach`
+    expression
+
+### Fixed
+
+-   Fixed animation clips sometimes dropping the final sample when baking due to
+    floating point errors
+-   Fixed `RootMotionTools` position offsets being calculated in the wrong
+    coordinate space, especially when the root motion contains changing
+    directions
+-   Worked around a Unity bug where if a skinned mesh and an optimized bone are
+    named the same, the skeleton would not be generated correctly
+
 ## [0.12.3] – 2025-3-29
 
 Officially supports Entities [1.3.9]
