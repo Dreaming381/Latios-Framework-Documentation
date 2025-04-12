@@ -6,6 +6,14 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic
 Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [0.12.5] – 2025-4-12
+
+Officially supports Entities [1.3.9]
+
+### Fixed
+
+-   Fixed `TriMeshColliderBlob.BuildBlob()` omitting two-thirds of the triangles
+
 ## [0.12.2] – 2025-3-22
 
 Officially supports Entities [1.3.9]

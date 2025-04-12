@@ -6,6 +6,19 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic
 Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [0.12.5] – 2025-4-12
+
+Officially supports Entities [1.3.9]
+
+### Added
+
+-   Added `AddComponentsCommandBuffer` which does not perform any component
+    initialization, but still respects the
+    `AddComponentsDestroyedEntityResolution` it is constructed with
+-   Added `DynamicHashMap.ReconstructAfterRemap()` which can be used to rehash
+    all elements due to hashcodes changing after an entity remap or blob asset
+    deserialization
+
 ## [0.12.3] – 2025-3-29
 
 Officially supports Entities [1.3.9]

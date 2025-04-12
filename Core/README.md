@@ -312,7 +312,8 @@ foot.
 
 This is a wrapper around a `DynamicBuffer` that provides hashmap-like
 functionality. Unlike other implementations, this implementation can correctly
-handle serialization of Entity and blob asset references.
+handle serialization of Entity and blob asset references. Although explicit API
+calls must be made if a key’s hashcode changes before and after serialization.
 
 ### Baking Interface Methods
 
