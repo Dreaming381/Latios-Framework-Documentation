@@ -354,8 +354,8 @@ latter shows up in the `Unity.Entities.Exposed` namespace.
 There are also situations where Unity’s package just does really dumb things
 that you probably weren’t aware of. For example, all prefabs will allocate on
 the heap when instantiated because of an included `LinkedEntityGroup`, even if
-they have no children. Or baking systems that use `WorldUpdateAllocator` will
-continuously allocate until the baking world is destroyed.
+they have no children. Or root component system groups might inject into
+themselves if you construct them early.
 
 I keep finding ways to mitigate bugs and missing APIs, and most of that ends up
 in Core.

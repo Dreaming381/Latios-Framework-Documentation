@@ -6,6 +6,25 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic
 Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [0.12.6] – 2025-4-20
+
+Officially supports Entities [1.3.14]
+
+### Added
+
+-   Added new Socket workflow for specifying a socket by name
+
+### Fixed
+
+-   Fixed exceptions when adding or regenerating an Optimized Skeleton Cache
+-   Reverted a change in 0.12.4 that was intended to work around a Unity bug
+    with incorrectly generated skeletons, as this change resulted in the
+    generation of unnecessary bones in far more common use cases
+-   Fixed authored sockets being treated as imported sockets
+-   Fixed a pointer misuse regression in `BufferPoseBlender.Optimize()` which
+    caused incorrect behavior for half the bones while stomping on non-bone
+    memory
+
 ## [0.12.4] – 2025-4-5
 
 Officially supports Entities [1.3.9]

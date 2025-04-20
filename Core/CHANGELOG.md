@@ -6,6 +6,22 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic
 Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [0.12.6] – 2025-4-20
+
+Officially supports Entities [1.3.14]
+
+### Added
+
+-   Added shorthand `GetCollectionAspect<T>()` method to `BlackboardEntity`
+-   Added `FluentQuery.WithAspectPresent<T>()` which adds all required `IAspect`
+    component types but ignores the enabled state of those components
+-   Added Color and Color32 extension methods `ToFloat4()` and `ToHalf4()`
+
+### Removed
+
+-   Removed `FixBakingAllocatorSystem` as this system’s sole purpose was to
+    address an issue that has now been fixed in the new Entities package
+
 ## [0.12.5] – 2025-4-12
 
 Officially supports Entities [1.3.9]

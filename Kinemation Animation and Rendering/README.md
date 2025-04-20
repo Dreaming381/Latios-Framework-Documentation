@@ -171,6 +171,9 @@ dumb things sometimes. Adreno GPUs have been susceptible to this.
     skinned mesh will fail to bind to it as the skeleton will be disabled at
     that time. The current workaround is to make the Game Object with the
     Animator a child of the Game Object with the Ghost Authoring component.
+-   If an asset was imported as an optimized hierarchy and internally contains a
+    Bone and a SkinnedMesh Renderer named identically, Kinemation may fail to
+    bake the skeleton correctly due to a Unity bug in `AnimatorUtility`.
 
 ## Near-Term Roadmap
 

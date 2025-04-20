@@ -94,6 +94,9 @@ and `MergeBlackboardsSystem` but before other custom systems in
 `CollectionComponentsReactiveSystem`. Other lifecycle tricks like this also
 exist, but are hidden from the user.
 
+Collection components and managed struct components will be automatically
+cleaned up when the `LatiosWorld` is disposed.
+
 ## Getting and Setting Components
 
 As collection components and managed struct components are not real components,
