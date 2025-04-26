@@ -6,6 +6,14 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic
 Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [0.12.7] – 2025-4-26
+
+Officially supports Entities [1.3.14]
+
+### Fixed
+
+-   Fixed an indexing issue if more than one unique mesh occupied an ECS chunk
+
 ## [0.12.6] – 2025-4-20
 
 Officially supports Entities [1.3.14]

@@ -6,6 +6,15 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic
 Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [0.12.7] – 2025-4-26
+
+Officially supports Entities [1.3.14]
+
+### Added
+
+-   Added `UnitySim.ApplyAngularImpulse()` which applies a rotational impulse
+    around the rigid body’s center without influencing movement
+
 ## [0.12.5] – 2025-4-12
 
 Officially supports Entities [1.3.9]
