@@ -109,7 +109,7 @@ you.
 
 Next, we need to create a field of type
 `CullingComputeDispatchData<CollectState, WriteState>`. In our example, we’ll
-name this `m_data`. In `OnCreate()`, we need to initialize it with the
+name this `m_data`. In `OnCreate()`, we need to construct it by passing in the
 `LatiosWorldUnmanaged`.
 
 Lastly, we can specify our `OnUpdate()` method like this:
@@ -117,6 +117,56 @@ Lastly, we can specify our `OnUpdate()` method like this:
 ```csharp
 [BurstCompile]
 public void OnUpdate(ref SystemState state) => m_data.DoUpdate(ref state, ref this);
+```
+
+Putting it all together, we have this:
+
+```csharp
+public partial struct MyRoundRobinSystem : ISystem, ICullingComputeDispatchSystem<MyRoundRobinSystem.CollectState, MyRoundRobinSystem.WriteState>
+{
+    LatiosWorldUnmanaged latiosWorld;
+    CullingComputeDispatchData<CollectState, WriteState> m_data;
+
+    public void OnCreate(ref SystemState state)
+    {
+        latiosWorld = state.GetLatiosWorldUnmanaged();
+        m_data      = new CullingComputeDispatchData<CollectState, WriteState>(latiosWorld);
+    }
+
+    [BurstCompile]
+    public void OnUpdate(ref SystemState state) => m_data.DoUpdate(ref state, ref this);
+
+    public CollectState Collect(ref SystemState state)
+    {
+        return new CollectState
+        {
+
+        };
+    }
+
+    public WriteState Write(ref SystemState state, ref CollectState collected)
+    {
+        return new WriteState
+        {
+
+        };
+    }
+
+    public void Dispatch(ref SystemState state, ref WriteState written)
+    {
+        
+    }
+
+    public struct CollectState
+    {
+
+    }
+
+    public struct WriteState
+    {
+
+    }
+}
 ```
 
 That’s all we need to make our system compliant with round-robin scheduling. And
