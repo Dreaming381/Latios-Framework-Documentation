@@ -32,20 +32,21 @@ That can be done by giving it “infinite mass”, which can be represented with
 multiplication is typically 50% faster than floating point division in raw
 throughput ignoring all other bottlenecks and latency-hiding tricks.
 
-Now the expression force \* `deltaTime` is a common one in game dev and has a
+Now the expression `force * deltaTime` is a common one in game dev and has a
 special name: **impulse**. Sometimes, it is easier to reason about impulses
 without knowing the factors that created them, so you may see impulses show up
 in the Psyshock API more than forces.
 
 Psyshock comes with a couple of utilities for calculating forces from other
-properties. One of these is `Physics.DragForceFrom()`. This method has actually
-two different forms. One form uses two drag coefficients named `k1` and `k2`.
-Usually people just make up these numbers based on whatever feels right. For
-something a little more realistic, there’s another variant that uses the “fluid”
-(usually air) velocity, viscosity, and density. This version models the actual
-friction of a spherical particle in these environments. Constants for air are
-provided in `Physics.Constants`. Lastly, there’s `Physics.BouyancyForceFrom()`
-which models the force of a fully submerged sphere.
+properties. One of these is `Physics.DragForceFrom()`. This method has two
+different forms. One form uses two drag coefficients named `k1` and `k2`.
+Usually people just make up numbers for these values based on whatever feels
+right to them. For something a little more realistic, there’s another variant
+that uses the “fluid” (usually air) velocity, viscosity, and density. This
+version models the actual friction of a spherical particle in these
+environments. Constants for air are provided in `Physics.Constants`. Lastly,
+there’s `Physics.BouyancyForceFrom()` which models the force of a fully
+submerged sphere.
 
 ## Rigid Body Positions
 
@@ -126,14 +127,13 @@ mass, and this means the outside atoms need to be moved greater distances to
 achieve the same rotation. Uniformly scaling an inertia tensor is cheap, though
 not simply a scalar multiplication of the matrix. Stretching is more expensive,
 because it changes the diagonal orientation. With Burst, you could still
-probably get away with doing it for thousands of rigid bodies every frame, but
-if you are trying to be optimal, understand that the cost is there. And
-Psyshock’s APIs are designed with this in mind.
+probably get away with doing it for thousands of rigid bodies every frame. But
+it is something you should at least profile.
 
 While you could compute the local inertia tensor diagonal and orientation
 precisely with your own apps and tools, Psyshock provides
 `UnitySim.LocalInertiaTensorFrom()` to compute them from uniform-density
-colliders just like with center of mass which returns the
+colliders just like with center-of-mass. This method returns the
 `LocalInertiaTensorDiagonal`. Note that in this method, you need to pass in the
 `stretch` value up-front. And like center-of-mass, these methods make crude
 approximations for triMesh colliders and self-overlapping regions of compound
@@ -170,16 +170,20 @@ rotation within the inertia tensor diagonal’s local space! If you have an
 angular velocity of (2, 0, 0), that means it is rotating at two radians per
 second around the diagonal’s local x-axis.
 
-Psyshock offers two methods for applying impulses that hide away some of the
+Psyshock offers three methods for applying impulses that hide away some of the
 math. These methods immediately update the `Velocity`. The first is
 `UnitySim.ApplyFieldImpulse()` which applies a uniform impulse across the entire
 rigid body. Such an impulse will never alter angular velocity, and only “moves”
 a rigid body. You provide the `Mass` and the impulse as a vector, where the
 normalized impulse is the direction, while the magnitude is the amount of force
-within the timestep. The second method is `UnitySim.ApplyImpulseAtPoint()` which
-additionally requires the world-space position the impulse is applied at, and
-the `inertialPoseWorldTransform`. This method may impact both linear and angular
-velocity.
+within the timestep. The second method is `ApplyAngularImpulse()` which applies
+a momentary torque impulse to the rigid body. This impulse will not alter the
+linear velocity. Along with the `mass` and `interialPoseWorldTransform`, you
+provide the axis you want the rigid body to rotate around due to the impulse,
+and the impulse magnitude. The final method is `UnitySim.ApplyImpulseAtPoint()`
+which requires the world-space position the impulse is applied at, and the
+impulse as a 3D vector, along with the `mass` and `inertialPoseWorldTransform`.
+This method may impact both linear and angular velocity.
 
 Now that we can update the `Velocity` with impulses, we need to apply the
 velocity updates to the rigid body. We can do that with `UnitySim.Integrate()`.
@@ -263,10 +267,14 @@ partial struct SimJob : IJobEntity
 
 ## Up Next
 
-There’s still plenty more to explore in the Psyshock API. We haven’t even
-covered contacts or other simulation APIs. But until I get around to expanding
-this series, feel free to explore them on your own.
+This part got fairly intense, especially with the details about rotations for
+rigid bodies. If you are serious about constructing a full rigid body physics
+engine out of Psyshock’s API, please take some time to experiment with these
+APIs. The next parts are only going to get harder and more confusing, so make
+sure you have a solid understanding of the APIs introduced here before
+continuing.
 
-Psyshock can be intimidating. No question is too stupid and you are encouraged
-to reach out to the community on Discord if you want help or would like to get
-more performance out of your use case.
+In the next part, we’ll explore the fundamental concepts of a “physics solver”,
+and use that to better understand the definition of a “contact manifold”.
+
+Continue to [Part 6](Getting%20Started%20-%20Part%206.md).
