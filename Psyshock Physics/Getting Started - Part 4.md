@@ -235,30 +235,29 @@ a safety check will throw an exception when safety checks are enabled.
 (`PairStream` stores the `BurstRuntime` 32-bit type hash to validate this.)
 
 ```csharp
-struct PlayerVsZoneFindPairsProcessor : IFindPairsProcessor
+struct SecondPassForEachPairProcessor : IForEachPairProcessor
 {
-    public PairStream.ParallelWriter                     pairStream;
-    public PhysicsComponentLookup<ZonePlayerTotalWeight> zonePlayerTotalWeightLookup;
+    public PhysicsComponentLookup<PlayerPoints>              playerPointsLookup;
+    [ReadOnly] public ComponentLookup<ZonePlayerTotalWeight> zonePlayerTotalWeightLookup;
 
-    public void Execute(in FindPairsResult result)
+    public void Execute(ref PairStream.Pair pair)
     {
-        if (Physics.DistanceBetween(result.colliderA, result.transformA, result.colliderB, result.transformB, 0f, out _))
-        {
-            ref var weight = ref pairStream.AddPairAndGetRef<float>(result.pairStreamKey, true, false, out _);
+        var pointsInZone = zonePointsLookup[pair.entityB].pointsPerFrame;
+        var totalWeight  = zonePlayerTotalWeightLookup[pair.entityB].totalWeight;
 
-            weight = 1f / math.max(0.001f, math.distance(result.transformA.position, result.transformB.position));
-            zonePlayerTotalWeightLookup.GetRW(result.entityA).ValueRW.totalWeight += weight;
-        }
+        ref var playerWeight = ref pair.GetRef<float>();
+
+        playerPointsLookup.GetRW(pair.entityA).ValueRW.points += pointsInZone * playerWeight / totalWeight;
     }
 }
 ```
 
-Something interesting you may notice is that we can get the stored data by ref.
-This is thread-safe writable. We can modify it for future ForEachPair
-operations, or we can completely replace it with a totally different type by
-calling `Pair.ReplaceRef<T>()`. As for the “raw” APIs, these are useful if you’d
-instead to prefer with raw untyped allocations instead. Type validation will be
-disabled if you do this.
+Something interesting you may notice is that true-to-its-name, `Pair.GetRef<T>`
+returns by `ref`. This is thread-safe writable. We can modify it for future
+ForEachPair operations, or we can completely replace it with a totally different
+type by calling `Pair.ReplaceRef<T>()`. As for the “raw” APIs, these are useful
+if you’d instead to prefer with raw untyped allocations instead. Type validation
+will be disabled if you do this.
 
 Also, it is worth noting that even though there is an API to replace data, the
 old data will still live in the `PairStream`. It simply won’t be directly
@@ -268,7 +267,7 @@ instances.
 
 ## Dynamic Stream Allocations
 
-We can only associate a single allocated instance to a pair in our PairStream.
+We can only associate a single allocated instance to a pair in our `PairStream`.
 But what happens if we need dynamic data? Are we stuck with using the raw API?
 
 Not at all!
