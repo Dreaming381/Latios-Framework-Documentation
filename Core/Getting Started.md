@@ -42,6 +42,12 @@ There are also Unity Transforms variants of these bootstraps for projects that
 use Unity Transforms. You will need to add LATIOS_TRANSFORMS_UNITY scripting
 define to your project if you use one of these bootstraps.
 
+**Warning:** If you have the Unity Physics, Character Controller, or Vehicles
+package installed, those packages are only compatible with Unity Transforms mode
+of the framework, and you must use a Unity Transforms bootstrap. QVVS
+alternatives for some of these packages may be found in the Latios Framework
+Add-Ons package at various stages of development.
+
 For NetCode Projects, the Latios Framework will detect the NetCode package and
 enable additional C\# files for compilation. One of these provides a dedicated
 NetCode bootstrap type called `LatiosClientServerBootstrap`, which offers Latios

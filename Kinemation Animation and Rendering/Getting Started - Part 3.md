@@ -1,10 +1,10 @@
 # Getting Started with Kinemation – Part 3
 
 In this part, we’ll cover baking an animation clip, and playing it on our
-character in a system. This guide assumes usage of QVVS Transforms. If you are
-using Unity Transforms, you may need to make some corrections in order to get
-the animations to work. This will not be an issue in Part 4 using optimized
-skeletons.
+character in a system. **This guide assumes usage of QVVS Transforms.** If you
+are using Unity Transforms, you **may need to make some corrections** in order
+to get the animations to work. This will not be an issue in Part 4 using
+optimized skeletons.
 
 ## Defining our Clip Player Component
 
@@ -89,6 +89,12 @@ namespace Dragons
 ```
 
 So far, so good.
+
+*Q: I’m getting an error about TransformSuperSystem not being defined. Why?*
+
+*A: You are probably using Unity Transforms. You will need to substitute this
+and other undefined symbols such as TransformAspect with Unity Transform
+equivalents.*
 
 Next, we want to get access to our animation clip. The `SkeletonClipSetBlob`
 stores all the animation clips in a `BlobArray` appropriately named `clips`.

@@ -41,9 +41,10 @@ Component* *Menu*, select *Latios -\> Myri -\> Audio Listener (Myri)*. Leave all
 the settings at default.
 
 Next, import an audio source with the *Load Type* set to *Decompress On Load*
-and *Preload Audio Data* checked. Then, on the non-listener Game Object, add a
-*Latios -\> Myri -\> Audio Source (Myri)* component. Drag your clip into the
-*Clip* field. Now enter play mode. You should hear your clip playing.
+and *Preload Audio Data* checked. *Load in Background* should be unchecked.
+Then, on the non-listener Game Object, add a *Latios -\> Myri -\> Audio Source
+(Myri)* component. Drag your clip into the *Clip* field. Now enter play mode.
+You should hear your clip playing.
 
 Now that you’ve heard your clip, the next thing to do is to start playing around
 with the position of the audio source. If you move your audio source to -1 on
