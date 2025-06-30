@@ -8,9 +8,10 @@ that led to this divergence in the first place.
 |                          | Unity Physics                                                             | Psyshock                                                                                                      |
 |--------------------------|---------------------------------------------------------------------------|---------------------------------------------------------------------------------------------------------------|
 | Query API                | Member methods                                                            | Static methods                                                                                                |
-| Collider Types           | Terrain                                                                   | More new types planned                                                                                        |
+| Collider Types           | Cylinder (kinda)                                                          | More new types planned                                                                                        |
 | Collider Representation  | Blob Asset                                                                | Mutable struct which for some types may contain a Blob Asset                                                  |
 | Convex Collider          | Beveled for performance                                                   | Hard-Edged for performance                                                                                    |
+| Terrain Collider         | Perfect 4-wide BVH without holes and fixed triangle quad splits           | Perfect 64-wide BVH with holes support and per-quad specification of triangle splits                          |
 | Raycasts                 | Include inside hits                                                       | Ignore inside hits (use point queries instead)                                                                |
 | Raycast Optimizations    | Ignore convex bevels                                                      | No bevels to ignore                                                                                           |
 | Collider Casts           | Conservative Advancement with tolerance and max of 10 iterations          | Minkowski raycasts and MPR with precise results                                                               |
@@ -19,6 +20,7 @@ that led to this divergence in the first place.
 | Collsion Events          | All hits stored in buffer iterated by ICollisionEventsJob single-threaded | User-invoked broadphase dispatches hits immediately to IFindPairsProcessor in parallel with pair write safety |
 | Pair Data                | No guarantees, requires filtering                                         | Strong guarantees based on the layers passed in                                                               |
 | Collision World          | Owned by singleton                                                        | Fully managed by user                                                                                         |
+| Archetype Processing     | EntityQueryMask filtered results or use colliderKey                       | Archetypes considered directly in spatial queries for improved performance and ergonomics                     |
 | Children and hierarchies | Static only                                                               | Fully supported (especially with QVVS Transforms)                                                             |
 | Systems                  | Out-of-the-box systems                                                    | No out-of-the-box systems, no automatic performance cost                                                      |
 | Simulator Modification   | Intermediate systems and jobs                                             | User drives each step from anywhere                                                                           |
@@ -104,16 +106,16 @@ to be processed in an `ITriggerEventsJob` giving us all of our collisions. That
 seems nice, except all of our resulting pairs are mixed together like a jar of
 jelly beans. Consequently each unique event handler needs to filter through the
 results and pick out the ones it cares for. That’s a lot of iterating through
-the events. We can use `EntityQueryMask` to speed this up, but still, it isn’t
-great. Instead, we might decide to bring our iteration count back down by having
-one job do all the filtering for all the different handlers to react to by
-creating a bunch of smaller collections of pairs. This works, but now the global
-filterer needs to know about every kind of pair interaction. You can try to
-generalize this, but it is just clunky. And also, this mega-filter algorithm has
-to run single-threaded. So this is a pretty bad bottleneck and simultaneously is
-tangling all our code together in stupid ways.
+the events. We can use `EntityQueryMask` or `ColliderKey` to speed this up, but
+still, it isn’t great. Instead, we might decide to bring our iteration count
+back down by having one job do all the filtering for all the different handlers
+to react to by creating a bunch of smaller collections of pairs. This works, but
+now the global filterer needs to know about every kind of pair interaction. You
+can try to generalize this, but it is just clunky. And also, this mega-filter
+algorithm has to run single-threaded. So this is a pretty bad bottleneck and
+simultaneously is tangling all our code together in stupid ways.
 
-What, you thought that was bad? It only gets worse.
+What? You thought that was bad? It only gets worse.
 
 Let’s suppose that we decide to drive our moving objects using physics, but we
 run into issues with the contacts and solver behavior between the military
@@ -152,7 +154,8 @@ to the instantiated prefabs? More slow cooking.
 
 What if I want to make an active ragdoll with rigid bodies for bones on an
 animated character? Unity Physics will break apart the entire hierarchy which
-will probably break animations.
+will break animations and generally requires a second copy of all bones to
+implement correctly.
 
 What if I’m making a simple game and I just want simple triggers? Unity Physics
 will compute contacts for all the trigger collisions because it relies on

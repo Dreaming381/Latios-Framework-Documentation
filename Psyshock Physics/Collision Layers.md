@@ -1,8 +1,12 @@
-# Collision Layers
+# Collision Layers and Collision Worlds
 
 A `CollisionLayer` is a struct containing several native containers and
 properties. It is used by the broadphase algorithms to provide fast and
 thread-safe collision detection and event handling.
+
+A `CollisionWorld` is a specialized `CollisionLayer` with additional cached
+entity archetype info so that entity queries can be applied on top of spatial
+queries efficiently
 
 ## The Collision Layer Structure
 
@@ -430,6 +434,60 @@ If you only need to query a single `Aabb` against a `CollisionLayer`, you can
 use the `FindObjects` API. It works very similarly to `FindPairs`, but with
 fewer options. Though it also has a zero-option overload for receiving each
 result in a `foreach` expression, which can be very convenient.
+
+## CollisionWorld
+
+The `CollisionWorld` type is very similar to `CollisionLayer` in terms of APIs.
+It is composed of a `CollisionLayer`, a list of `EntityArchetype` captured from
+the entities at build time, and a mapping between the two.
+
+Unlike with `CollisionLayer`, a `CollisionWorld` may only be created from an
+`EntityQuery`. You cannot use arrays or lists. To override AABBs, you must
+populate the optional `WorldCollisionAabb` component for each entity you wish to
+override.
+
+Every `CollisionWorld` can be built with a specified world index via the
+`WithWorldIndex()` in the fluent builder API. This value is exclusively
+user-defined. It is written to the optional `WorldCollisionIndex` along with the
+body index when building a `CollisionWorld`. `WorldCollisionIndex` provides a
+convenient way to look up the body index in a `CollisionWorld` from the entity.
+
+In addition to the `CollisionLayer` properties, `CollisionWorld` provides a
+couple additional properties. `archetypeCount` contains the number of unique
+archetypes that were found on entities when building the `CollisionWorld`. And
+`archetypeIndices` is a per-body array of indices to a unique archetype. Bodies
+which share the same archetype index have the same archetype.
+
+### Masks
+
+The `CollisionWorld.Mask` is an `EntityQuery` evaluated on the `CollisionWorld`.
+The `Mask` contains all archetype indices in the `CollisionWorld` that match the
+entity query. This is backed by `Allocator.Temp` memory for a sufficiently large
+set of matching archetypes, and therefore `Mask` should not be passed between
+jobs or persist for multiple frames.
+
+You create a `Mask` using `CollisionWorld.CreateMask()`. You can specify either
+a `TempQuery` or an `EntityQueryMask`. The `Mask` can be used in a `foreach` to
+iterate the archetype indices directly if you ever need that. However, the
+common use case is to pass it into spatial query methods such as `Raycast()` or
+`DistanceBetween()`.
+
+### FindPairs
+
+You can perform FindPairs operations with `CollisionWorld` instances and Masks.
+There are special rules for which pairs get reported:
+
+-   Single `CollisionWorld`, single `Mask` – Each unique pair reported once.
+-   Single `CollisionWorld`, `Mask`s A and B – Each pair is composed of an
+    entity matching `Mask` A as `entityA`, and an entity matching `Mask` B as
+    `entityB`. If a pair of entities match both masks, then the pair may be
+    reported twice, with each entity in the pair being reported as `entityA`
+    once and `entityB` the other time. However, an entity will never be in a
+    pair with itself.
+-   Two `CollisionWorlds`, `Mask`s A and B – Each `CollisionWorld` is filtered
+    by its own respective mask, and otherwise the FindPairs operates using the
+    standard bipartite rules. An entity may not be present in both
+    `CollisionWorld` instances.
 
 ## Debugging Collision Layers
 

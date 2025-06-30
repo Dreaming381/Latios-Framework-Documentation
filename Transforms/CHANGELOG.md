@@ -6,6 +6,39 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic
 Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [0.13.0] – 2025-7-6
+
+Officially supports Entities [1.3.14]
+
+### Added
+
+-   Added `WorldTransformReadOnlyAspect` method `Has()` which checks if the
+    underlying world transform type is in the specified `ArchetypeChunk`
+-   Added `FluentQuery` extension `WithoutWorldTransform()` to exclude the
+    underlying world transform type
+-   Added `enableTransformSyncing` to `GameObjectEntityAuthoring` which when
+    disabled may prevent unnecessary transform sync jobs from executing (that
+    the engine might sync on)
+
+### Changed
+
+-   **Breaking:** `MotionHistoryUpdateSuperSystem` now updates at the beginning
+    of `SimulationSystemGroup` and there is a new
+    `MotionHistoryInitializeSuperSystem` which updates within
+    `PostSyncPointGroup` instead
+-   A second transform system update is performed in `PostSyncPointGroup` prior
+    to `MotionHistoryInitializeSuperSystem` when Qvvs Transforms are installed
+
+### Fixed
+
+-   Fixed compilation issues in ShaderLibrary hlsl files
+
+### Removed
+
+-   Removed `version` and `isInitialized` from `PreviousTransform` and
+    `TwoAgoTransform`, as Motion History no longer uses the `worldIndex`
+    property of QVVS Transforms and now propagates the property unaltered
+
 ## [0.12.6] – 2025-4-20
 
 Officially supports Entities [1.3.14]

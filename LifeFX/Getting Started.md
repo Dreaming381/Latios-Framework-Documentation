@@ -253,8 +253,12 @@ Events to another system. Consult Unity’s Galaxy Samples for an example of thi
 Once you have your graph set up, you will need a Visual Effect Game Object in
 your scene (**not a subscene**). Add a VFX Graph Event Buffer Provider component
 to the Game Object. Drag in your tunnel, and set the names of your graph
-properties for the buffer name, start, and count. It should look something like
-this:
+properties for the buffer name, start, and count.
+
+The Game Object needs to be a Game Object Entity. It is safe to disable
+transform syncing.
+
+It should look something like this:
 
 ![](media/3248cce2cd5492328abd972ade9df7a1.png)
 

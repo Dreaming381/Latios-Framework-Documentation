@@ -6,7 +6,7 @@ over all things spatial and physics.
 
 While the API is lower-level than a typical physics engine, Psyshock allows you
 to sculpt a spatial query and/or physics engine suited for your project with
-better performance and gameplay ergonomics than a traditional game engine can
+better performance and gameplay ergonomics than a traditional physics engine can
 provide.
 
 Check out the [Getting Started](Getting%20Started%20-%20Part%201.md) series!
@@ -117,9 +117,9 @@ implicitly assignable from the Entities package counterparts) when you need
 write access to entities found by FindPairs.
 
 The only other thing you must watch for, is that **no entity can appear twice in
-a participating CollisionLayer!** There is a check in place for this when safety
-checks are enabled. If this rule is a problem for you, use `ScheduleSingle()`
-instead.
+a participating** `CollisionLayer`**!** There is a check in place for this when
+safety checks are enabled. If this rule is a problem for you, use
+`ScheduleSingle()` instead.
 
 Another awesome thing about FindPairs is that it is a broadphase. It reports
 AABB intersection pairs, not true collider pairs. Why is that a good thing? It
@@ -144,6 +144,16 @@ means you get to choose what algorithm to follow up with.
 
 And remember, you can use a different `IFindPairsProcessor` for each FindPairs
 call.
+
+### CollisionWorld – Injecting ECS into CollisionLayers
+
+Have you ever wanted to do a raycast, and specify `IComponentData` types that
+the hit entities must have to be accepted?
+
+`CollisionWorld` is a special type of `CollisionLayer` with extra ECS metadata
+baked in to do exactly this! But it doesn’t just filter results. It uses the
+specified components to actively reduce the set of AABBs it needs to search. To
+my knowledge, no other ECS physics engine can do this!
 
 ### Static Queries
 
@@ -230,6 +240,7 @@ character controllers or magical forces.
 -   More QuickTests
 -   More Character Controller Utilities
 -   Motor Constraints
+-   Terrain Collider Baking
 -   Persistent Pair State
 -   FindPairs improvements
     -   Aabb-only layers
@@ -241,11 +252,11 @@ character controllers or magical forces.
     -   Optimizations
 -   More Collider Shapes
     -   Quad, RoundedBox, Cone, Cylinder
-    -   Terrain, Convex Compound (V-HCAD)
-    -   Layer embedded?
+    -   Marching Cubes, Convex Compound (V-HCAD)
 -   Simplified Overlap Queries
 -   More Force Equations
--   More Constraint Formulas
+-   More Constraint Formulas and Solvers
+-   General Optimized Contact Generation
 -   Authoring Improvements
     -   Autofitting
     -   Stretch mode baking options

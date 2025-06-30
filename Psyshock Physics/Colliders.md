@@ -10,13 +10,19 @@ Psyshock supports the following collider types:
     -   center and halfwidth
 -   Triangle Collider
     -   pointA, pointB, and pointC
-    -   No built-in authoring component
+    -   no built-in authoring component
 -   Convex Collider
     -   local-space blob and non-uniform scale factor
 -   TriMesh Collider
-    -   Local-space blob and non-uniform scale factor
+    -   local-space blob and non-uniform scale factor
 -   Compound Collider
     -   local-space blob and uniform scale factor
+-   Terrain Collider
+    -   local-space heightmap blob of signed 16-bit integers and a hole mask
+    -   a base height offset integer, and a non-uniform scale factor
+    -   triangles are always in the positive xz quadrant in local space
+    -   experimental, with no baking of the `UnityEngine.TerrainCollider` at
+        this time
 
 ## Authoring
 
@@ -214,3 +220,29 @@ space and then applied to that sub-collider.
 
 A Compound Collider is a composite collider type and contains several
 sub-colliders.
+
+### Terrain Collider
+
+A `TerrainCollider` is a struct which defines a heightmap terrain composed of
+signed 16-bit integers, where four adjacent height values (quads) define two
+triangles for collision. Bitmasks specify that some triangles may not be valid,
+and each quad can define its triangle split direction as top left to bottom
+right, or bottom left to top right.
+
+The core of a `TerrainCollider` is its public
+`BlobAssetReference<TerrainColliderBlob> terrainColliderBlob` field. A
+`TerrainColliderBlob` contains the height values, hole masks, dimension
+information, and triangle split orientations. It also has a hierarchical data
+structure for 8-by-8 quads.
+
+There is no built-in `Baker<UnityEngine.TerrainCollider>`. If you want a
+`TerrainCollider`, you will need to bake it yourself either with the smart
+blobber API provided, or via the direct blob baking API.
+
+A `TerrainCollider` exposes a public `float3` scale which can apply a
+non-uniform scale to the collider. And it reacts to stretched transforms
+exactly. It also exposes a `baseHeightOffset` integer which biases the short
+height values before scaling.
+
+A Terrain Collider is a composite collider type and contains multiple
+sub-colliders (in this case, all Triangles).

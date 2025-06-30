@@ -1,6 +1,6 @@
 # QVVS Transforms
 
-QVVS Transforms is a collections of 3D transform systems based on a concept of a
+QVVS Transforms is a collection of 3D transform systems based on a concept of a
 QVVS representation. A QVVS is a vector-based representation of an object
 transform that can account for position, rotation, and uniform scale in both
 local space and world space. In addition, it can also account for a flavor of
@@ -105,11 +105,9 @@ those who need better compatibility with other offerings.
     subscenes.
 -   Some representations of Unity Transforms don’t map to QVVS cleanly in
     abstract APIs, and information may be discarded in both directions.
--   Motion History for motion vectors don’t work correctly with n – 1 rendering.
 
 ## Near-Term Roadmap
 
--   Split motion history initialization and update phases
 -   Fixed-Rate Transforms
 -   Custom hierarchy-aware job types
 -   Synchronous hierarchy modification APIs

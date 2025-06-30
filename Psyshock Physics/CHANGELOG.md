@@ -6,6 +6,59 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic
 Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [0.13.0] – 2025-7-6
+
+Officially supports Entities [1.3.14]
+
+### Added
+
+-   *New Feature:* Added `CollisionWorld`, which is a `CollisionLayer` with
+    extra entity archetype information for performing spatial queries with ECS
+    queries
+-   *New Feature:* Added `TerrainCollider`, which is a heightmap terrain
+    collider type that supports holes
+-   *New Feature:* Added `SubstepRateManager` which is an `IRateManager` that
+    can be used to break up a large variable timestep into smaller substeps
+-   Added `CollisionWorldIndex` and `CollisionWorldAabb` `IComponentData` for
+    working with `CollisionWorld` instances
+-   Added `PhysicsDebug.WriteToFile()` which can write a debug hex string to a
+    file so that it isn’t truncated in the editor
+-   Added TGS reprojection `Update()` method and supporting fields to `UnitySim`
+    contact jacobians
+-   Added `isCreated` property to `PairStream`
+
+### Changed
+
+-   **Breaking:** `FindObjectsEnumerator` no longer returns `Current` as` ref
+    readonly` as this was error-prone
+-   FindPairs methods now require the processor be an `unmanaged` type, whereas
+    before the requirement was simply `struct`
+
+### Fixed
+
+-   Fixed incorrect contact normal being generated in
+    `UnitySim.ContactsBetween()` for a Triangle-Box and Triangle-Triangle pairs
+-   Fixed `UnitySim.ContactsBetween()` not accounting for the capsule radius
+    correctly when the contact normal is not perpendicular to the capsule axis
+-   Fixed mid-phase search bounds in `Physics.DistanceBetween()` for a
+    TriMesh-TriMesh pair
+-   Fixed profile marker name for FindPairs when Burst is disabled
+-   Fixed aliasing error messages in FindPairs and ForEachPairs not specifying
+    the entity when Burst is enabled
+-   Fixed contact plane generation for box colliders along x and z axes
+-   Fixed technically undefined behavior with pointers in
+    `FindObjectsEnumerator`
+
+### Improved
+
+-   `PhysicsDebug.LogDistanceBetween()` is now Burst-compatible
+-   `Physics.DistanceBetween()` between two box colliders now use an SAT
+    algorithm which is more numerically robust in common use cases
+
+### Removed
+
+-   Removed `FindObjectsEnumerator.Reset()` which was ineffective
+
 ## [0.12.7] – 2025-4-26
 
 Officially supports Entities [1.3.14]

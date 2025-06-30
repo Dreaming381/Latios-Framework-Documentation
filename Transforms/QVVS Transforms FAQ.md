@@ -88,3 +88,12 @@ Ask them to support QVVS Transforms. They can detect the Latios.Transforms
 assembly and define a symbol in their package. Then they can use compiler
 directives to check for that symbol and the LATIOS_TRANSFORMS_UNITY symbol to
 determine whether to use Latios.Transforms or Unity Transforms.
+
+## Usage
+
+### Do I need to use TransformAspect for writing transforms? Shouldn’t I write to WorldTransform instead?
+
+Even though Unity’s `IAspect` will be going away in the future, the
+`TransformAspect` type will live on. You should prefer to use the
+`TransformAspect` type, as writing to `WorldTransform` directly for an entity
+with a parent will cause your hierarchy to get corrupted.

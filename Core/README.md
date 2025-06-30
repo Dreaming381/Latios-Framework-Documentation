@@ -373,7 +373,6 @@ in Core.
 ## Near-Term Roadmap
 
 -   `ThreadStackAllocator` `AllocatorManager` support
--   Blob prolonged retention system
 -   Entity create/change/destroy pipeline
 -   Subscene loading world bootstraps
 -   Fixed rate time management
@@ -384,7 +383,4 @@ in Core.
     -   Default initialization interface
     -   Get as ref
     -   Inspectors
--   Profiling tools
-    -   Port and cleanup from Lsss
 -   Reflection-free improvements
--   Job-friendly safe blob management

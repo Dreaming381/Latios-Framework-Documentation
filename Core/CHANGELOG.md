@@ -6,6 +6,41 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic
 Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [0.13.0] – 2025-7-6
+
+Officially supports Entities [1.3.14]
+
+### Added
+
+-   *New Feature:* Added `GapAllocator` for allocating into spans of specialized
+    resources such as graphics buffers with minimal fragmentation
+-   Added `CountForThreadIndex()` method to `UnsafeParallelBlockList`
+-   Added `BlackboardEntity` constructor which accepts a `SystemHandle`,
+    allowing a blackboard entity API for the system entity
+-   Added `BlackboardEntity` overloads for `AddComponent()` and
+    `RemoveComponent()` which accept a `ComponentTypeSet`
+-   Added `BlackboardEntity` methods `GetEnabled<T>()` and `SetEnabled<T>()` for
+    working with `IEnableableComponent`
+-   Added methods `GetOrAdd()` and `TryGet()` to `DynamicHashMap` which allow
+    for more complex operations on `DynamicHashMap`s with fewer lookups
+-   Added `simd` methods `distance()` and `clamp()`
+-   Added `UnsafeList<T>` extension method `AddRangeFromBlob()`
+-   Added `Exposed` APIs for working with `BlobAssetOwner` components
+-   Added `GetEntity()` extension method to `SystemHandle` to retrieve the
+    underlying entity
+
+### Fixed
+
+-   Fixed `Bits.SetBits()` overload which accepts a `ulong`
+-   Fixed compilation issues in ShaderLibrary hlsl files
+
+### Improved
+
+-   `AddOrSetCollectionComponentAndDisposeOld<T>()` will now only create a sync
+    point if the entity does not already have both the Exists and Cleanup
+    components, and both will be added in a single structural change to reduce
+    the total archetypes
+
 ## [0.12.6] – 2025-4-20
 
 Officially supports Entities [1.3.14]

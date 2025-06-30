@@ -10,7 +10,7 @@ Unlike `FindObjects` which allows you to search a single AABB region within a
 `CollisionLayer`, FindPairs allows you to search the AABB of each element in the
 `CollisionLayer` against all the other elements in the `CollisionLayer` in a
 highly-optimized parallel operation. Each time FindPairs finds two elements
-whose AABBs overlap, it must give the results back to you.
+whose AABBs overlap, it gives the results back to you on-the-spot.
 
 Similar to how an `IJobEntity` reports each filtered entity via the `Execute()`
 method, FindPairs reports each found pair via an `Execute()` method in your own
@@ -43,7 +43,7 @@ state.Dependency = Physics.FindPairs(ourCollisionLayer, new LogPairsProcessor())
 ```
 
 Just like when building a collision layer, FindPairs also uses a fluent API.
-FindPairs has six scheduling modes:
+FindPairs has five scheduling modes:
 
 -   .RunImmediate – Run without scheduling a job. You can call this from inside
     a job.
@@ -72,12 +72,11 @@ these phases in the timeline view of the profiler.
 
 So yeah, FindPairs has awesome thread-safety guarantees. But if you try to write
 to the components of the entity pairs using `ComponentLookup`, you will still
-get safety errors. That’s because Unity’s job system doesn’t know this is safe.
-You could get around this with the `[NativeDisableParallelForRestriction]`
-attribute, but Psyshock provides a safer alternative. In your
-`IFindPairsProcessor`, simply replace your `ComponentLookup` with
-`PhysicsComponentLookup`. There’s also `PhysicsBufferLookup` and
-`PhysicsAspectLookup`.
+get safety errors. Unity’s job system doesn’t know this is safe. You could get
+around this with the `[NativeDisableParallelForRestriction]` attribute, but
+Psyshock provides a safer alternative. In your `IFindPairsProcessor`, simply
+replace your `ComponentLookup` with `PhysicsComponentLookup`. There’s also
+`PhysicsBufferLookup` and `PhysicsAspectLookup`.
 
 Here's an example where two ship entities take damage when they collide.
 FindPairs reports pairs where the AABBs are overlapping, so the
@@ -111,7 +110,7 @@ struct DamageCollidingShipsProcessor : IFindPairsProcessor
 Unlike with `ComponentLookup`, `PhysicsComponentLookup` requires the entity
 passed in to be a `SafeEntity`. The `FindPairsResult` properties `entityA` and
 `entityB` are of this type. `SafeEntity` can be implicitly casted to a normal
-Entity, but you can’t go the other way. Additionally, if safety checks are
+`Entity`, but you can’t go the other way. Additionally, if safety checks are
 enabled, an exception will be thrown when a `SafeEntity` is used in a
 `PhysicsComponentLookup` inside a `RunImmediate()` or `ScheduleParallelUnsafe()`
 context.
@@ -181,7 +180,7 @@ As mentioned before, you can disable safe write access to `layerB` entirely in a
 two-layer FindPairs by using `ScheduleParallelByA()`. This variant can do all of
 its work in a single phase. But for complete parallelism, you can disable write
 safety completely via `ScheduleParallelUnsafe()`. This one is useful if all you
-need to do are force `bool` values or `IEnableableComponent` in a specific
+need to force `bool` values or `IEnableableComponent` states in a specific
 direction. You can also use this for writing to structural change command
 buffers using `FindPairsResult.jobIndex`. And you can write to a
 `PairStream.ParallelWriter` in this mode using `FindPairsResult.pairStreamKey`
@@ -190,9 +189,36 @@ buffers using `FindPairsResult.jobIndex`. And you can write to a
 For even more advanced use cases, `IFindPairsProcessor` has two default methods
 you can override. They are `BeginBucket()` and `EndBucket()`. These give you a
 `FindPairsBucketContext` which provide access to all the layer elements that
-would be processed for the specific `jobIndex`. Combined with
-`Physics.FindPairsJobIndexCount()`, you can use these to begin and end indices
-in a `NativeStream` or configure other caches.
+would be processed for the specific `jobIndex` (one or two buckets). Combined
+with `Physics.FindPairsJobIndexCount()`, you can use these to begin and end
+indices in a `NativeStream` or configure other caches.
+
+## FindPairs with Collision World
+
+`CollisionWorld` is also capable of leveraging FindPairs. It has three different
+ways of operating.
+
+For a single `CollisionWorld`, a single `EntityQueryMask` can be specified as a
+filter for the query. The resulting FindPairs operation will act like a single
+`CollisionLayer` FindPairs operation, with only the entities matching the
+`EntityQueryMask` being considered.
+
+Similarly, two `CollisionWorld` instances each with their own `EntityQueryMask`
+can be tested against each other. This matches the behavior of two
+`CollisionLayers`, with only entities matching each `CollisionWorld`’s
+respective `EntityQueryMask` being considered.
+
+The new third operation is with a single `CollisionWorld`, but with two
+`EntityQueryMask` instances. As you might expect, entities that match the first
+mask will always be the A result, and entities that match the second mask will
+always be the B result. But an entity might match both masks, and that’s when
+things get a little weird.
+
+If an entity matches both masks, it will never report a pair with itself.
+However, if two entities match both masks, they will report as a pair **twice**,
+with their roles as A and B flipping the second time. Both reports will happen
+within the same `jobIndex` and bucket context, so you can easily filter out the
+second report with a local `UnsafeHashSet` if needed.
 
 ## On to Part 4
 
