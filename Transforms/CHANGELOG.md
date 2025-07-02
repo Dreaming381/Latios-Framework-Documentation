@@ -32,6 +32,8 @@ Officially supports Entities [1.3.14]
 ### Fixed
 
 -   Fixed compilation issues in ShaderLibrary hlsl files
+-   Fixed missing safety attribute in `CopyGameObjectTransformToEntitySystem`
+    when using Unity Transforms
 
 ### Removed
 

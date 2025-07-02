@@ -157,7 +157,8 @@ dumb things sometimes. Adreno GPUs have been susceptible to this.
     native plugin is expected to work across all platforms, you may have to
     compile the library yourself for some platforms. If you would like to help
     Kinemation support your target platform officially, please reach out!
--   Occlusion Culling is not supported.
+-   Occlusion Culling is not supported (not that Entities Graphics supports it
+    either).
 -   Entities Graphics stats don’t work. Kinemation may provide its own solution
     for this in a future release which will be more extensible and customizable.
     In the meantime, you are strongly encouraged to use RenderDoc to analyze
@@ -177,6 +178,7 @@ dumb things sometimes. Adreno GPUs have been susceptible to this.
 
 ## Near-Term Roadmap
 
+-   Mesh LOD Support
 -   Procedural and Indirect Draw Support
 -   GPU Deformed Mesh Normals and Tangents Recalculation
 -   Blend Shape Animation Baking Helpers

@@ -6,6 +6,46 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic
 Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [0.13.0] – 2025-7-6
+
+Officially supports Entities [1.3.14]
+
+### Added
+
+-   *New Feature:* Added
+-   Added `IBaker` extension method `CreateBoneNamesForExposedSkeleton()` which
+    allows a baker to get all the bone names and parent indices of an exposed
+    skeleton in skeleton order
+-   Added
+
+### Changed
+
+-   **Breaking:** Split motion history into separate initialization and update
+    phases, with the update phase occurring at the beginning of
+    `SimulationSystemGroup`, which fixes motion vectors when using n-1 rendering
+
+### Fixed
+
+-   Fixed the name of skeleton roots that get baked to the binding paths
+-   Fixed error when using multiple submeshes on a Unique Mesh due to Unity
+    aggressively validating `MaterialMeshInfo` despite Kinemation’s relaxed
+    constraints
+-   Fixed Unique Meshes being reuploaded every frame
+-   Fixed Unique Meshes getting assigned to the wrong entities when multiple
+    existed in a single ECS chunk
+-   Fixed issue where renderable entities that had their world transform removed
+    at runtime would break the culling pipeline
+-   Fixed issue where culling callbacks could be invoked before the first
+    `PresentationSystemGroup` update, which could sometimes happen in
+    manually-bootstrapped projects
+
+### Improved
+
+-   The persistent material properties buffer resizing strategy has been
+    switched from a single thread group copying the entire buffer to instead
+    multiple 64k group dispatches copying 16 MB each dispatch, which resolved a
+    corruption issue on an Nvidia GPU
+
 ## [0.12.7] – 2025-4-26
 
 Officially supports Entities [1.3.14]

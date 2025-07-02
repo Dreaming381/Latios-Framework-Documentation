@@ -80,10 +80,7 @@ five types of animation:
 -   Harfbuzz Text Shaping
 -   Diacritics
 -   Custom Sprites
+-   Voxel Vertex Stride Mode (for raymarching)
 -   Billboards
 -   9-Slice Panels
 -   Decals
-
-## Not-So-Near-Term Roadmap
-
--   Animation overhaul (solid-state after transition is complete)
