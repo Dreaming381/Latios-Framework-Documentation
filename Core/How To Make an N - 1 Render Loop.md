@@ -46,18 +46,9 @@ BootstrapTools.AddWorldToCurrentPlayerLoopWithDelayedSimulation(world);
 Then, add the following three `SuperSystems` somewhere in your project:
 
 ```csharp
-[UpdateInGroup(typeof(PostSyncPointGroup), OrderFirst = true)]
-public class PreRenderTransformSuperSystem : RootSuperSystem
-{
-    protected override void CreateSystems()
-    {
-        GetOrCreateAndAddSystem<TransformSystemGroup>();
-    }
-}
-
 [UpdateInGroup(typeof(SimulationSystemGroup))]
 [UpdateBefore(typeof(TransformSuperSystem))]
-public class PreTransformSuperSystem : RootSuperSystem
+public class GamePreTransformSuperSystem : RootSuperSystem
 {
     protected override void CreateSystems()
     {
@@ -66,7 +57,7 @@ public class PreTransformSuperSystem : RootSuperSystem
 
 [UpdateInGroup(typeof(SimulationSystemGroup))]
 [UpdateAfter(typeof(TransformSuperSystem))]
-public class PostTransformSuperSystem : RootSuperSystem
+public class GamePostTransformSuperSystem : RootSuperSystem
 {
     protected override void CreateSystems()
     {
@@ -83,11 +74,17 @@ likely best fit for your system.
 1.  If your system performs structural change operations using `EntityManager`,
     place the system in `LatiosWorldSyncGroup`.
 2.  If your system modifies `TransformAspect`, place the system in
-    `PreTransformSuperSystem`.
-3.  If your system reads input, place the system in `PreTransformSuperSystem`
-    before all other systems.
+    `GamePreTransformSuperSystem`.
+3.  If your system reads input, place the system in
+    `GamePreTransformSuperSystem` before all other systems.
 4.  If your system generates jobs which can run during a sync point, place the
     system in `PreSyncPointGroup`.
 5.  If your system modifies material properties, place the system in the
     `PresentationSystemGroup` before `LatiosEntitiesGraphicsSystem`.
-6.  For all other systems, place the system in `PostTransformSuperSystem`.
+6.  For all other systems, place the system in `GamePostTransformSuperSystem`.
+
+Side note, the “Game” prefix here is to differentiate between the QVVS
+Transforms built-in `PreTransformSuperSystem` and `PostTransformSuperSystem`,
+which are exclusively intended for synchronization between entities and other
+transform representations such as `GameObjects` or Kinemation Optimized Skeleton
+buffers.

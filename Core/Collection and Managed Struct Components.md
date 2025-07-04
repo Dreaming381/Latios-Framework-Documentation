@@ -2,7 +2,7 @@
 
 Collection components and managed struct components are special types which can
 be “attached” to entities just like any other component. They can contain native
-containers and reference types respectively but can only be accessed from the
+containers and reference types respectively but can only be retrieved from the
 main thread.
 
 **Due to Unity API limitations, these components are not real components and are
@@ -181,7 +181,8 @@ the same rules as `ComponentType`s in Unity’s ECS:
 
 The automatic dependency management will do its best to keep track of this for
 you, but requires that you correctly specify whether you are accessing a
-collection component as `readOnly` similar to requesting a `ComponentLookup`.
+collection component’s containers as `readOnly` similar to requesting a
+`ComponentLookup`.
 
 *Note: You specify read-only status when requesting the actual collection
 component value, not when querying the* `ExistComponent`*.*
@@ -196,8 +197,8 @@ even if scheduled from separate systems.
 Before the `OnUpdate()` of the system executes, the system dispatcher registers
 it with the `LatiosWorld` as the active running system. From there, the
 `LatiosWorld` forwards all `Dependency` updates to that system and also records
-a list of all `Entity`-`ICollectionComponent` pairs which have been accessed and
-need their internal `JobHandle`s updated. After the `OnUpdate` finishes, the
+a list of all `Entity`-`ICollectionComponent` pairs which have been retrieved
+and need their internal `JobHandle`s updated. After the `OnUpdate` finishes, the
 system dispatcher passes the final `Dependency` to the `LatiosWorld` which then
 commits the `Dependency` to the internal storage.
 
