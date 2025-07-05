@@ -1,16 +1,15 @@
 # Getting Started with Myri Audio
 
-Myri in its current form is an audio solution which drew inspiration from the
-Megacity 2019 demo. It currently supports simple use cases appropriate for game
-jams, experiments, and maybe even some commercial projects. However, it lacks
-the necessary control features required to deliver a final product in this
-release. A major overhaul is planned for a future release which will lay the
-foundation of something much more suitable.
+Myri is an audio solution for Unity ECS. It drew inspiration from the Megacity
+2019 demo, but has since gone above and beyond. It currently supports simple
+production use cases where only spatialization and simple mixing are required.
+Advanced sound design tools are not yet present, though they are planned for a
+future release. If you are a sound designer and would like to help shape Myri’s
+feature, please reach out!
 
-With that said, I do believe that at the time of writing, Myri is still the
-closest to a production-ready ECS audio solution for Unity Engine proper. Many
-of the concepts discussed here will survive through the new overhaul. So I hope
-you enjoy trying it out and feel free to send feedback!
+With that said, Myri is still a production-ready solution for many styles of
+games. And what it may lack in features, it makes up for in simplicity and
+performance.
 
 ## Setting up the Managed Driver
 
@@ -24,11 +23,12 @@ First, it requires a Unity Engine Audio Listener attached to the main camera.
 This is the only time a Unity Engine audio component is ever used in Myri.
 
 Second, the managed driver will always attach the Mono runtime and garbage
-collector to the mixing thread. Normally, this doesn’t happen.
+collector to the DSP mixing thread. This doesn’t happen with the default Burst
+driver.
 
-With these two alterations, the managed driver will typically have different
-behavior in the editor when switching scenes or doing any other custom loading
-compared to what will happen in a build.
+With these two alterations, the managed driver may exhibit different behavior in
+the editor when switching scenes or doing any other custom loading compared to
+in a build.
 
 ## Playing Your First Sound
 
@@ -68,11 +68,7 @@ Myri provides three components for authoring audio. They can all be found in
 ### Audio Source
 
 The *Audio Source (Myri)* component provides all the settings available to an
-audio-emitting entity. When the listener is inside the *Inner Range*, it will be
-heard at max volume. Myri uses inverse-square falloff, so at twice the *Inner
-Range*, the audio source will be heard at quarter volume. The *Range Fade
-Margin* provides a range inside the *Outer Range* where the volume will
-interpolate to zero.
+audio-emitting entity. At the top are the *Clip* and *Volume* controls.
 
 An important thing to keep in mind is that audio volume and perceptual volume
 are two very different scales. Myri’s authoring presents everything in raw audio
@@ -95,24 +91,56 @@ One-shot sources will be combined if they begin playing at the same time (the
 same audio frame). This is purely a performance optimization, and the resulting
 mix is identical to what would happen if the sources were sampled separately.
 
-If *Use Cone* is checked, then the audio source receives an additional
-directional attenuation factor. Listeners within the *Inner Angle* from the
-source’s forward direction will not receive any attenuation. Listeners at the
-*Outer Angle* will be attenuated by the *Outer Angle Volume*.
-
 If *Auto Destroy on Finished* is checked and *Looping* is unchecked, the entity
 containing the audio source will automatically be destroyed once the clip has
 finished playing. This uses the [Auto-Destroy
 Expirables](../Core/Auto-Destroy%20Expirables.md) mechanism.
 
+The *Audio Channel* lets you specify an audio channel asset. Audio channels are
+used for categorizing sources so that they can only be heard by specific
+listeners. To create an audio channel asset, go to *Assets -\> Create -\> Latios
+\-\> Myri (Audio) -\> Audio Channel*. If you don’t provide an audio channel
+asset, the audio source will use an internal default channel.
+
+When *Use Falloff* is enabled, Myri enables spatialization on the audio source.
+When the listener is inside the *Inner Range*, the source will be heard at max
+volume. Beyond that, Myri uses inverse-square falloff, so at twice the *Inner
+Range*, the audio source will be heard at quarter volume. The *Range Fade
+Margin* provides a range inside the *Outer Range* where the volume will
+interpolate to zero.
+
+If *Use Cone* is enabled, then the audio source receives an additional
+directional attenuation factor. Listeners within the *Inner Angle* from the
+source’s forward direction will not receive any attenuation. Listeners at the
+*Outer Angle* will be attenuated by the *Outer Angle Volume*. *Use Cone* has no
+effect if *Use Falloff* is disabled.
+
 ### Audio Listener
 
 The *Audio Listener* component provides all the settings for an entity that is
 able to receive and spatially process sounds before sending them to the mixed
-output. The *Interaural Time Difference Resolution* (ITD resolution) specifies
-the resolution for computing the time it takes for sound to reach one ear versus
-the other assuming the speed of sound in Earth’s atmosphere. A higher resolution
-may increase the amount of sampling performed when voices are combined.
+output.
+
+The *Volume* and *Gain* values are raw values. *Gain* is a volume multiplier
+that is considered before the limiter. That is, it can make quiet moments a
+little louder.
+
+A **limiter** is a special effect that causes the volume to drop dynamically
+when the input signal becomes too loud. It forces the input audio signal to not
+cross a volume threshold. The limiter “looks ahead” at upcoming samples to
+determine if one is too loud. If it finds one, it starts ramping down the volume
+so that by the time the too-loud sample is ready to be played, it will be played
+at an appropriate volume. Once things quiet down, the limiter is allowed to
+restore the volume at a relaxation rate in decibels.
+
+The *Range Multiplier* is a multiplier applied to the falloff ranges of all
+sources for this specific listener. As an example, you might increase this value
+if the player is using a character with enhanced hearing capabilities.
+
+The *Interaural Time Difference Resolution* (ITD resolution) specifies the
+resolution for computing the time it takes for sound to reach one ear versus the
+other assuming the speed of sound in Earth’s atmosphere. A higher resolution may
+increase the amount of sampling performed when voices are combined.
 
 The *Listener Response Profile* allows for providing a custom spatial profile
 which describes the filters applied to the audio sources. Such profiles can be
@@ -121,11 +149,21 @@ class. If no custom profile is applied, a default profile which provides basic
 horizontally-spatialized audio is used. More info on creating these profile
 builders in code can be found further down this page.
 
+Lastly, you can specify a list of audio channel assets that the listener can
+hear. Any audio source that uses any one of the channels in list will be heard
+by the listener. Multiple listeners may be able to hear the same source. If
+*Include Sources Without A Channel* is enabled, the internal default channel
+will be added to the list.
+
 ### Audio Settings
 
 The *Audio Settings* component allows for configuring system-level settings in
 Myri. These settings must be applied to the *World Blackboard Entity* to have
 any effect.
+
+The master output settings specify the final output volume across all listeners
+after they have been mixed together. The master output has one final limiter
+stage, and these settings are also exposed here.
 
 The mixing thread updates at a fixed interval independent of the application
 framerate. In Myri’s world, these are referred to as “audio frames”. The audio
@@ -164,9 +202,9 @@ Update* at *1*.
 
 For scenarios where the main thread framerate outpaces the audio framerate
 slightly, but sampling consumes a large amount of time, it may instead be
-preferred to begin sampling an audio frame earlier than normal. Setting
-*Lookahead Audio Frames* to a value of 1 or greater will accomplish this. While
-this increases audio latency, it does not introduce a performance cost.
+preferred to begin sampling an audio frame or two early. Setting *Lookahead
+Audio Frames* to a value of 1 or greater will accomplish this. While this
+increases audio latency, it does not introduce a performance cost.
 
 ### Optimizing Clips for Performance
 
@@ -185,31 +223,27 @@ kHz being converted to 48 kHz.
 ## IComponentData
 
 Myri’s entire API is exposed as Burst-friendly `IComponentData` that can be
-interacted with inside jobs. Note that much of this API is likely to change in a
-future release. The components will be divided up differently, but the
-individual fields in the components will persist.
+interacted with inside jobs. Audio Sources use a modular set of components,
+while listeners use a single `AudioListener` component.
 
-### AudioSourceLooped and AudioSourceOneShot
+### AudioSourceVolume
 
-Looped and one-shot audio sources are handled separately in Myri. However, they
-expose identical properties publicly. The `clip`, `volume`, `innerRange`,
-`outerRange`, and `rangeFadeMargin` can all be configured freely.
+`AudioSourceVolume` is the most essential component for defining an audio
+source. It has a single `volume` field, which is a raw value. To mute an audio
+source, set the volume to zero. This will trigger a fast-path that avoids
+sampling the source.
 
-These components also contain internal playback state. Copying a component will
-copy its playback state. For looped sources, this means copying the unique
-offset value. For one-shots, the actual playhead position will be copied. In
-some cases this behavior is desirable, such as when working with component
-arrays you may want to only modify the `volume`. Other times you may want to
-reset the playback state. You can use the `ResetPlaybackState()` method to do
-so. Changing the `clip` will also reset the state, but only if the new value is
-different from the previous value.
+### AudioSourceClip
 
-A reset state will not be initialized until the next `AudioSystem` update, so
-you do not have to call `ResetPlaybackState()` after copying instances that have
-already been reset, or came from prefabs, or were constructed through code.
-
-To mute an audio source, set the volume to zero. This will trigger a fast-path
-that avoids sampling the source.
+An `AudioSourceClip` describes an audio clip and its current playback state. If
+the clip or looping properties change, the playback state will be reset. You can
+also manually reset the playback state via `ResetPlaybackState()`, which you may
+need to do if you copy the `AudioSourceClip` struct manually to another entity.
+Entities spawned from prefabs will start in a reset state and do not require any
+further intervention. For looping clips, `offsetIsBasedOnSpawn` toggles whether
+the clip plays from the beginning, or whether it aligns to one of the clip’s
+voices for ambience. Currently, `AudioSourceClip` is required for audio sources
+to be heard.
 
 ### AudioClipBlob
 
@@ -222,20 +256,78 @@ played by looped sources.
 Audio Clips have a full [Smart Blobber API](../Core/Smart%20Blobbers.md) which
 you can use in your own bakers.
 
+### AudioSourceDistanceFalloff
+
+When `AudioSourceDistanceFalloff` is present, the audio source enables
+spatialization for all listeners. It provides the three authoring values of
+`innerRange`, `outerRange`, and `rangeFadeMargin`. These values use `half`
+precision.
+
+`AudioSourceDistanceFalloff` requires `WorldTransform` or `LocalToWorld` to be
+present in order to have an effect.
+
+### AudioSourceEmitterCone
+
+When `AudioSourceEmitterCone` is present, and `AudioSourceDistanceFalloff` and
+`WorldTransform`/`LocalToWorld` are also present, then the volume perceived by
+the listener will be further filtered by the cone shape. The cone’s center axis
+always faces the audio source’s forward direction.
+
+### AudioSourceChannelID
+
+When `AudioSourceChannelID` is present, it defines the channel that listeners
+should be listening to if they want to hear this audio source. If absent or
+`default`, then the audio source uses the internal default channel. At this
+time, non-default instances must be baked, though they can be copied around at
+runtime. To bake an instance, call `GetChannelID()` on the audio channel asset
+from within a baker.
+
+### AudioSourceSampleRateMultiplier
+
+This component applies a multiplier to the sample rate of the clip. A value of
+2f will result in the clip playing at double speed, and an octave higher in
+pitch. Random values close to 1.0 can provide subtle variations to the sound,
+which may be useful for commonly played sound effects. Be careful though,
+because only sources with the exact same multiplier can be voice-combined.
+
+Notably, changing this value while the clip is playing will NOT have the desired
+effect, and will cause the playback state to jump around wildly. Set this value
+when the entity spawns, and then leave it alone.
+
 ### AudioListener
 
-The `AudioListener` component is very simple, containing only three values. The
-volume is the most useful. The `itdResolution` (inter-aural time difference
-resolution) will be clamped to [0, 15]. This value measures the number of steps
-from center to either ear that audio can be delayed by. Higher values increase
-fidelity but decrease the effectiveness of voice-combining, which comes with a
-performance cost. The `listenerProfile` contains the metadata used to describe
-the spatialization filtering.
+The `AudioListener` component describes all parameters of the listener except
+its transform and the audio source channels. A `WorldTransform` or
+`LocalToWorld` must also be present for the listener to be valid.
+
+The listener contains `volume`, `gain`, `limiterDBRelaxPerSecond`, and
+`limiterLookaheadTime` values which describe the listener’s sound in the overall
+mix. These can all be changed at any time, though artifacts may occur when
+changing the `limiterLookaheadTime` while audio is playing.
+
+The `rangeMultiplier` is the multiplier applied to the
+`AudioSourceDistanceFalloff` values. Like those values, it represents the
+multiplier in `half` precision.
+
+The `itdResolution` (inter-aural time difference resolution) will be clamped to
+[0, 15]. This value measures the number of steps from center to either ear that
+audio can be delayed by. Higher values increase fidelity but decrease the
+effectiveness of voice-combining, which comes with a performance cost. The
+`listenerProfile` contains the metadata used to describe the spatialization
+filtering.
 
 Unlike audio sources, the internal listener state is stored in
 `ICleanupComponentData`. The structural change commands are sent to
 `SyncPointPlaybackSystem`. You typically do not have to worry about these
 components.
+
+### AudioListenerChannelID
+
+Audio Listeners have a `DynamicBuffer<AudioListenerChannelID>` where each
+element contains an `AudioSourceChannelID`. These represent the set of channels
+that the listener can hear. A single element with just the default value will
+hear the default channel. No elements will prevent the listener from hearing
+anything.
 
 ### AudioSettings
 
@@ -252,15 +344,19 @@ expose settings and create custom editors for it if you wish. As an alternative,
 you can implement the `IListenerProfileBuilder` on a struct type, but you are
 responsible for applying the profile to an `AudioListener` component.
 
-When building a profile, you create *channels*. A channel is a rectangular area
-on a unit sphere which contains a unique set of volume controls and filters.
-Each ear has its own set of channels. When an audio source is heard by the
-listener, the direction from the listener to the source is computed. If that
-direction lies within the channel’s rectangular area, that source will be
-processed by the channel. If a direction does not lie within a channel, it will
-distribute the source’s audio signal to multiple channels using a weighting
-function. With the right filters and volumes, this dynamic distribution can
-create dynamic and responsive listening experiences.
+When building a profile, you create *filter channels*. These channels are
+different from audio channel assets. A filter channel may be either a spatial
+channel, or a direct channel. Each ear has its own set of channels.
+
+A spatial channel is a rectangular area on a unit sphere which contains a unique
+set of volume controls and filters for that area. When an audio source with
+spatialization is heard by the listener, the direction from the listener to the
+source is computed. If that direction lies within the spatial channel’s
+rectangular area, that source will be processed by the channel. If a direction
+does not lie within a channel, it will distribute the source’s audio signal to
+multiple spatial channels using a weighting function. With the right filters and
+volumes, this dynamic distribution can create dynamic and responsive listening
+experiences.
 
 *Weighting function details: The weighting function scans horizontally and
 vertically around the unit circle until it finds a channel in each of the four
@@ -271,26 +367,27 @@ some shortcomings. If no channel is detected in the horizontal and vertical
 searches, then all channels will be evaluated rather than the nearest. I’m not
 100% confident this is the best model, and would appreciate feedback.*
 
+Direct filter channels are specific channels that hear non-spatialized audio
+sources. All direct channels in a profile receive any given non-spatialized
+audio source within the entire ECS context.
+
 ### Adding a Channel
 
-To create a channel, call `AddChannel()`. This returns a `ChannelHandle` which
-can be used for adding filters to the channel.
+To create a channel, call `AddSpatialChannel()` or `AddDirectChannel()`. These
+return a `ChannelHandle` which can be used for adding filters to the channel.
 
-The first argument `minMaxHorizontalAngleInRadiansCounterClockwiseFromRight`
-specifies the range of the channel horizontally in radians, measured from the
-right ear counter-clockwise looking from above. Values from -2π to 2π are
-accepted, but the max value should always be greater than the min.
+The first argument in `AddSpatialChannel()`,
+`minMaxHorizontalAngleInRadiansCounterClockwiseFromRight`, specifies the range
+of the channel horizontally in radians, measured from the right ear
+counter-clockwise looking from above. Values from -2π to 2π are accepted, but
+the max value should always be greater than the min. The second argument
+`minMaxVerticalAngleInRadians` specifies the range of the channel vertically in
+radians, measured from the nose counter-clockwise looking from the right ear.
+Much like the horizontal arguments, values from -2π to 2π are accepted, but the
+max value should always be greater than the min.
 
-The second argument `minMaxVerticalAngleInRadians` specifies the range of the
-channel vertically in radians, measured from the nose counter-clockwise looking
-from the right ear. Much like the horizontal arguments, values from -2π to 2π
-are accepted, but the max value should always be greater than the min.
-
-The third argument `passthroughFraction` dictates the amount of the signal that
-should bypass filters. Each channel has a filter route and a bypass route which
-get mixed together in the final output. Each of these routes can have a custom
-volume factor applied using `filterVolume` and `passthroughVolume` arguments
-respectively.
+The `volume` parameter applies a scalar volume control value relative to the
+other channels. This is a raw scale factor without any limiting.
 
 The last argument specifies which ear the channel should be associated with. Use
 `true` for the right ear, and `false` for the left ear.
@@ -320,6 +417,11 @@ filtering logic remains unchanged.*
 If attempting to bake listener profile blob assets for storage outside of a
 listener component, use the `IBaker` extension method
 `BuildAndRegisterListenerProfileBlob()`. This is not a smart blobber API.
+
+*Q: Wait, why not?*
+
+*A: Listener profiles are small and cheap to compute, and a smart blobber API
+would have more overhead than needed.*
 
 ## Custom DSP
 

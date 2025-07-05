@@ -6,6 +6,63 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic
 Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [0.13.0] – 2025-7-6
+
+Officially supports Entities [1.3.14]
+
+### Added
+
+-   *New Feature:* Added Audio Source Channels which allow listeners to listen
+    to only a specific subset of sources
+-   *New Feature:* Added a per-listener limiter to support proper level mixing
+    between listeners
+-   *New Feature:* Added limiter controls to each listener as well as the master
+    output
+-   *New Feature:* Added `AudioSourceSampleRateMultiplier` which can be used for
+    generating subtle varieties to time and pitch of sources
+-   Added `rangeMultiplier` to `AudioListener` which can be used to scale all
+    spatial ranges of all sources the listener might listen to
+-   Added `ListenerProfileBuilder` method `AddDirectChannel()`, which is a
+    channel dedicated to sources that do not use spatialization
+-   Made the `StateVariableFilter` public API, which allows performing DSP
+    frequency filtering on individual samples passed in one-at-a-time
+
+### Changed
+
+-   **Breaking:** `AudioSourceOneShot` and `AudioSourceLooped` have been
+    replaced with `AudioSourceClip`, `AudioSourceVolume`, and
+    `AudioSourceDistanceFalloff`, where `AudioSourceClip` can represent either
+    looping or non-looping clips, and `AudioSourceDistanceFalloff` is optional
+    and enables spatialization when present
+-   **Breaking:** `ListenerProfileBuilder` method `AddSpatialChannel()` only
+    requests a single volume rather than differentiating between passthrough and
+    filter volumes, as the passthrough mechanism has been removed
+-   **Breaking:** `AudioClipOverrideBase` and `AudioClipOverrideRequest` have
+    been replaced with `IAudioClipOverride` and executes within Myri’s baker
+    context
+-   Spatialization ranges now use the `half` type at runtime
+-   The default `AudioSettings` `lookaheadAudioFrames` has been changed from 0
+    to 1
+-   A dedicated Myri ECS World is now created at runtime, which is used for
+    internal purposes
+
+### Fixed
+
+-   Fixed an issue where voice combining would have an unintended volume scaling
+    effect, making combined sources much louder than they should be
+-   Fixed an issue where streaming blob assets could be unloaded while sampling
+    was happening
+
+### Improved
+
+-   Simplified the underlying DSP Graph topology to reduce overhead
+-   The Myri Burst Driver now outputs audio an audio frame sooner
+
+### Removed
+
+-   Removed various DSP Graph nodes, as these should have never been public to
+    begin with
+
 ## [0.12.0] – 2025-2-23
 
 Officially supports Entities [1.3.9]

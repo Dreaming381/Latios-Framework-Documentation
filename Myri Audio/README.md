@@ -19,22 +19,31 @@ chaotic your scene is.
 
 ### Spatialization
 
-Myri processes sound in 3D space in order to provide the listener a sense of
-directionality and immersion. While much simpler than the cutting-edge
-techniques used in VR applications, the model is customizable through a listener
-profile API. From 2D panning to up to 127 distinct direction channels, Myri can
-be tuned to meet your project’s needs.
+Myri processes sound in 3D space to provide the listener a sense of
+directionality and immersion. While simpler than the cutting-edge techniques
+used in VR applications, the model is customizable through a listener profile
+API. From 2D panning to up to 127 distinct direction channels, Myri can be tuned
+to meet your project’s needs.
 
 The default profile produces a similar sound experience to the Megacity 2019
 demo.
 
+### Basic Mixing with Multiple Listeners
+
+Myri uses a channel asset system that allows listeners to filter on specific
+audio sources. Listeners are mixed together, with each listener having their own
+limiter controls to shape the final output.
+
+The easiest way to think about this is that not only does a listener have a
+position in 3D space, but it also acts like a fader control in a mixing console.
+
 ### Voice Combining
 
 Myri can detect when several audio sources are playing the same clip in unison
-and combine them to save processing power and reduce cacophony of ambient sounds
-without losing spatial or intensity information. This feature is in stark
-contrast to Unity’s FMOD implementation where sources are omitted when too many
-are played at once.
+and combine them to save processing power and reduce cacophony of ambient
+sounds, all without losing spatial or intensity information. This feature is in
+stark contrast to Unity’s FMOD implementation where sources are omitted when too
+many are played at once.
 
 The mechanism Myri uses for this is inspired by the Megacity demo. But unlike
 the demo, Myri can also combine one-shot sources.
@@ -47,6 +56,13 @@ Myri allows audio sources to define cone-shaped emitters. These can be used to
 emulate directional audio emitters such as loudspeakers.
 
 Cone emitters are fully modifiable at runtime.
+
+### Speed-Up/Slow-Down Pitch Shifting
+
+Myri allows clips to override the sample rate that clips can be played at.
+Playing at a higher sample rate means that the clip plays faster, and the pitch
+rises. This provides a simple mechanism to randomize the pitches of sound
+effects.
 
 ### ECS-Friendly Job Scheduling
 
@@ -79,12 +95,6 @@ those familiar with classical Unity terminology, audio sources always exhibit
 instantiating a prefab. You can even command Myri to automatically destroy the
 entity when the clip is done playing.
 
-### Multiple Listeners
-
-Yes. Multiple listeners are supported. Their outputs are automatically mixed
-together. I’m probably crazy for supporting this, but if this was a feature you
-were hoping for, well I’m glad I delivered.
-
 ## Known Issues
 
 -   Myri may drop the first samples of a newly instantiated audio source if the
@@ -93,9 +103,12 @@ were hoping for, well I’m glad I delivered.
     during frame spikes.
 -   Myri will only use up to `n` worker threads when performing sampling, where
     `n` is the sum of spatialization channels across all listeners. A default
-    listener has four spatialization channels.
+    listener has six spatialization channels.
 -   A job which manages listeners and the DSP graph is not Bursted due to
     DSPGraph limitations.
+-   A high number of listeners can have a heavy load on the DSP thread and
+    potentially overwhelm it due to the heavy processing required for each
+    limiter.
 
 ## Known Unity Engine and DSPGraph Issues
 
@@ -106,9 +119,6 @@ Unity!
 -   Sometimes in the editor, audio may stutter despite a lack of warnings of the
     DSPGraph being starved. This is because GC spikes stall the audio thread if
     Burst Compilation is disabled.
--   The Unity Editor sometimes emits an exception from a Bursted job. This is a
-    DSPGraph and job system bug related to scheduling, and does not appear to
-    have any adverse effects currently.
 -   Sometimes DSPGraph will hang editor shutdown or domain reload. This tends to
     affect some computers but not others, and only happens when Myri is used
     with engine-imported audio clips. Beginning with 0.12.0, an option in the
@@ -117,9 +127,6 @@ Unity!
 
 ## Near-Term Roadmap
 
--   Unified runtime representation for one-shot and looping sources
--   Effect Stacks Overhaul
-    -   Exposed limiter controls per listener and master
-    -   Source and listener layer masks
-    -   Streaming audio independent of main thread
-    -   Procedural audio and custom user effects via DSP APIs
+-   Hierarchical Mixing
+-   Audio Clip Compression
+-   Programmable Effects on the DSP Thread vis Effect Stacks
