@@ -12,11 +12,9 @@ Officially supports Entities [1.3.14]
 
 ### Added
 
--   *New Feature:* Added
 -   Added `IBaker` extension method `CreateBoneNamesForExposedSkeleton()` which
     allows a baker to get all the bone names and parent indices of an exposed
     skeleton in skeleton order
--   Added
 
 ### Changed
 

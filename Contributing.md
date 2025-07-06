@@ -20,8 +20,10 @@ can come quickly and with minimal disruption to the existing API until the next
 feature release. I have a design process that helps enforce this. I have never
 been able to teach anyone else this process. And consequently, my stance on
 contributions directly to the framework is that I’d strongly recommend sticking
-to smaller quality-of-life improvements. That’s not to say you can’t try to get
-a big feature merged, but mentally prepare yourself for a tough journey.
+to smaller quality-of-life improvements or the [areas where help is most
+wanted](#_Friendly_Development_Areas). That’s not to say you can’t try to get a
+big feature of your own design merged, but mentally prepare yourself for a tough
+journey.
 
 However, for the [add-ons
 package](https://github.com/Dreaming381/Latios-Framework-Add-Ons), go freaking
@@ -231,13 +233,32 @@ here’s a living list of ideas that will be especially helpful:
         in ECS, then make the scene you want to see function in ECS and send it
         our way.
 
-### Code
+### Samples
+
+The Latios Framework’s APIs are designed to support many, many use cases.
+Naturally, I do not have time to build samples for showing off all of them.
+Here’s a few ideas for some things you might be able to demonstrate:
+
+-   Psyshock Scenes
+    -   Feel free to consider out-of-the-box physics demos using physics engines
+        from the Add-Ons package, such as Anna physics.
+-   Kinemation Character Customization
+    -   This is easy to do with Kinemation. But setting up a complete solution
+        with assets and UI integration is something I’ve just never got around
+        to.
+-   LifeFX VFX
+    -   LifeFX allows for all sorts of VFX to be created. I’m not a VFX artist,
+        so it would be awesome to have someone who is show off all the things
+        that can be done with graphics events, tracked transforms, and even
+        Kinemation deform buffer vertex sampling.
+
+## Friendly Development Areas
 
 I tend to focus on code that plays to my strengths as a developer, which usually
 involves performance-sensitive code and complex data. Consequently, I tend to
 not spend time on things to improve the editor experience or reduce boilerplate.
-If you are looking to spend money to get someone to help me, these are the areas
-that someone else can easily provide a lot of value to:
+If you are looking to help, these are the areas that you can easily provide a
+lot of value to:
 
 -   Editor scripting and tools
     -   Most of my authoring components use default inspectors and have very
@@ -247,10 +268,26 @@ that someone else can easily provide a lot of value to:
         boilerplate, but often times, I struggle to justify the time investment.
         If you like the idea of reduced boilerplate, feel free to reach out, and
         I can walk you through some of my ideas.
--   Physics
-    -   If you are a physics nerd, Psyshock could use your help! I’d love
-        Psyshock to grow to support multiple different solvers and constraints
-        and techniques that users can mix and match to craft their perfect
-        physics engine.
+
+However, if you are like me and are more interested in the deep technical
+runtime code, there are a few of areas I could use your help as well. Reach out
+on Discord if you want to get involved in one of these:
+
+-   2D
+    -   I don’t intend to develop 2D on my own, but I happen to know a lot about
+        it, and am not opposed to guiding individuals or even a full team to
+        develop a suite of 2D functionality. I’d even be willing to help with
+        some of the challenging aspects of it if needed.
+-   Psyshock
+    -   Psyshock’s architecture lends itself to being more friendly for
+        contributors to help out, that-is if you can wrap your head around the
+        math involved. There are so many different constraint solvers, spatial
+        tests, and other things that would all be welcome in the giant Psyshock
+        toolbox.
+-   Calligraphics
+    -   Calligraphics is undergoing a major overhaul behind-the-scenes at a
+        slow-and-steady rate. The project has already been broken down into
+        bite-size steps, which means anyone with interest can jump in and help
+        out.
 
 If you have further inquiries, PM me on the Unity forums or DM me on Discord.

@@ -53,9 +53,9 @@ you decide to only go this far.
 
 There will be three hooks added to ECS from installation. One is during the
 setup of baking. One is during the creation of the Editor World. And one is
-during a `ComponentSystemGroup` update. All these hooks do are check for
-specific Latios Framework features being used (none are yet) and then return
-back to the normal Unity way of doing things.
+during a `ComponentSystemGroup` update. These hooks simply check for specific
+Latios Framework features being used (none are yet) and then return back to the
+normal Unity way of doing things.
 
 Nearly all Latios Framework systems use the `[DisableAutoCreation]` attribute,
 so they won’t be around. The exceptions are some baking systems and a
@@ -73,7 +73,7 @@ Features made available in this state include:
 -   Fluent Queries
 -   `EntityWith<>` and `EntityWithBuffer<>`
 -   `DynamicHashMap`
--   `ThreadStackAllocator`
+-   `ThreadStackAllocator` and `GapAllocator`
 -   `TempQuery`
 -   `ComponentBroker`
 -   `TypePack`, `Bits`, and other extensions
@@ -267,9 +267,11 @@ the end of `InitializationSystemGroup`.
 
 LifeFX is disabled by default with the installers commented out in the
 bootstrap, because it introduces a partial sync point at the end of
-`PresentationSystemGroup`. This is because VFX Graph updates between
+`PresentationSystemGroup`. This happens because VFX Graph updates between
 `PresentationSystemGroup` and rendering and buffers need to be fully synced with
-the main thread before that point.
+the main thread before that point. When you enable LifeFX in the bootstrap, all
+functionality including graphics events, global buffers, and tracked transforms
+are enabled.
 
 ## Changes When Enabling GameObjectEntity
 

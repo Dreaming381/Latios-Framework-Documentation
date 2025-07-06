@@ -2,9 +2,11 @@
 
 This guide will walk you through installing Latios Framework into your DOTS
 project. It will also show you how to enable or disable features of the
-framework. This guide is specifically designed to address custom project needs.
-For the basics of Latios Framework setup, it is recommended you review [Core:
-Getting Started](Core/Getting%20Started.md) first.
+framework.
+
+This guide is specifically designed to address custom project needs. For the
+basics of Latios Framework setup, it is recommended you review [Core: Getting
+Started](Core/Getting%20Started.md) first.
 
 ## Installation
 
@@ -12,7 +14,7 @@ When you first install the package, you may experience compiler errors due to
 lack of special scripting defines. Add the requested scripting defines to
 continue.
 
-Latios Framework 0.12 uses a custom transform system rather than Unity’s
+Latios Framework 0.13 uses a custom transform system rather than Unity’s
 Transforms by default. This system will bake `GameObject` `Transform`s fine, but
 may pose compatibility issues with other ECS packages. If compatibility is a
 larger concern to you than the performance and feature advantages of this custom
