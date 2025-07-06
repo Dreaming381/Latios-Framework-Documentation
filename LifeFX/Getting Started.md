@@ -20,7 +20,7 @@ For performance, it is usually best for a single `VisualEffect` instance to
 service many entities at once. This is a different workflow from how VFX Graph
 is typically used with Game Objects. LifeFX doesn’t magically make your “working
 with Game Objects” VFX Graphs suddenly compatible with entities with high
-performance. Unity hasn’t made this possible, and there’s nothing LifeFX can do
+performance. Unity hasn’t made that possible, and there’s nothing LifeFX can do
 about it. Unity’s Galaxy Sample also uses this alternate workflow and may
 provide a good reference.
 
@@ -127,6 +127,15 @@ The map component is read during the Dispatch stage of
 `GraphicsGlobalBufferBroadcastSystem` only runs the first time it is invoked in
 a frame.
 
+### Tracked Transform
+
+The `TrackedWorldTransform` component can be attached to an entity to have it
+automatically be tracked on the GPU. Tracked Transforms are stored in global
+buffer resource with the shader property name `_latiosTrackedWorldTransforms`.
+
+The two most-significant bits of `worldIndex` are used to encode alive and
+enabled states of the transform on the GPU.
+
 ## Making Your First LifeFX Effect
 
 ### ECS and Tunnel
@@ -214,7 +223,7 @@ your graph like this:
 ![](media/ceb520169ebfd237106dc8492e733f81.png)
 
 Here, there’s a Count property which is fed in via LifeFX. Note that this is a
-Periodic Burst. This will allow this spawner to listen for new spawns every
+*Periodic Burst*. This will allow this spawner to listen for new spawns every
 frame.
 
 There are a few different paths to go from here. If you only need to spawn a
@@ -260,13 +269,100 @@ transform syncing.
 
 It should look something like this:
 
-![](media/3248cce2cd5492328abd972ade9df7a1.png)
+![](media/0756349e35ed2dee33c04d82963f07ab.png)
 
 That’s it!
 
 You can enter play mode, and hopefully everything works! In play mode, you can
 bind the graph editor to the Visual Effect in your scene and live edit it while
 your ECS simulation running.
+
+## Using Tracked Transforms in VFX Graph
+
+The first example spawned particles from events. But those events only lasted a
+single frame. Often, particles may need to track an entity across several
+frames. But there is no guarantee that events on one frame will go to the
+correct corresponding particles on subsequent frames. This is where Tracked
+Transforms comes into play!
+
+### ECS Spawning
+
+First, you will need to ensure that your entity has a `TrackedWorldTransform`
+added to it. You can add this in your own baker. The enabled state of this
+component does not matter, as it will be overwritten at runtime. Optionally, you
+can also add the `TrackedWorldTransformEnableFlag` if you want to toggle
+tracking at runtime (which can help with performance).
+
+Next, you will need to add a single integer value to your graphics event used
+for spawning. If all your graphics event needs is transform data, then you can
+create a *Spawn Event Tunnel*.
+
+For tracked transform spawning to work, you **must** update your graphics event
+system inside `KinemationCustomGraphicsSetupSuperSystem`. In this system, you
+only iterate entities with enabled `TrackedWorldTransform` components, as this
+component will only be enabled on the first frame the `TrackedWorldTransform`
+needs to be synced. `TrackedWorldTransform` contains a `transformIndexInBuffer`
+property. Copy this value into a new graphics event that you send to the
+`GraphicsEventPostal`.
+
+```csharp
+struct SpawnIndexTunnel : IComponentData
+{
+    public UnityObjectRef<SpawnEventTunnel> tunnel;
+}
+
+[BurstCompile]
+partial struct SpawnTrackedTransformJob : IJobEntity
+{
+    [ReadOnly] public GraphicsEventPostal postal;
+
+    public void Execute(in SpawnIndexTunnel tunnel, in TrackedWorldTransform transform)
+    {
+        postal.Send(transform.transformIndexInBuffer, tunnel.tunnel);
+    }
+}
+```
+
+### VFX Graph
+
+In the Package Manager, go to the Latios Framework, and select the Samples tab.
+Install *LifeFX VFX Subgraphs*.
+
+In your VFX Graph, create four properties, two *Int* values, and two *Graphics
+Buffer* values.
+
+![](media/53400f2898288b25f67a91ced73133f4.png)
+
+Then, go to the *Attributes* tab and create a custom *Int* attribute named
+*TransformIndex*.
+
+![](media/20097f418d79fc3c2031636b8989de2d.png)
+
+In the *Initialize* context, sample the *SpawnBuffer* and set the
+*TransformIndex* attribute.
+
+![](media/70996e039e71663ad9d096ba289d6cec.png)
+
+In the Update context, sample the TransformBuffer with the TransformIndex. Make
+sure to specify the buffer type as VfxQvvs. Then create a new *Get QVVS
+Properties* node (which can be found inside *LifeFX Operators*). Connect the
+*alive* output to the particle’s *Alive* attribute, and then use the other
+transform properties to manipulate your particle.
+
+![](media/c73817ef54d7a0271d3c9bb8b384bdca.png)
+
+The *alive* output will only be false for a single frame upon entity
+destruction, and the transform buffer will hold the last remembered transform
+for that entity. On subsequent frames, the *TransformIndex* may refer to a
+different entity, so make sure you ignore any sampled transforms on subsequent
+frames if your particle outlives the entity.
+
+## Custom Tracking
+
+The entire implementation of Tracked Transforms uses the public API of LifeFX.
+This means that everything it does can be replicated in your own code, and
+consequently, you can use the Tracked Transforms implementation as a reference
+for synchronizing your own state between entities and the GPU.
 
 ## Q&A
 
