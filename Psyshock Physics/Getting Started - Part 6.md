@@ -622,10 +622,12 @@ part of its experiments.
 
 ## Up Next
 
-There’s still plenty more to explore in the Psyshock API. We haven’t even
-covered contacts or other simulation APIs. But until I get around to expanding
-this series, feel free to explore them on your own.
+That was a lot of information. Hopefully, this brought to light the inner
+workings of modern physics engines, and brought a little bit of intuition behind
+the various domain buzzwords.
 
-Psyshock can be intimidating. No question is too stupid and you are encouraged
-to reach out to the community on Discord if you want help or would like to get
-more performance out of your use case.
+In the next part, we’ll build our own very basic rigid body simulation using the
+`UnitySim` API. That process will involve concepts from every part of this
+Getting Started guide so far. Make sure you come prepared!
+
+Continue to [Part 7](Getting%20Started%20-%20Part%207.md).
