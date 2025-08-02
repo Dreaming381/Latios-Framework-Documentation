@@ -6,6 +6,29 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic
 Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [0.13.1] – 2025-8-2
+
+Officially supports Entities [1.3.14]
+
+### Added
+
+-   Added motor constraints to `UnitySim`
+-   Added `ContactJacobianStaticCollisionFilter` to `UnitySim`, which performs
+    Unity Physics detailed mesh collision algorithm
+-   Added `Physics.Raycast()` overload which allows specifying a specific
+    `subCollider` to cast against
+
+### Changed
+
+-   Added `in` specifiers to `Physics.Raycast()` overloads which take in a
+    `Collider` as a parameter
+
+### Fixed
+
+-   Fixed smart blobber baking of multiple convex colliders
+-   Fixed `UnitySim.ConvertToWorldMassInertia()` not accounting for scale and
+    stretch correctly for a body with a non-zero `localCenterOfMassUnscaled`
+
 ## [0.13.0] – 2025-7-6
 
 Officially supports Entities [1.3.14]

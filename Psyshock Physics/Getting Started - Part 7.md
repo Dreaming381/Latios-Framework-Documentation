@@ -337,6 +337,7 @@ sliding. And that value might be used to play an audio cue or something. The
 `return` `bool` value determines whether there was actual contact between the
 bodies detected. Because contacts are speculative, it is possible the bodies are
 moving too slowly or away from each other, so there isn’t any actual contact.
+Ignore the optional `collisionFilter` parameter for now.
 
 Anyways, that’s really it inside this processor. The `SolveJacobian()` method is
 doing most of the work of computing the impulses for contacts and friction, and

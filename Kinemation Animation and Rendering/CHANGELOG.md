@@ -6,6 +6,19 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic
 Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [0.13.1] – 2025-8-2
+
+Officially supports Entities [1.3.14]
+
+### Fixed
+
+-   Fixed baking skinned mesh binding paths for skinned meshes bound to an
+    exposed skeleton that was not the root of the hierarchy
+-   Fixed baking LOD Pack composed of a single mesh-material-submesh with a
+    fade-out, whereas previously the fade-out would be ignored
+-   Fixed LOD Pack evaluation not accounting for culling on orthographic cameras
+-   Fixed Burst logging of entity errors in `KinemationBindingReactiveSystem`
+
 ## [0.13.0] – 2025-7-6
 
 Officially supports Entities [1.3.14]

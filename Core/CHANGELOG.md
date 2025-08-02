@@ -6,6 +6,15 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic
 Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [0.13.1] – 2025-8-2
+
+Officially supports Entities [1.3.14]
+
+### Fixed
+
+-   Fixed Burst logging of entity errors for some collection component
+    interactions
+
 ## [0.13.0] – 2025-7-6
 
 Officially supports Entities [1.3.14]
