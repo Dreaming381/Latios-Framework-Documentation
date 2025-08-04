@@ -6,6 +6,16 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic
 Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [0.13.2] – 2025-8-3
+
+Officially supports Entities [1.3.14]
+
+### Fixed
+
+-   Fixed smart blobber baking regression for convex colliders
+-   Fixed terrain collider blob builder off-by-one error when calculating the
+    number of grid rows
+
 ## [0.13.1] – 2025-8-2
 
 Officially supports Entities [1.3.14]

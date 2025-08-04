@@ -6,6 +6,16 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic
 Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [0.13.2] – 2025-8-3
+
+Officially supports Entities [1.3.14]
+
+### Fixed
+
+-   Fixed regression baking skinned mesh binding paths for skinned meshes bound
+    to an exposed skeleton where the child of the root would not be included in
+    the path
+
 ## [0.13.1] – 2025-8-2
 
 Officially supports Entities [1.3.14]
