@@ -6,6 +6,24 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic
 Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [0.13.3] – 2025-8-16
+
+Officially supports Entities [1.3.14]
+
+### Added
+
+-   Added `IBaker` extension methods `ShouldBakeAll<T>()` and
+    `ShouldBakeAllInterface<T>()` which are designed to help users bake multiple
+    instances of a component on a `GameObject` at once, allowing for example all
+    the results to be packed into a single `DynamicBuffer`
+-   Added `GetUnsafeComponentPtrXXX()` methods to `ComponentBroker`, which allow
+    for accessing pointers to components type-agnostically
+
+### Fixed
+
+-   Fixed `IBaker` extension methods that operated on interfaces registering the
+    wrong dependencies when requested to access parent or children components
+
 ## [0.13.1] – 2025-8-2
 
 Officially supports Entities [1.3.14]

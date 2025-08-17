@@ -6,6 +6,28 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic
 Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [0.13.3] – 2025-8-16
+
+Officially supports Entities [1.3.14]
+
+### Added
+
+-   Added `UnitySim.LocalInertiaTensorDiagonal` static method
+    `ApproximateFrom(float3x3 inertiaTensor)` which uses the Unity Physics
+    approximation algorithm for decomposing the inertia tensor into an
+    orientation and diagonal
+-   Added static class `TrueSim` featuring various APIs for customizing the
+    center of mass and inertia tensors of complex geometry
+
+### Fixed
+
+-   Fixed floating point and other errors in `Physics.DistanceBetween()` between
+    two box colliders
+-   Fixed contact normal selection in `UnitySim` for various collider pairs when
+    the colliders are near-perfectly touching on points or edges
+-   Fixed `ForEachPair` second pass pair distribution issue which caused memory
+    corruption when enough pairs where needed in the second pass
+
 ## [0.13.2] – 2025-8-3
 
 Officially supports Entities [1.3.14]
