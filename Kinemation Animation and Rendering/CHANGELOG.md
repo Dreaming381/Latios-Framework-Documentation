@@ -6,6 +6,17 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic
 Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [0.13.4] – 2025-8-23
+
+Officially supports Entities [1.3.14]
+
+### Fixed
+
+-   Fixed incorrect vertex color attribute in Unique Mesh which resulted in
+    out-of-range errors
+-   Fixed `DynamicBuffer<CullingSplitElement>` not being cleared, causing it to
+    perpetually grow every frame
+
 ## [0.13.2] – 2025-8-3
 
 Officially supports Entities [1.3.14]

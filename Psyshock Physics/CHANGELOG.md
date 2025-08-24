@@ -6,6 +6,17 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic
 Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [0.13.4] – 2025-8-23
+
+Officially supports Entities [1.3.14]
+
+### Fixed
+
+-   Fixed incorrect results in `Physics.DistanceBetween()` between two box
+    colliders when at least one of the boxes has a center that is not (0, 0, 0)
+    locally
+-   Fixed raycasting TriMesh colliders when the `WorldTransform` is not identity
+
 ## [0.13.3] – 2025-8-16
 
 Officially supports Entities [1.3.14]
