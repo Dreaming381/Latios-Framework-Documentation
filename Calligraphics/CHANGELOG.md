@@ -6,6 +6,16 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic
 Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [0.13.5] – 2025-8-30
+
+Officially supports Entities [1.3.14]
+
+### Added
+
+-   Added scripting define LATIOS_DISABLE_CALLIGRAPHICS which disables the
+    module entirely, as Unity 6.3 alpha breaks the current implementation’s
+    ability to compile
+
 ## [0.12.0] – 2025-2-23
 
 Officially supports Entities [1.3.9]
