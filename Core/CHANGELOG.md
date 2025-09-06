@@ -6,6 +6,29 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic
 Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [0.13.6] – 2025-9-6
+
+Officially supports Entities [1.3.14]
+
+### Added
+
+-   Added various `ArchetypeChunk` extension APIs that accept a
+    `ComponentBroker` for accessing component array pointers, shared components,
+    and `EnabledMasks`
+
+### Changed
+
+-   `ComponentBroker` APIs that access types in read-only mode will never bump
+    the change version, even if the type was registered with the
+    `ComponentBroker` using read-write access, though performance may be worse
+    in such a scenario
+
+### Fixed
+
+-   Fixed consecutive additions of unique values into `DynamicHashMap` where the
+    unique keys of these additions all collide in the same bucket would result
+    in some of these elements no longer being retrievable by key
+
 ## [0.13.3] – 2025-8-16
 
 Officially supports Entities [1.3.14]
