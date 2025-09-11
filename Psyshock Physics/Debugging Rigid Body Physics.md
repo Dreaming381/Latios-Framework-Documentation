@@ -85,6 +85,51 @@ copy-and-paste that text in a bug report. Additionally, if one or both of the
 colliders involved is a composite collider (compound, tri-mesh, or terrain), try
 to specify the subcollider indices when you report the bug.
 
+Example code:
+
+```csharp
+bool wroteFile = false;
+Physics.DistanceBetweenAll(result.colliderA, result.transformA, result.colliderB, result.transformB, maxDistance, ref distanceBetweenAllCache);
+foreach (var distanceResult in distanceBetweenAllCache)
+{
+    var contacts = UnitySim.ContactsBetween(result.colliderA, result.transformA, result.colliderB, result.transformB, in distanceResult);
+    bool bad = false;
+    foreach (var contact in contacts.AsSpan())
+    {
+        // A metric that is used to detect potentially bad scenarios. You can try and come up with your own metrics to catch other cases.
+        if (contact.distanceToA < distanceResult.distance - 0.05f)
+            bad = true;
+    }
+    if (bad)
+    {
+        // Logging an error can trigger pause-on-error allowing you to inspect what is happening
+        UnityEngine.Debug.LogError($"Bad contacts! Normal: {contacts.contactNormal}, count: {contacts.contactCount}, result distance: {distanceResult.distance}");
+
+        // Drawing the colliders let you see where they actually are during collision detection, before they get moved by collision response.
+        PhysicsDebug.DrawCollider(result.colliderA, result.transformA, UnityEngine.Color.green);
+        PhysicsDebug.DrawCollider(result.colliderA, result.transformA, UnityEngine.Color.red);
+        foreach (var contact in contacts.AsSpan())
+        {
+            // This is one way to draw contact point pairs
+            UnityEngine.Debug.DrawRay(contact.location, contact.distanceToA * contacts.contactNormal, UnityEngine.Color.magenta);
+            UnityEngine.Debug.LogError($"Hit on B: {contact.location}, distanceToA: {contact.distanceToA}");
+        }
+
+        // Calling the methods again here allows for setting breakpoints to step through the evaluation again and find where things maybe went wrong.
+        var debugCache = new DistanceBetweenAllCache();
+        Physics.DistanceBetweenAll(result.colliderA, result.transformA, result.colliderB, result.transformB, maxDistance, ref debugCache);
+        contacts = UnitySim.ContactsBetween(result.colliderA, result.transformA, result.colliderB, result.transformB, in distanceResult);
+
+        // You can write out the pair to a file, though you probably want to write the file only once per frame
+        if (!wroteFile)
+        {
+            var text = PhysicsDebug.LogDistanceBetween(result.colliderA, result.transformA, result.colliderB, result.transformB, maxDistance);
+            FixedString512Bytes filepath = $"BadContactsHex_{result.bodyIndexA}_{result.bodyIndexB}_{distanceResult.subColliderIndexA}_{distanceResult.subColliderIndexB}.txt";
+            PhysicsDebug.WriteToFile(text, filepath);
+        }
+    }
+```
+
 ## Why Are These Issues Happening?
 
 The short answer is that Psyshock and Unity Physics do collision detection
