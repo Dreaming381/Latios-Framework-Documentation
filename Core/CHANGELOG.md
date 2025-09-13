@@ -6,6 +6,16 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic
 Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [0.13.7] – 2025-9-13
+
+Officially supports Entities [1.3.14]
+
+### Fixed
+
+-   Fixed element removal in `DynamicHashMap` corrupting the hashmap when the
+    element is one of three or more elements using the same bucket, and is not
+    the last element added
+
 ## [0.13.6] – 2025-9-6
 
 Officially supports Entities [1.3.14]
