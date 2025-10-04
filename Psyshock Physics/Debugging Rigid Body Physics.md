@@ -107,7 +107,7 @@ foreach (var distanceResult in distanceBetweenAllCache)
 
         // Drawing the colliders let you see where they actually are during collision detection, before they get moved by collision response.
         PhysicsDebug.DrawCollider(result.colliderA, result.transformA, UnityEngine.Color.green);
-        PhysicsDebug.DrawCollider(result.colliderA, result.transformA, UnityEngine.Color.red);
+        PhysicsDebug.DrawCollider(result.colliderB, result.transformB, UnityEngine.Color.red);
         foreach (var contact in contacts.AsSpan())
         {
             // This is one way to draw contact point pairs
