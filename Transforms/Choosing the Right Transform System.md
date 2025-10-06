@@ -11,8 +11,6 @@ Picking the correct one is important.
 
 -   Cached QVVS
     -   Extreme Transforms Augmentation
--   Non-cached QVVS (Not yet implemented)
-    -   Extreme Transforms Augmentation (Not yet implemented)
 -   Unity Transforms
     -   Stretch Compatibility Augmentation (Not yet implemented)
     -   Deterministic Parallel Hierarchy Augmentation (Not yet implemented)
@@ -57,29 +55,6 @@ outweigh the overhead of the extra jobs.
 
 The extra components add a single byte per child entity plus a 4-byte chunk
 component.
-
-## Non-cached QVVS
-
-Compared to its cached counterpart, Non-cached QVVS omits the
-`ParentToWorldTransform` and `TransformAspect` in order to reduce memory and
-computation cost. However, this may make it more difficult to develop with as
-the `WorldTransform` may be more stale and writing transforms requires knowledge
-of the hierarchy state by the user.
-
-Entity sizes are identical to cached, except that child entities only require 80
-bytes excluding `Parent` and `Child` components.
-
-When working with Non-cached QVVS, the `WorldTransform` is always up-to-date for
-root entities and should be both written-to and read-from directly. For child
-entities, `WorldTransform` may be stale and should never be written to directly.
-Write to `LocalTransform` instead. `WorldTransform` will be updated by the
-`TransformSuperSystem`.
-
-Non-cached QVVS is not yet implemented.
-
-### Extreme Transforms Augmentation
-
-This augmentation is identical to the Cached QVVS augmentation of the same name.
 
 ## Unity Transforms
 

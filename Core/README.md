@@ -165,13 +165,6 @@ to work correctly with systems that rely on singletons, such as Unity Physics.*
 
 See more: [Scene Management](Scene%20Management.md)
 
-### Math
-
-What framework would be complete without some math helpers? Not this one.
-Overly-used algorithms and some SIMD stuff are here. Help yourself!
-
-See more: [Math](Math.md)
-
 ### Fluent Queries
 
 Fluent syntax for expressing EntityQueries was a big improvement. However, every
@@ -227,35 +220,6 @@ You can also play back these buffers manually.
 
 See more: [Custom Command Buffers and
 SyncPointPlaybackSystem](Custom%20Command%20Buffers%20and%20SyncPointPlaybackSystem.md)
-
-### Rng and RngToolkit
-
-There are three common strategies for using random numbers in DOTS ECS. The
-first is to store the `Random` instance in a singleton, which prevents
-multithreading. The second is to store several `Random` instances in an array
-and access them using `[NativeThreadIndex]` which breaks determinism. The third
-is to store a `Random` instance on every entity which requires an intelligent
-seeding strategy and consumes memory bandwidth.
-
-There’s a way better way!
-
-`Rng` is a new type which provides deterministic, parallel, low bandwidth random
-numbers to your jobs. Simply call `Shuffle()` before passing it into a job, then
-access a unique sequence of random numbers using `GetSequence()` and passing in
-a unique integer (`chunkIndex`, `entityInQueryIndex`, ect). The returned
-sequence object can be used just like `Random` for the remainder of the job. You
-don’t even need to assign the state back to anything.
-
-`Rng` is based on the Noise-Based RNG presented in [this GDC
-Talk](https://www.youtube.com/watch?v=LWFzPP8ZbdU) but updated to a more
-recently shared version:
-[SquirrelNoise5](https://twitter.com/SquirrelTweets/status/1421251894274625536)
-
-However, if you would like to use your own random number generation algorithm,
-you can use the `RngToolkit` to help convert your `uint` outputs into more
-desirable forms.
-
-See more: [Rng and RngToolkit](Rng%20and%20RngToolkit.md)
 
 ### EntityWith\<T\> and EntityWithBuffer\<T\>
 

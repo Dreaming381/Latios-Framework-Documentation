@@ -264,8 +264,8 @@ the Game Object’s `UnityEngine.Transform` every frame.
 
 In both modes, scripts attached to the Game Object can react to the binding to
 the self-hosted or externally-hosted entity by implementing the
-`IInitializeGameObjectEntity` interface. A common use case is to add
-`IManagedStructComponent` components to the entity referencing Game Object
+`IInitializeGameObjectEntity` interface. A common use case is to add unmanaged
+components to the entity containing `UnityObjectRef`s referencing Game Object
 scripts.
 
 Also, at runtime the Entity will have a managed struct component

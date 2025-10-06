@@ -78,8 +78,6 @@ After the bootstrap is created, it can be
     entity and tracks job dependencies automatically
 -   [BlackboardEntity](Blackboard%20Entities.md) – an Entity with extensions to
     apply `EntityManager` operations on it
--   [Rng](Rng%20and%20RngToolkit.md) – a struct with a powerful thread-safe,
-    deterministic, fire-and-forget workflow for random number generation
 -   [Smart Blobber](Smart%20Blobbers.md) – a specialized baking API used for
     generating blob assets
 -   [Component Broker](Component%20Broker.md) – a specialized type for accessing

@@ -6,6 +6,29 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic
 Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [0.14.0] – 2025-10-?
+
+Officially supports Entities [1.3.14]
+
+### Added
+
+-   *New Feature:* Added `UnsafeParallelBlockList<T>` and
+    `UnsafeIndexedBlockList<T>` which wrap the untyped versions
+-   *New Feature:* Added `AtomicDoubleBuffer<T>` which is a multi-producer
+    single-consumer type intended for use inside a `SharedStatic<T>` as part of
+    the implementation of a static class utility
+-   Added `Sort()` extension methods to `Span<T>` that use Unity’s native
+    sorting algorithm
+-   Added `UnsafeParallelBlockList.Clear()` to remove all elements
+-   Added `LockIndexReentrant()` and `UnlockIndex()` methods to
+    `UnsafeParallelBlockList`, which allows for better coordination between
+    readers and writers
+
+### Changed
+
+-   Changed `UnsafeParallelBlockList.Write<T>()` to now take the value as an
+    `in` parameter
+
 ## [0.13.7] – 2025-9-13
 
 Officially supports Entities [1.3.14]

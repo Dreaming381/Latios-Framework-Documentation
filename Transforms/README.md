@@ -108,7 +108,5 @@ those who need better compatibility with other offerings.
 
 ## Near-Term Roadmap
 
+-   Hierarchy-centric ECS Redesign
 -   Fixed-Rate Transforms
--   Custom hierarchy-aware job types
--   Synchronous hierarchy modification APIs
--   Uncached Transforms

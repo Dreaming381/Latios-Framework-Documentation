@@ -72,7 +72,7 @@ packages to use QVVS Transforms.
 
 Unity Physics internal algorithms can’t leverage any of the QVVS features
 anyways. Psyshock can though, so you could also help implement missing features
-in Psyshock and Mimic.
+in Psyshock and the various add-ons.
 
 ### But there’s got to be a way to make QVVS Transforms and Unity Transforms work together, right?
 
@@ -93,7 +93,8 @@ determine whether to use Latios.Transforms or Unity Transforms.
 
 ### Do I need to use TransformAspect for writing transforms? Shouldn’t I write to WorldTransform instead?
 
-Even though Unity’s `IAspect` will be going away in the future, the
-`TransformAspect` type will live on. You should prefer to use the
-`TransformAspect` type, as writing to `WorldTransform` directly for an entity
-with a parent will cause your hierarchy to get corrupted.
+You should prefer to use the `TransformAspect` type, as writing to
+`WorldTransform` directly for an entity with a parent will cause your hierarchy
+to get corrupted. Unity’s `IAspect` is going away in the future, but QVVS
+Transforms are also getting a redesign, so for now, stick with
+`TransformAspect`.
