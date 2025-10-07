@@ -6,6 +6,56 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic
 Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [0.14.0] – 2025-10-?
+
+Officially supports Entities [1.3.14]
+
+### Added
+
+-   *New Feature:* Added `PhysicsDebug.ILineDrawer` and overload generic methods
+    of all `Collider` and `Aabb` drawing APIs to use this interface, allowing
+    custom line drawers to receive lines from Psyshock collider shapes
+-   Added `PhysicsDebug.DrawSubCollider()` allowing drawing of only a single
+    subcollider within a composite collider
+-   Added `LatiosSim.Contact` and `LatiosSim.ContactNormalFrom()` the later of
+    which may be experimented with to determine if it produces reasonable
+    contact normal vectors
+
+### Changed
+
+-   **Breaking:** Renamed `UnitySim.Update()` to `UnitySim.UpdateJacobian()` for
+    contact constraints to align with the other APIs
+-   **Breaking:** The static `Physics` class members `AccelerationFrom()`,
+    `DragForceFrom()`, `BouyancyForceFrom()`, `WarpPropertiesForDesiredSpeed()`,
+    and `Constants` have all been moved to the static `TrueSim` class
+
+### Fixed
+
+-   Fixed `UnitySim.SolveJacobian()` for contact constraints wrongly applying
+    contact impulses based on the initial velocities rather than the updated
+    velocities from other contacts
+-   Fixed incorrect interval tree construction inside
+    `Physics.BuildCollisionWorld()`, resulting in some queries being missed
+-   Fixed `Physics.DistanceBetween()` edge tests between two overlapping box
+    colliders sometimes missing detection
+-   Fixed `Physics.FindPairs()` indexing `CollisionWorld` elements incorrectly
+    in many cases
+-   Fixed out-of-bounds indexing sometimes happening when performing spatial
+    queries on `CollisionWorld` with a mask that only matches some but not all
+    archetypes within a bucket
+-   Fixed `Physics.AabbFrom()` not respecting the true extents of compound
+    colliders when stretching is applied
+-   Fixed `CompoundCollider.StretchMode.StretchPositionsOnly` behaving the same
+    as `StretchMode.IgnoreStretch`
+-   Fixed mid-phase queries involving a tri-mesh collider with very small
+    stretch values skipping over the tri-mesh entirely
+
+### Improved
+
+-   Added mid-phase acceleration structure and evaluation to compound colliders
+-   Removed duplicate edge drawing for `PhysicsDebug.DrawCollider()` when
+    drawing tri-mesh and terrain colliders
+
 ## [0.13.7] – 2025-9-13
 
 Officially supports Entities [1.3.14]

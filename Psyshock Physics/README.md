@@ -239,7 +239,6 @@ character controllers or magical forces.
 
 -   More QuickTests
 -   More Character Controller Utilities
--   Motor Constraints
 -   Terrain Collider Baking
 -   Persistent Pair State
 -   FindPairs improvements
@@ -261,5 +260,3 @@ character controllers or magical forces.
     -   Autofitting
     -   Stretch mode baking options
 -   More Debug Tools
--   Debug Gizmo Integration Hooks
-    -   If you are an asset developer interested in this, please reach out to me

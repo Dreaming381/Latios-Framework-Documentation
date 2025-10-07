@@ -5,32 +5,31 @@ almost every design decision Unity Physics makes, Psyshock ends up making the
 opposite. This table breaks down the differences. And below that is the rant
 that led to this divergence in the first place.
 
-|                          | Unity Physics                                                             | Psyshock                                                                                                      |
-|--------------------------|---------------------------------------------------------------------------|---------------------------------------------------------------------------------------------------------------|
-| Query API                | Member methods                                                            | Static methods                                                                                                |
-| Collider Types           | Cylinder (kinda)                                                          | More new types planned                                                                                        |
-| Collider Representation  | Blob Asset                                                                | Mutable struct which for some types may contain a Blob Asset                                                  |
-| Convex Collider          | Beveled for performance                                                   | Hard-Edged for performance                                                                                    |
-| Terrain Collider         | Perfect 4-wide BVH without holes and fixed triangle quad splits           | Perfect 64-wide BVH with holes support and per-quad specification of triangle splits                          |
-| Raycasts                 | Include inside hits                                                       | Ignore inside hits (use point queries instead)                                                                |
-| Raycast Optimizations    | Ignore convex bevels                                                      | No bevels to ignore                                                                                           |
-| Collider Casts           | Conservative Advancement with tolerance and max of 10 iterations          | Minkowski raycasts and MPR with precise results                                                               |
-| Layers                   | Based on masks, max 32                                                    | Based on EntityQueries or user-provided, unlimited and independent                                            |
-| Broadphase               | BVH with static and dynamic trees                                         | Multibox SAP with layer-self tests and layer vs layer tests                                                   |
-| Collsion Events          | All hits stored in buffer iterated by ICollisionEventsJob single-threaded | User-invoked broadphase dispatches hits immediately to IFindPairsProcessor in parallel with pair write safety |
-| Pair Data                | No guarantees, requires filtering                                         | Strong guarantees based on the layers passed in                                                               |
-| Collision World          | Owned by singleton                                                        | Fully managed by user                                                                                         |
-| Archetype Processing     | EntityQueryMask filtered results or use colliderKey                       | Archetypes considered directly in spatial queries for improved performance and ergonomics                     |
-| Children and hierarchies | Static only                                                               | Fully supported (especially with QVVS Transforms)                                                             |
-| Systems                  | Out-of-the-box systems                                                    | No out-of-the-box systems, no automatic performance cost                                                      |
-| Simulator Modification   | Intermediate systems and jobs                                             | User drives each step from anywhere                                                                           |
-| Collider Scaling         | Uniform Scale                                                             | Non-uniform stretch                                                                                           |
-| Integrator               | Built-in damping and gravity                                              | Utilities to aid user in writing their own                                                                    |
-| Forces                   | Explosion forces out-of-the-box                                           | Utilities for advanced drag and buoyancy for ballistics                                                       |
-| Contact Manifolds        | Reports first 32 contacts found per pair                                  | Reports area-maximized 32 contacts found per pair                                                             |
-| Collision Solver         | Self-contained loop                                                       | Loop controlled by user using Physics.ForEachPair                                                             |
-| Joints                   | Strictly-defined                                                          | User can fully customize inputs and even define custom constraints                                            |
-| Motors                   | Several                                                                   | Planned                                                                                                       |
+|                          | Unity Physics                                                                    | Psyshock                                                                                                      |
+|--------------------------|----------------------------------------------------------------------------------|---------------------------------------------------------------------------------------------------------------|
+| Query API                | Member methods                                                                   | Static methods                                                                                                |
+| Collider Types           | Cylinder (kinda)                                                                 | More new types planned                                                                                        |
+| Collider Representation  | Blob Asset                                                                       | Mutable struct which for some types may contain a Blob Asset                                                  |
+| Convex Collider          | Beveled for performance                                                          | Hard-Edged for performance                                                                                    |
+| Terrain Collider         | Perfect 4-wide BVH without holes and terrain-wide toggle of triangle quad splits | Perfect 64-wide BVH with holes support and per-quad specification of triangle splits                          |
+| Raycasts                 | Include inside hits                                                              | Ignore inside hits (use point queries instead)                                                                |
+| Raycast Optimizations    | Ignore convex bevels                                                             | No bevels to ignore                                                                                           |
+| Collider Casts           | Conservative Advancement with tolerance and max of 10 iterations                 | Minkowski raycasts and MPR with precise results                                                               |
+| Layers                   | Based on masks, max 32                                                           | Based on EntityQueries or user-provided, unlimited and independent                                            |
+| Broadphase               | BVH with static and dynamic trees                                                | Multibox SAP with layer-self tests and layer vs layer tests                                                   |
+| Collsion Events          | All hits stored in buffer iterated by ICollisionEventsJob single-threaded        | User-invoked broadphase dispatches hits immediately to IFindPairsProcessor in parallel with pair write safety |
+| Pair Data                | No guarantees, requires filtering                                                | Strong guarantees based on the layers passed in                                                               |
+| Collision World          | Owned by singleton                                                               | Fully managed by user                                                                                         |
+| Archetype Processing     | EntityQueryMask filtered results or use colliderKey                              | Archetypes considered directly in spatial queries for improved performance and ergonomics                     |
+| Children and hierarchies | Static only                                                                      | Fully supported (especially with QVVS Transforms)                                                             |
+| Systems                  | Out-of-the-box systems                                                           | No out-of-the-box systems, no automatic performance cost                                                      |
+| Simulator Modification   | Intermediate systems and jobs                                                    | User drives each step from anywhere                                                                           |
+| Collider Scaling         | Uniform Scale                                                                    | Non-uniform stretch                                                                                           |
+| Integrator               | Built-in damping and gravity                                                     | Utilities to aid user in writing their own                                                                    |
+| Forces                   | Explosion forces out-of-the-box                                                  | Utilities for advanced drag and buoyancy for ballistics                                                       |
+| Contact Manifolds        | Reports first 32 contacts found per pair                                         | Reports area-maximized 32 contacts found per pair                                                             |
+| Collision Solver         | Self-contained loop                                                              | Loop controlled by user using Physics.ForEachPair                                                             |
+| Joints                   | Strictly-defined                                                                 | User can fully customize inputs and even define custom constraints                                            |
 
 ## The Rant
 
