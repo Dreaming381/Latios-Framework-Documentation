@@ -6,6 +6,41 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic
 Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [0.14.0] – 2025-10-?
+
+Officially supports Entities [1.3.14]
+
+### Added
+
+-   *New Feature:* Added ADPCM compression, which can optionally be used for a
+    clip with a codec selector in authoring or the `Codec` enum in baking
+-   *New Feature:* Added various runtime inspector properties to
+    `AudioSourceClip` providing info about the clip
+-   Added the `clip` property to `AudioSourceClip` to allow setting or changing
+    the clip at runtime
+-   Added `AudioClipBlob.sampleCountPerChannel`, which replaces
+    `samplesLeftOrMono.Length`
+-   Added `DspTools` methods `AccumulateSignalNoisePower()` and
+    `CalculateSignalToNoiseRatio()`, which allow comparing differences in audio
+    signals such as for evaluating compression quality
+
+### Changed
+
+-   **Breaking:** `AudioClipBlob` fields `samplesLeftOrMono` and `samplesRight`
+    have been replaced with `encodedSamples`, as the data may now be compressed
+-   **Breaking:** Renamed `SampleUtilities` to `DspTools`
+
+### Fixed
+
+-   Fixed issue when *Use Falloff* was unchecked resulted in the audio source
+    never playing
+
+### Improved
+
+-   Added DC offset compensation with a gradual release to make the waveform
+    continuous and eliminate artifacts that resulted from changing an
+    `AudioSourceVolume` or using `AudioSourceDistanceFalloff`
+
 ## [0.13.0] – 2025-7-6
 
 Officially supports Entities [1.3.14]

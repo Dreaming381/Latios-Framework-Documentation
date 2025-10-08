@@ -14,7 +14,11 @@ When you first install the package, you may experience compiler errors due to
 lack of special scripting defines. Add the requested scripting defines to
 continue.
 
-Latios Framework 0.13 uses a custom transform system rather than Unity’s
+Some features of the framework are no longer compatible with Unity 6.3 and
+newer. Add the scripting define LATIOS_DISABLE_CALLIGRAPHICS for these editor
+versions. This issue will be resolved in a future framework release.
+
+Latios Framework 0.14 uses a custom transform system rather than Unity’s
 Transforms by default. This system will bake `GameObject` `Transform`s fine, but
 may pose compatibility issues with other ECS packages. If compatibility is a
 larger concern to you than the performance and feature advantages of this custom
@@ -36,7 +40,7 @@ default world, but with Latios Framework modules installed.
 If you are already using an `ICustomBootstrap`, you may still be able to install
 Latios Framework. The following lines in `Initialize()` are the minimum
 requirements to create a working `LatiosWorld`. You can either assign this world
-to World.`DefaultGameObjectInjectionWorld` or create multiple `LatiosWorld`
+to `World.DefaultGameObjectInjectionWorld` or create multiple `LatiosWorld`
 instances in a multi-world setup.
 
 ```charp
@@ -107,3 +111,26 @@ members. They should be correctly preserved, but if not, please report them.
 -   Unika
     -   All Unika types and interfaces that are handled by codegen need to be
         preserved.
+
+## Cross-Platform Determinism
+
+The Latios Framework experimentally supports Burst’s deterministic floating
+point mode for the following modules:
+
+-   Core
+-   QVVS Transforms
+-   Calci
+-   Psyshock
+-   Unika
+-   Kinemation (partial)
+
+You can enable this mode using the scripting define LATIOS_BURST_DETERMINISM.
+
+**This does not mean using the Latios Framework promises cross-platform
+determinism!** That isn’t even promised by Unity’s ECS packages. You will need
+to perform your own analysis.
+
+For Kinemation specifically, optimized skeleton maintenance systems are
+deterministic. That is, any built-in systems which affect the transforms of
+bones, sockets, or transforms are deterministic. Systems which calculate
+`WorldRenderBounds` and `RenderVisibilityFeedbackFlag` are NOT deterministic.

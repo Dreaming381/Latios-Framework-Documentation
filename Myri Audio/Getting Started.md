@@ -41,10 +41,10 @@ Component* *Menu*, select *Latios -\> Myri -\> Audio Listener (Myri)*. Leave all
 the settings at default.
 
 Next, import an audio source with the *Load Type* set to *Decompress On Load*
-and *Preload Audio Data* checked. *Load in Background* should be unchecked.
-Then, on the non-listener Game Object, add a *Latios -\> Myri -\> Audio Source
-(Myri)* component. Drag your clip into the *Clip* field. Now enter play mode.
-You should hear your clip playing.
+and *Preload Audio Data* checked (the latter is optional on some platforms).
+*Load in Background* should be unchecked. Then, on the non-listener Game Object,
+add a *Latios -\> Myri -\> Audio Source (Myri)* component. Drag your clip into
+the *Clip* field. Now enter play mode. You should hear your clip playing.
 
 Now that you’ve heard your clip, the next thing to do is to start playing around
 with the position of the audio source. If you move your audio source to -1 on
@@ -95,6 +95,14 @@ If *Auto Destroy on Finished* is checked and *Looping* is unchecked, the entity
 containing the audio source will automatically be destroyed once the clip has
 finished playing. This uses the [Auto-Destroy
 Expirables](../Core/Auto-Destroy%20Expirables.md) mechanism.
+
+The *Codec* lets you choose a compression format to store the clip. Compressed
+clips decrease build and runtime memory usage, but require more processing power
+at runtime to play. The current options are as follows:
+
+-   Uncompressed – No compression, fast, full quality, great for short clips
+    that get instantiated in large quantities
+-   ADPCM – 8:1 compression ratio, medium speed and quality
 
 The *Audio Channel* lets you specify an audio channel asset. Audio channels are
 used for categorizing sources so that they can only be heard by specific

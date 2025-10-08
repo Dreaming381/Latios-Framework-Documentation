@@ -20,6 +20,7 @@ Officially supports Entities [1.3.14]
 -   Added `LatiosSim.Contact` and `LatiosSim.ContactNormalFrom()` the later of
     which may be experimented with to determine if it produces reasonable
     contact normal vectors
+-   Added LATIOS_BURST_DETERMINISM support
 
 ### Changed
 

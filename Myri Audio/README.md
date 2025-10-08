@@ -31,7 +31,7 @@ demo.
 ### Basic Mixing with Multiple Listeners
 
 Myri uses a channel asset system that allows listeners to filter on specific
-audio sources. Listeners are mixed together, with each listener having their own
+audio sources. Listeners are mixed together, with each listener having its own
 limiter controls to shape the final output.
 
 The easiest way to think about this is that not only does a listener have a
@@ -63,6 +63,11 @@ Myri allows clips to override the sample rate that clips can be played at.
 Playing at a higher sample rate means that the clip plays faster, and the pitch
 rises. This provides a simple mechanism to randomize the pitches of sound
 effects.
+
+### Compression
+
+Myri supports both uncompressed and ADPCM compression for clips. More encoding
+formats may be added in the future.
 
 ### ECS-Friendly Job Scheduling
 
@@ -109,6 +114,10 @@ entity when the clip is done playing.
 -   A high number of listeners can have a heavy load on the DSP thread and
     potentially overwhelm it due to the heavy processing required for each
     limiter.
+-   Sudden changes in listener or master volumes can cause temporary clicking
+    noises as the effects are applied instantaneously. A remedy will be provided
+    in a future release. It should be noted that audio source volumes do not
+    suffer from this problem.
 
 ## Known Unity Engine and DSPGraph Issues
 
@@ -128,5 +137,5 @@ Unity!
 ## Near-Term Roadmap
 
 -   Hierarchical Mixing
--   Audio Clip Compression
+-   Conversion from DSP Graph to Unity 6.3+ scriptable audio APIs
 -   Programmable Effects on the DSP Thread vis Effect Stacks

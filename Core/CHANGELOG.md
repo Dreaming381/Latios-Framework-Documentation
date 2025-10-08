@@ -23,11 +23,17 @@ Officially supports Entities [1.3.14]
 -   Added `LockIndexReentrant()` and `UnlockIndex()` methods to
     `UnsafeParallelBlockList`, which allows for better coordination between
     readers and writers
+-   Added LATIOS_BURST_DETERMINISM support
 
 ### Changed
 
 -   Changed `UnsafeParallelBlockList.Write<T>()` to now take the value as an
     `in` parameter
+
+### Removed
+
+-   Moved `simdFloat3`, `simd`, `Rng`, `RngToolkit`, `Qcp`, `LatiosMath`, and
+    `MathExtensions` to Calci
 
 ## [0.13.7] – 2025-9-13
 

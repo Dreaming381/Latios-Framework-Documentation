@@ -15,6 +15,7 @@ Officially supports Entities [1.3.14]
 -   Added `GameObjectEntityUnmanaged` component which is now attached to any
     `GameObjectEntity`, allowing for unmanaged access to the
     `UnityObjectRef<GameObject>`
+-   Added LATIOS_BURST_DETERMINISM support
 
 ## [0.13.0] – 2025-7-6
 
