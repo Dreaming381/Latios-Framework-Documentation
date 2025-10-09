@@ -134,3 +134,6 @@ For Kinemation specifically, optimized skeleton maintenance systems are
 deterministic. That is, any built-in systems which affect the transforms of
 bones, sockets, or transforms are deterministic. Systems which calculate
 `WorldRenderBounds` and `RenderVisibilityFeedbackFlag` are NOT deterministic.
+Also, sampling animation clips is NOT deterministic, not even in contexts that
+use `FloatMode.Deterministic`, as ACL does not have a deterministic compilation
+mode at this time

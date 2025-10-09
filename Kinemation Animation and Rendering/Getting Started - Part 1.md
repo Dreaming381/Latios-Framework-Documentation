@@ -30,6 +30,12 @@ character as an entity.
     -   No limit to number of meshes bound to skeleton, nor number of materials
         per mesh
 
+If your platform is not supported out-of-the-box, you have two options. You can
+either [compile the AclUnity plugin for your
+platform](https://github.com/Dreaming381/AclUnity), or you can add the
+LATIOS_DISABLE_ACL scripting define to your project, though this will disable
+animation clip functionality.
+
 ## Skeletons and Bones – Not What You Think
 
 Before we explore the different building blocks of Kinemation, we need to make
@@ -113,9 +119,9 @@ Renderer entities can be given the `RendererVisibilityFeedbackFlag` which is an
 `IEnableableComponent` that is enabled if the renderer was visible in the
 previous frame, and disabled otherwise. Renderer entities can also be given
 `PostProcessMatrix` and `PreviousPostProcessMatrix` for applying shear and other
-visual matrix transform effects to the entities for rendering. If a renderer
-entity uses procedural vertex shader animation, its culling bounds can be
-increased via the `ShaderEffectRadialBounds` component.
+visual matrix transform effects to the entities for rendering (QVVS Transforms
+only). If a renderer entity uses procedural vertex shader animation, its culling
+bounds can be increased via the `ShaderEffectRadialBounds` component.
 
 ### LODs
 
@@ -140,6 +146,18 @@ often more performant, especially for dynamic entities as it avoids the need for
 child entities. At runtime, such entities have `LodCrossfade`,
 `UseMmiRangeLodTag`, and either `MmiRange2LodSelect` or `MmiRange3LodSelect`.
 
+Lastly, Kinemation supports Mesh LODs. At runtime, it does this with the
+`MeshLod` component and optionally the `MeshLodCurve` component for automatic
+evaluation. `MeshLodCrossfadeMargin` is a component on the
+`worldBlackboardEntity` which can be used to define a global crossfade
+transition margin between all Mesh LOD levels.
+
+LOD Group can be used alongside LOD Pack and Mesh LOD. However, Mesh LODs are
+only respected for meshes that are at LOD 0 level of a LOD Pack. This way, Mesh
+LODs can be used for LOD Pack level 0, while an imposter or fadeout can be used
+for later levels of the LOD Pack. All three LOD systems will coordinate
+ownership of the `LodCrossfade` component.
+
 ### Unique Meshes
 
 Renderer entities can be set up with a Unique Mesh. This is a mesh pooled at
@@ -162,6 +180,13 @@ override API to configure the submesh IDs and materials, and you must add the
 `OverrideMeshInRangeTag` component. You can use
 `RendererBakingTools.uniqueMeshPlaceholder` as the mesh and disable submesh
 clamping when extracting `MeshMaterialSubmeshSettings`.
+
+**Warning:** There is currently a bug in Unity that will result in unique meshes
+being uploaded a frame late, which can cause rendering artifacts. To work around
+this, uncomment `KinemationBootstrap.InstallUniqueMeshesEarlyUploader(world);`
+within your bootstrap. This has a performance penalty of uploading all dirty
+unique meshes every frame regardless of their visibility status, but will fix
+the frame delay issue.
 
 ## Deforming Renderers
 
@@ -195,6 +220,11 @@ material properties each frame during the culling loop.
 
 You will also notice the internal `ChunkDeformPrefixSums` component added to
 Bound mesh entities at runtime.
+
+Every *bound mesh deforming renderer* will have its `RenderBounds` component
+modified by a Kinemation system. Do not try to set this component yourself. To
+add additional padding to the culling bounds to account for additional vertex
+deformation effects, use the `ShaderEffectRadialBounds` component.
 
 ### Dynamic Meshes
 
@@ -258,8 +288,7 @@ the binding phase. The skinned mesh entity is reparented directly to the
 skeleton entity and given the `CopyParentWorldTransformTag` component. In Unity
 Transforms, the `LocalTransform` is also set to `Identity` and further
 modification of it by the user will result in undefined behavior. The entity
-will also be given the internal cleanup component `SkeletonDependent` and the
-chunk component `ChunkSkinningCullingTag`.
+will also be given the internal cleanup component `SkeletonDependent`.
 
 The skinned mesh entity will go through a skeleton binding phase where an
 attempt is made to compute bone indices for the bind poses. If this operation
@@ -273,10 +302,20 @@ results are applied additively on top of dynamic meshes and blend shape
 deformations. Skeletal skinning can be disabled via
 `DisableComputeShaderProcessingTag`.
 
-When skeletal skinning is active, `RenderBounds` and `WorldRenderBounds` are
-ignored, and instead culling uses data from the skeleton entities for culling.
-To add additional padding to the culling bounds to account for additional vertex
-deformation effects, use the `ShaderEffectRadialBounds` component.
+Skinned meshes can use one of two different skinning algorithms: linear blend
+skinning (default), and dual quaternion skinning. Additionally, the skinning can
+either be performed completely in a compute shader (required for blend shapes or
+if the skinned mesh is also a *dynamic mesh*) or partly in a vertex shader. This
+is dictated by the shader used. In the case of a compute shader,
+`SkinnedMeshSettingsAuthoring.useDualQuaternionSkinning` must be set to true to
+use dual quaternion skinning. This setting will add the
+`DualQuaternionSkinningDeformTag` to the entity. Additionally, skinned meshes
+can extract motion history from the skeleton, allowing for motion vectors or
+other effects in shaders.
+
+`SkinnedMeshSettingsAuthoring` can also specify a fadeout for the entity, which
+uses the LOD Pack algorithm (an exception to LOD Pack not being supported for
+deforming renderers).
 
 ## Skeletons
 
@@ -294,12 +333,10 @@ At runtime, several other internal components will be added to the skeleton
 entity:
 
 -   `DynamicBuffer<DependentSkinnedMesh>`
--   `SkeletonBoundsOffsetFromMeshes`
--   `ChunkPerCameraSkeletonCullingMask`
--   `ChunkPerCameraSkeletonCullingSplitsMask`
+-   `SkeletonWorldBoundsOffsetsFromPosition`
 
 A skeleton entity is not valid by itself. It must additionally be one of two
-specialized archetypes, exposed or optimized.
+specialized archetypes: exposed or optimized.
 
 ### Exposed Skeletons
 
@@ -344,7 +381,6 @@ correctly.
     -   `BoneCullingIndex`
     -   `BoneBounds`
     -   `BoneWorldBounds`
-    -   `ChunkBoneWorldBounds`
 
 With the exception of transform components, all required exposed bone components
 can be added via `CullingUtilities.GetBoneCullingComponentTypes()`. As Unity
@@ -398,8 +434,6 @@ At runtime, additional components are added to optimized skeleton entities:
 -   `OptimizedSkeletonTag`
 -   `OptimizedSkeletonState`
 -   `DynamicBuffer<OptimizedBoneBounds>`
--   `OptimizedSkeletonWorldBounds`
--   `ChunkOptimizedSkeletonWorldBounds`
 
 Optimized skeletons typically perform much better at scale, as they offer better
 cache locality for updating their transform hierarchy and culling bounds.
@@ -412,8 +446,8 @@ skeletons.
 
 Optimized skeletons require an initialization step. This typically happens in
 `MotionHistoryUpdateSystem`, but if the entity was instantiated after this point
-in the frame (sometime during SimulationSystemGroup), you may need to initialize
-the entity manually via the `ForceInitialize()` method.
+in the frame (sometime during `SimulationSystemGroup`), you may need to
+initialize the entity manually via the `ForceInitialize()` method.
 
 An optimized skeleton can either be in a synced or unsynced state. Accessing
 `rawLocalTransformsRW`, sampling poses from skeleton clips (more on that in a

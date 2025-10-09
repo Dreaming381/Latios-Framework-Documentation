@@ -55,12 +55,15 @@ blend shapes.
 
 ### More Performance for More Things
 
-Kinemation is built to handle heavily populated scenes, and offers various tools
-to help you squeeze the most performance out of your virtual world. It uses a
-special culling system that analyzes the results of frustum culling to minimize
-the amount of data that needs to be sent to the GPU. This means the GPU spends
-less time waiting for and ingesting data and more time rendering. Both CPU and
-GPU performance benefit from this technique. On some projects, this optimization
+If you thought the scale and density of environments that Entities Graphics
+could handle was impressive, just wait until you see what Kinemation can handle!
+
+Kinemation is faster than Entities Graphics in nearly every aspect, but
+especially for dynamic entities and LOD handling. It uses a special culling
+system that analyzes the results of frustum culling to minimize the amount of
+data that needs to be sent to the GPU each frame. This means the GPU spends less
+time waiting for and ingesting data and more time rendering. Both CPU and GPU
+performance benefit from this technique. On some projects, this optimization
 alone can double framerates.
 
 Submesh sharing is always on in Kinemation, including for skinned meshes. It
@@ -81,6 +84,10 @@ single entity. This is effectively Mesh LODs, and is one of the fastest LOD
 solutions available for spammed entities (especially dynamic ones). LOD Pack has
 built-in LOD Crossfade support too. *Note: LOD Pack does not support deforming
 meshes.*
+
+Unity 6.2 introduced Mesh LODs, but at the time of writing, Entities Graphics
+does not support them. However, Kinemation has fixed that. Mesh LODs are
+supported out-of-the-box.
 
 Lastly, if you ever needed to know which entities a frame rendered, Kinemation
 provides a feedback flag for this purpose. You can use this for animation
@@ -157,6 +164,8 @@ dumb things sometimes. Adreno GPUs have been susceptible to this.
     native plugin is expected to work across all platforms, you may have to
     compile the library yourself for some platforms. If you would like to help
     Kinemation support your target platform officially, please reach out!
+    Alternatively, you can add the LATIOS_DISABLE_ACL scripting define at the
+    cost of losing animation clip functionality.
 -   Occlusion Culling is not supported (not that Entities Graphics supports it
     either).
 -   Entities Graphics stats don’t work. Kinemation may provide its own solution
@@ -174,11 +183,13 @@ dumb things sometimes. Adreno GPUs have been susceptible to this.
     Animator a child of the Game Object with the Ghost Authoring component.
 -   If an asset was imported as an optimized hierarchy and internally contains a
     Bone and a SkinnedMesh Renderer named identically, Kinemation may fail to
-    bake the skeleton correctly due to a Unity bug in `AnimatorUtility`.
+    bake the skeleton correctly due to a Unity bug/limitation in
+    `AnimatorUtility`. Newer Unity versions will warn you about this.
 
 ## Near-Term Roadmap
 
--   Mesh LOD Support
+-   Sync-less `LatiosEntitiesGraphicsSystem`
+-   Automatic Batch Combining
 -   Procedural and Indirect Draw Support
 -   GPU Deformed Mesh Normals and Tangents Recalculation
 -   Blend Shape Animation Baking Helpers

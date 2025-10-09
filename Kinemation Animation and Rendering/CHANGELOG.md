@@ -6,6 +6,77 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic
 Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [0.14.0] – 2025-10-?
+
+Officially supports Entities [1.3.14]
+
+### Added
+
+-   *New Feature:* Added Mesh LOD support for Unity 6.2 and newer, which works
+    out-of-the-box with crossfades
+-   *New Feature:* Added `UnityRig` static class with methods `SolveTwoBoneIK()`
+    and `SolveHintPositionForTwoBoneIK()` which provides two-bone IK based on
+    the Unity Rigging package
+-   Added `PromiseAllEntitiesInChunkUseSameMaterialMeshInfoTag`, which when
+    present, allows significant reduction in CPU resources during rendering in
+    some scenarios
+-   Added `RendererPriority` component which allows assigning draw priorities of
+    entities, although this is ignored by URP and HDRP built-in render passes
+-   Added `ApplyWorldTransforms()` and `ApplyRootTransforms()` methods to
+    `OptimizedSkeletonAspect` which allows setting multiple bone transforms at
+    once in an optimal way
+-   Added `requireLodCrossfade` field to `MeshRendererBakeSettings`, as Mesh LOD
+    may still add it even if this is false, so adding it directly in a baker is
+    no longer recommended
+-   Added `out` parameter `requireLodCrossfade` to `IBaker` extension
+    `BakeLodMaskForEntity()` as this method no longer adds the `LodCrossfade`
+    component directly
+-   Added *Use Fade Out* property to `SkinnedMeshSettingsAuthoring` which allows
+    fading out the skinned mesh at a distance using the LOD Pack mechanism
+-   Added LATIOS_BURST_DETERMINISM support for all jobs which call
+    `OptimizedSkeletonAspect.ForceInitialize()`
+-   Added support for unique meshes to be uploaded in the custom graphics system
+    groups
+-   Added `KinemationBootstrap.InstallUniqueMeshesEarlyUploader()` which enables
+    custom graphics and forces all dirty unique meshes to be uploaded, working
+    around a Unity bug that causes unique mesh uploads to be delayed by a frame
+
+### Changed
+
+-   Skinned meshes now always update and use `WorldRenderBounds` and
+    `ChunkWorldRenderBounds` just like every other renderable entity
+-   `RenderVisibilityFeedbackFlag` is no longer set for skeletons which do not
+    have any skinned meshes attached, as skeletons are not directly culled
+    anymore
+-   `PostProcessMatrix` is no longer required in Unity Transforms mode on
+    skinned meshes
+-   `WorldRenderBounds` updates are now performed after
+    `LatiosEntitiesGraphicsSystem`
+-   Many internal components used for skeletons and skinned meshes have changed,
+    with the overall component count shrinking
+
+### Improved
+
+-   Improved the performance of optimized skeleton transform propagation by
+    switching from a recursive depth-first algorithm to an iterative
+    breadth-first algorithm
+-   Improved the performance of bounds updates significantly by no longer
+    updating BRG bounds, as it was discovered Unity completely ignores it and
+    does not use it in GPU RD
+-   Improved the performance of frustum culling and draw command generation by
+    up to 25%
+-   LOD Pack can now be used inside a LOD Group with proper coordination of the
+    LOD Crossfade value
+
+### Removed
+
+-   **Breaking:** Removed the height field from `MmiRange2LodSelect` and
+    `MmiRangeLodSelect` as this info is now extracted from the
+    `WorldRenderBounds`
+-   **Breaking:** Removed `ChunkPerCameraSkeletonCullingMask` and
+    `ChunkPerCameraSkeletonCullingSplitsMask` as they are no longer used
+-   Removed many bounds and culling systems
+
 ## [0.13.4] – 2025-8-23
 
 Officially supports Entities [1.3.14]

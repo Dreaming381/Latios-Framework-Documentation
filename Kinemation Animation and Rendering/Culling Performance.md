@@ -33,7 +33,7 @@ situation.
 ## Frustum Culling
 
 If your worker threads are slammed during culling with large amounts of time
-consumed by `FrustumCullUnskinnedEntitiesSystem`’s `SingleSplitCullingJob` and
+consumed by `FrustumCullSystem`’s `SingleSplitCullingJob` and
 `MultiSplitCullingJob`, you may have a frustum culling bottleneck.
 `MultiSplitCullingJob` is typically more expensive, and occurs for directional
 lights with shadow map cascades and for point light shadows. If most of the
@@ -58,6 +58,53 @@ within the far reaches of your view frustum, you might end up with a heavy
 If you encounter issues with this in a project that you can share, please share
 it! There are two potential improvements to this problem (evaluation pipelining
 and distance culling of `ChunkWorldRenderBounds`). But these require testing.
+
+## Batch Optimization
+
+Batch optimization allows more entities to be packed into a single instanced
+draw call. Here are many properties that define a unique draw call:
+
+-   BatchID
+-   Culling splits (shadows)
+-   Mesh LOD level
+-   Submesh
+-   Mesh
+-   Material
+-   Triangle winding (negative transform scaling)
+-   Motion vector configuration
+-   Whether to use lightmaps
+-   Transparency
+-   LOD Crossfade configuration
+-   Shadow casting configuration
+-   Layer
+-   Rendering layer masks
+-   Rendering priority
+
+Most notably, the `BatchID` is currently a bit messy. It is uniform for any
+given chunk of entities, but any new chunks created on different frames will end
+up with different `BatchID`s, even if the entities are technically
+batch-compatible (this is based on the presence of various material property
+override components). While batch combining is planned for the future, in the
+meantime you can force entities to “re-batch” by setting the
+`EntitiesGraphicsChunkInfo` component to default for all entities you want to
+reset. Note that this will cause all rendering ECS data to be reuploaded to the
+GPU, so it is not always beneficial.
+
+Kinemation needs to sort through every entity and determine which draw calls it
+should put the entity into based on all these settings. The fewer overall draw
+calls, the fewer buckets Kinemation will have, and the more cache-efficient this
+step will be.
+
+However, for extreme scenes, a potentially large optimization can be made. If
+Kinemation can be promised that all entities in a chunk share the exact same
+`MaterialMeshInfo`, it can put the entire chunk into the draw calls. To promise
+this, add the `PromiseAllEntitiesInChunkUseSameMaterialMeshInfoTag` component to
+these entities. You will probably want to use your own `ISharedComponentData` to
+enforce this. Currently, chunks containing entities with multiple meshes and
+materials, Mesh LODs, LOD Crossfades, or negative transform scaling are not
+supported by this optimization and will fall back to the normal path. If you
+would like to see more scenarios supported by this optimization, please share a
+project that reproduces the performance problems you are facing.
 
 ## General Tips for Worker Thread Bottlenecks
 
