@@ -20,10 +20,9 @@ can come quickly and with minimal disruption to the existing API until the next
 feature release. I have a design process that helps enforce this. I have never
 been able to teach anyone else this process. And consequently, my stance on
 contributions directly to the framework is that I’d strongly recommend sticking
-to smaller quality-of-life improvements or the [areas where help is most
-wanted](#_Friendly_Development_Areas). That’s not to say you can’t try to get a
-big feature of your own design merged, but mentally prepare yourself for a tough
-journey.
+to smaller quality-of-life improvements or the areas where help is most wanted.
+That’s not to say you can’t try to get a big feature of your own design merged,
+but mentally prepare yourself for a tough journey.
 
 However, for the [add-ons
 package](https://github.com/Dreaming381/Latios-Framework-Add-Ons), go freaking
@@ -282,12 +281,13 @@ on Discord if you want to get involved in one of these:
     -   Psyshock’s architecture lends itself to being more friendly for
         contributors to help out, that-is if you can wrap your head around the
         math involved. There are so many different constraint solvers, spatial
-        tests, and other things that would all be welcome in the giant Psyshock
-        toolbox.
+        tests, and other things that would all be welcome in the ever-growing
+        Psyshock toolbox.
 -   Calligraphics
-    -   Calligraphics is undergoing a major overhaul behind-the-scenes at a
-        slow-and-steady rate. The project has already been broken down into
-        bite-size steps, which means anyone with interest can jump in and help
-        out.
+    -   Calligraphics is the most community-contributed feature of the
+        framework. It turns out that world-space text is critical to many
+        applications, even if it isn’t the most exciting. If Calligraphics
+        doesn’t quite fully meet your needs, and you want to help close that
+        gap, please reach out!
 
 If you have further inquiries, PM me on the Unity forums or DM me on Discord.

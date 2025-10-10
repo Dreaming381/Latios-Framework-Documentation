@@ -67,7 +67,7 @@ Features made available in this state include:
 -   `IBaker` extension methods for interfaces
 -   Baking system `WorldUpdateAllocator` memory leak fix
 -   `BootstrapTools` functionality
--   Math and `Rng` Extensions and utilities
+-   Math, Bezier curves, and `Rng` Extensions and utilities
 -   Collections and Custom Command Buffers (user-invoked playback only)
 -   `EntityDataCopyKit` (and its underlying `EntityManager` extension methods)
 -   Fluent Queries
@@ -81,6 +81,7 @@ Features made available in this state include:
 -   All static runtime methods of Psyshock (Psyshock at runtime is system-free)
 -   NetCode Bootstrap and utility APIs (when NetCode package is installed)
 -   Kinemation’s `GraphicsUnmanaged` and `GraphicsBufferUnmanaged` APIs
+-   2-Bone IK
 -   Unika, with the exception of not having the default entity remap systems
 -   Various other extension methods
 
@@ -210,6 +211,7 @@ Features and improvements made available with Kinemation include:
 
 -   F and Shift + F for runtime entities (and closed subscenes) support
 -   LOD Crossfade support
+-   Mesh LOD support
 -   LOD Pack which allows packing up to 3 LOD levels (the last level can be an
     empty fade-out) into a single entity with crossfade for even better
     performance than LOD Group
@@ -225,6 +227,7 @@ Features and improvements made available with Kinemation include:
 -   Animation clip event storage
 -   Inertial blending
 -   Root motion utilities
+-   EWBIK
 -   Automatic bounds updates
 -   Squash-and-stretch bone scaling for Optimized Skeletons
 -   Dynamic Meshes (animate vertices using Burst)

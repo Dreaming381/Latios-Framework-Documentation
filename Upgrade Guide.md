@@ -1,4 +1,4 @@
-# Upgrade Guide [0.12.7] [0.13.0]
+# Upgrade Guide [0.13.7] [0.14.0]
 
 If you are not using version control, please back up your project in a separate
 directory before upgrading! You may need to reference the pre-upgraded project
@@ -7,104 +7,92 @@ during the upgrade process.
 This document only highlights the common things to be aware of when upgrading.
 See the changelogs of each module for a complete list of changes.
 
-## Transforms
+## Core
 
-### Motion History Changes
+### Math Moved Out
 
-Motion History has been broken up into two separate phases. The first phase is
-the initialization phase for new entities, and updates in `PostSyncPointGroup`
-like the old updates did. The second phase is the update phase, which now
-updates at the beginning of `SimulationSystemGroup`. The change ensures that
-valid motion history exists at the end of `InitializationSystemGroup`, but that
-motion history is not updated right before rendering in n-1 mode. You may need
-to adjust system scheduling orders accordingly.
-
-### Extra Update
-
-If you used QVVS Transforms and used `PreTransformSuperSystem` or
-`PostTransformSuperSystem`, be aware that these super systems now update twice
-each frame by default.
+All of the math-related APIs in Core, such as SIMD, RNG, QCP, and various other
+utilities and extensions have been moved to the new Calci module. Simply
+reference the new module in your assembly and add a `using Latios.Calci;` to
+your files, and things should be back to normal.
 
 ## Psyshock
 
-### FindObjects
+### Physics to TrueSim
 
-If you used `ref readonly` in a `FindObjects` `foreach` expression, you will
-encounter errors when upgrading. Just delete the `ref readonly` and you should
-be good to go.
+Some static methods and constants which used to be in the Physics class are now
+in the `TrueSim` class. They otherwise act the same as before.
 
 ## Myri
 
-### Runtime Component Changes
+### AudioClipBlob Compression Support
 
-The runtime components `AudioSourceLooped` and `AudioSourceOneShot` are no
-longer in Myri. They have instead been replaced with `AudioSourceClip`,
-`AudioSourceVolume`, and `AudioSourceDistanceFalloff`. Whether or not a clip
-loops is now a property of `AudioSourceClip`. Otherwise, you’ll find all the
-other fields from the old components still present. They’ve just been moved to
-the new modular structure.
+Myri no longer exposes the raw samples in the `AudioClipBlob`, as they may now
+be optionally stored in a compressed form. If you need APIs to extract the
+audio, please make a feature request.
 
-### Simplified Audio Listener Profile
+### SampleUtilities Renamed to DspTools
 
-There’s a new Audio Listener Profile, and that means the
-`ListenerProfileBuilder` API has also changed. There’s no longer a concept of
-“passthrough” for each channel. Instead, the signal in a given channel always
-flows through all effects. You can recreate the effect of passthrough by scaling
-the gain and quality values down.
-
-### AudioClipOverrideBase Replaced with Interface
-
-Myri’s baker will now search for instances of `IAudioClipOverride` to receive a
-`SmartBlobberHandle<AudioClipBlob>` and will automatically use it. This replaces
-both `AudioClipOverrideBase` and `AudioClipOverrideRequest`. If you need to
-build the clip in your own baker, then simply return `default`, and then in your
-own baker, you can add `AudioSourceClip` yourself.
-
-### Voice Combining
-
-If you spawned multiple audio sources at the same time using the same clip, you
-will find the sources may be quieter after upgrading. This is because a bug was
-fixed that caused voice combining to be louder than it should have been. To
-restore the original volume, multiply the volume of each source by the total
-number of nearby sources using the same clip.
-
-### A New World
-
-Don’t be alarmed if you start seeing a new ECS World show up when using Myri.
-Myri is creating this for internal purposes and you should ignore it.
+The static class `SampleUtilities` was renamed to `DspTools` to better reflect
+the variety of features this class will provide.
 
 ## Kinemation
 
-### Motion History Update
+### Major Bounds Overhaul
 
-Kinemation’s system ordering has been updated to reflect the changes to motion
-history. Most projects will not be affected negatively regarding Kinemation, but
-if you did something special with update ordering and Kinemation components, be
-wary of these changes.
+Renderer bounds handling received a major overhaul. Deforming renderers now use
+`WorldRenderBounds` and `ChunkWorldRenderBounds` like all other entities. In
+addition, systems responsible for computing these bounds have been moved to run
+after `LatiosEntitiesGraphicsSystem`, which is much later than when Entities
+Graphics normally performs these tasks. Update any manually-created archetypes
+and system orders accordingly.
+
+### LODs Update
+
+MMI Range LODs no longer contain a `height` field. They use the
+`WorldRenderBounds` now. Just delete that field from custom bakers and runtime
+code. Additionally, if you were adding `LodCrossfade` to entities yourself in
+bakers, please use `MeshRendererBakeSettings.requireLodCrossfade` instead, as
+otherwise you may get baking errors.
+
+### Skeleton Culling Changes
+
+Skeletons are no longer directly culled, and therefore skeletons without skinned
+meshes will no longer have `RenderVisibilityFeedbackFlag` updated. A
+`CullingGroup`-like API may be provided in the future to address this feature
+regression, but the implementation of such a feature will be based on user
+requests for it. If you are missing this functionality, please share your use
+case through one of the various communication channels.
+
+Additionally, Unity Transforms mode no longer requires the use of
+`PostProcessMatrix` in any scenario.
 
 ## New Things to Try!
 
 ### Core
 
-You can now construct a `BlackboardEntity` type out of a `SystemHandle`, giving
-you a much richer API for working with system entities.
+`UnsafeParallelBlockList` now has generically typed versions, making it easier
+to express your intent when you don’t need type punning.
+
+### New Module – Calci
+
+Calci is a new module focused on math and algorithms. In addition to housing
+former Core APIs, it comes with new Bezier curve APIs.
 
 ### Psyshock Physics
 
-Psyshock brings the new `CollisionWorld` type, which stores archetype info along
-with a `CollisionLayer` to allow for combo ECS-spatial queries. But if that
-isn’t what you are after, then maybe the new `SubstepRateManager` or
-experimental `TerrainCollider` might interest you.
+Psyshock now has a much more extensible API for drawing outlines of colliders,
+allowing you to feed lines into your own line renderer.
 
-### Myri
+### Kinemation
 
-Myri received a major feature update including a brand new mixing workflow,
-modular audio source components, and even some rudimentary pitch shifting via
-the sample rate multiplier.
+Kinemation now supports Mesh LODs for Unity 6.2 and newer. This means there are
+now 3 different LOD systems which are able to crossfade. And now, these systems
+coordinate with each other so that you can combine multiple techniques. You can
+use Mesh LODs up until at a distance where you use LOD Pack to switch to an
+imposter or fade out. And you can combine Mesh LOD with LOD Group for your
+skinned meshes.
 
-### LifeFX
-
-LifeFX now has Tracked Transforms, which provides a way for particles in VFX
-Graph to track an entity’s transform and detect when that entity is destroyed.
-This feature includes both ECS components to facilitate tracking, and VFX
-Subgraphs included as package samples for working with the QVVS transforms.
+On the animation side, Kinemation’s new `UnityRig` class provides 2-bone IK. Use
+this in combination with `OptimizedSkeletonAspect`’s new multi-bone writing APIs
+to commit your IK changes in batch with ensured correctness.
