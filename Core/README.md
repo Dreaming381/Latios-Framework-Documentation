@@ -279,6 +279,8 @@ functionality. Unlike other implementations, this implementation can correctly
 handle serialization of Entity and blob asset references. Although explicit API
 calls must be made if a key’s hashcode changes before and after serialization.
 
+See more: [DynamicHashmap](Dynamic%20Hashmap.md)
+
 ### Baking Interface Methods
 
 You know how with Game Objects you can call `GetComponent<ISomeInterface>()` but
