@@ -404,7 +404,10 @@ you aren’t making use of `math.min()` and `math.max()`, these are your friends
 Third, if you have boundary conditions at the ends of your list of elements to
 process, consider splitting the logic up such that you only try to vectorize the
 range of elements that aren’t affected by the boundary conditions. Then, you can
-use
+use vectorization for the much simpler loop that doesn’t have to deal with
+boundary conditions, and use normal unvectorized code to deal with the
+complicated scenarios. Classifying data is useful in general, as long as the
+classification costs are relatively small.
 
 Fourth, if you have any kinds of switch cases or switch expressions, or any
 other kind of lookup table, you are going to want to replace these with math.
