@@ -1,4 +1,4 @@
-# LifeFX
+# Calci
 
 Calci is a math and algorithms module for general-purpose game development. It
 offers high performance implementations that are architecture-agnostic, which
