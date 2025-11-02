@@ -6,6 +6,19 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic
 Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [0.14.1] – 2025-11-2
+
+Officially supports Entities [1.3.14]
+
+### Fixed
+
+-   Fixed `OptimizeSkeletonAspect.ForceInitialize()` defaulting transforms
+    rather than initializing them correctly, resulting in non-animated skeletons
+    having invalid bone transforms
+-   Fixed `UnityRig.SolveTwoBoneIK()` using stale transforms in parts of the
+    algorithm and not handling cases where the tip or target is very close to
+    the root position
+
 ## [0.14.0] – 2025-10-18
 
 Officially supports Entities [1.3.14]

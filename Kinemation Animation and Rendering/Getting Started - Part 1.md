@@ -181,12 +181,13 @@ override API to configure the submesh IDs and materials, and you must add the
 `RendererBakingTools.uniqueMeshPlaceholder` as the mesh and disable submesh
 clamping when extracting `MeshMaterialSubmeshSettings`.
 
-**Warning:** There is currently a bug in Unity that will result in unique meshes
-being uploaded a frame late, which can cause rendering artifacts. To work around
-this, uncomment `KinemationBootstrap.InstallUniqueMeshesEarlyUploader(world);`
-within your bootstrap. This has a performance penalty of uploading all dirty
-unique meshes every frame regardless of their visibility status, but will fix
-the frame delay issue.
+**Warning:** There is a bug in some versions of Unity that will result in unique
+meshes being uploaded a frame late, which can cause rendering artifacts. To work
+around this, uncomment
+`KinemationBootstrap.InstallUniqueMeshesEarlyUploader(world);` within your
+bootstrap. This has a performance penalty of uploading all dirty unique meshes
+every frame regardless of their visibility status, but will fix the frame delay
+issue. It is believed the bug is fixed in Unity 6000.2.8f1 and newer.
 
 ## Deforming Renderers
 

@@ -6,6 +6,36 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic
 Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [0.14.1] – 2025-11-2
+
+Officially supports Entities [1.3.14]
+
+### Added
+
+-   Added a new `Playback()` overload to `DestroyCommandBuffer` which employs a
+    new typically faster batching algorithm that may sometimes perform
+    operations multi-threaded
+-   Added a new static method `DestroyEntitiesWithBatching()` method to
+    `DestroyCommandBuffer` which performs the new batching algorithm on a custom
+    `NativeArray<Entity>`
+-   Added `BlobBuilder` extension method `ConstructFromSpan<T>()` as a
+    `ReadOnlySpan` alternative to the `NativeArray` counterpart extension method
+-   Added `EntityManager Entities.Exposed` extension method
+    `GetChunkFromChunkHashcode()`
+
+### Fixed
+
+-   Worked around an issue where Entities 1.4.x detection wasn’t being
+    recognized for Entities Exposed by now detecting the missing scripting
+    define symbol and displaying an error
+-   Fixed C\#10 file scope namespaces not being handled correctly in source
+    generators
+
+### Improved
+
+-   `SyncPointPlaybackSystem` now uses the new `DestroyCommandBuffer` batching
+    algorithm for improved performance
+
 ## [0.14.0] – 2025-10-18
 
 Officially supports Entities [1.3.14]
