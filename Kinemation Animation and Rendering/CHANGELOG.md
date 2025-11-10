@@ -6,6 +6,16 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic
 Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [0.14.2] – 2025-11-9
+
+Officially supports Entities [1.3.14]
+
+### Fixed
+
+-   Fixed bone propagation memory corruption issue
+-   Fixed various regressions with `UnityRig.SolveTwoBoneIK()` where rotations
+    were not propagating offsets correctly
+
 ## [0.14.1] – 2025-11-2
 
 Officially supports Entities [1.3.14]
