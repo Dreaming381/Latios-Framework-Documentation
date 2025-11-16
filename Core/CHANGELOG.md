@@ -6,6 +6,15 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic
 Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [0.14.3] – 2025-11-15
+
+Officially supports Entities [1.3.14]
+
+### Fixed
+
+-   Fixed disposal memory leak in `UnsafeIndexedBlockList` if an index had no
+    more blocks but still had a valid block list
+
 ## [0.14.2] – 2025-11-9
 
 Officially supports Entities [1.3.14]

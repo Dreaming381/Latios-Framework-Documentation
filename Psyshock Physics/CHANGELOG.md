@@ -6,6 +6,26 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic
 Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [0.14.3] – 2025-11-15
+
+Officially supports Entities [1.3.14]
+
+### Added
+
+-   Added new scripting define LATIOS_PSYSHOCK_VALIDATE_GJK which enables a
+    validation check for internal queries and writes hex strings to a file
+    whenever a bad result occurs
+
+### Fixed
+
+-   Fixed wrong `Physics.DistanceBetween()` results between box and capsule
+    colliders in some situations
+-   Fixed `Physics.DistanceBetween()` reporting hitpoints between a box and
+    triangle such that one point is on an edge while the other is on a face,
+    which should never happen
+-   Fixed `UnitySim.ContactsBetween()` results between a box and triangle being
+    constructed from an incorrect contact normal in some situations
+
 ## [0.14.1] – 2025-11-2
 
 Officially supports Entities [1.3.14]
