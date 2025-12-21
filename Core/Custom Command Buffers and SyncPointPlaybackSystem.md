@@ -136,6 +136,21 @@ partial struct Job : IJobEntity
 }
 ```
 
+Beginning in version 0.14.6, there are additional
+`InstantiateCommandBufferCommandX` variants, which allow populating an
+`IInstantiateCommand` instead of an `IComponentData`. `IInstantiateCommand`
+allows for defining a custom post-process operation to be applied after
+playback. The struct itself should contain any needed per-instance parameters.
+The struct must also define a `GetFunctionPointer()` method, which is called
+once on application startup.
+
+The function pointer will be invoked once during playback of any
+`InstantiateCommandBufferCommandX` using the specific `IInstantiateCommand`
+type. The passed in Context object provides the `EntityManager`, the array of
+instantiated entities, and a `ReadCommand<T>()` method for reading the
+`IInstantiateCommand` associated with a specific instantiated entity. It is safe
+to perform structural change operations within this method.
+
 ### AddComponentsCommandBuffer
 
 `AddComponentsCommandBuffer` is similar to `InstantiateCommandBuffer`, except
@@ -189,7 +204,7 @@ the following command buffers:
 -   EnableCommandBuffer
 -   DisableCommandBuffer
 -   DestroyCommandBuffer
--   InstantiateCommandBuffer
+-   InstantiateCommandBuffer & CommandX variants
 -   AddComponentsCommandBuffer
 
 It will play back these buffers in the order they are requested from systems.

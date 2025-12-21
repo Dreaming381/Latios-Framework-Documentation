@@ -70,8 +70,6 @@ other cache-efficiently.
     deserialized after remapping. The triggering of these serializations and
     deserializations must be handled explicitly via provided systems or custom
     logic.
--   If `LinkedEntityGroup` is not present, prefab entities using Unika may not
-    remap correctly. A workaround may be provided in a future release.
 -   It is not possible to see specific script values in the inspector or
     debugger.
 -   Polymorphic interfaces do not support `ref struct` types as parameters or

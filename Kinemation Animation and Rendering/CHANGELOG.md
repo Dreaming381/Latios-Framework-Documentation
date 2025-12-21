@@ -6,6 +6,32 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic
 Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [0.14.6] – 2025-12-20
+
+Officially supports Entities [1.4.3]
+
+This release only contains internal compatibility changes
+
+## [0.14.5] – 2025-12-13
+
+Officially supports Entities [1.3.14]
+
+### Added
+
+-   Added `bufferHandle` property to `GraphicsBufferUnmanaged`
+
+### Fixed
+
+-   Fixed memory leak when no entities are visible during a culling pass, due to
+    `TempJob` allocating a single byte when asked for zero bytes and
+    `BatchRendererGroup` not cleaning up these allocations when there are no
+    entities to draw
+
+### Improved
+
+-   Refactored `LatiosEntitiesGraphicsSystem` so that more logic is now
+    Burst-compiled on the main thread
+
 ## [0.14.4] – 2025-11-16
 
 Officially supports Entities [1.3.14]

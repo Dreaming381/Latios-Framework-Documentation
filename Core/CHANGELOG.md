@@ -6,6 +6,58 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic
 Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [0.14.6] – 2025-12-20
+
+Officially supports Entities [1.4.3]
+
+### Added
+
+-   *New Feature:* Added `IInstantiateCommand` and new
+    `InstantiateCommandBufferCommand1` and `InstantiateCommandBufferCommand2`
+    types for allowing custom post-processing of instantiated entities upon
+    playback
+-   Added `ThreadStackAllocator` property `isCreated` for lazy operations
+-   Added `EntityManager` and `EntityStorageInfoLookup` extension method
+    `IsAlive()` which can check whether an entity exists and is not pending
+    destruction due to cleanup components
+-   Added `Exposed` `EntityArchetype` extension `IsCleanup()` to detect
+    archetypes representing cleanup entities
+-   Added `BootstrapTools` method `IsAssemblyReferencingOtherAssembly()` as a
+    strongly-typed alternative to `IsAssemblyReferencingSubstring()`
+-   Added `ComponentBroker` methods `TryWriteComponentIgnoreParallelSafety()`
+    and `TryWriteBufferIgnoreParallelSafety()` intended to assist
+    deserialization operations
+-   Added Exposed `EntityManager` extension methods `GetComponentLookup<T>()`
+    and `GetEntityStorageInfoLookup()`
+-   Added `UnityObjectRef` extension method `EntityID()` in Unity 6.3 and newer
+
+### Removed
+
+-   **Breaking:** Removed exposed `BlobAssetStore` Burst extension methods as
+    Entities 1.4.3 allows normal `BlobAssetStore` methods to be Burst-compatible
+
+## [0.14.5] – 2025-12-13
+
+Officially supports Entities [1.3.14]
+
+### Added
+
+-   Added optional parameter bool `readOnly` to
+    `LatiosWorldUnmanaged.GetCollectionComponent()`
+-   Added `ComponentSystemGroup` tracing APIs to `Unity.Entities.Exposed` for
+    Unity 6.4 compatibility
+
+### Fixed
+
+-   Fixed `DestroyCommandBuffer` memory corruption when destroying enough
+    entities to trigger job dispatch
+
+### Improved
+
+-   Added additional safety checks inside `DestroyCommandBuffer` to detect
+    invalid `LinkedEntityGroup` buffers
+-   Improved the performance of `InstantiateCommandBuffer` playback
+
 ## [0.14.4] – 2025-11-16
 
 Officially supports Entities [1.3.14]

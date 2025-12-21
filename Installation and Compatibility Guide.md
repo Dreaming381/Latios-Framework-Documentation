@@ -14,10 +14,6 @@ When you first install the package, you may experience compiler errors due to
 lack of special scripting defines. Add the requested scripting defines to
 continue.
 
-Some features of the framework are no longer compatible with Unity 6.3 and
-newer. Add the scripting define LATIOS_DISABLE_CALLIGRAPHICS for these editor
-versions. This issue will be resolved in a future framework release.
-
 Latios Framework 0.14 uses a custom transform system rather than Unity’s
 Transforms by default. This system will bake `GameObject` `Transform`s fine, but
 may pose compatibility issues with other ECS packages. If compatibility is a
@@ -68,23 +64,15 @@ is found in a static class named `<moduleName>Bootstrap` or
 `<moduleName>BakingBootstrap`. Check the documentation of each method to learn
 which bootstraps it needs to be called within.
 
-## Entities 1.4.x Support
+## Entities Supported Versions
 
-Entities 1.4.x support is currently experimental. The Latios Framework will not
-compile with this package by default. You will need to add the scripting define
-symbol LATIOS_ENTITIES_1_4 to get things to compile.
+Entities 1.4.x is currently the officially supported version. The last framework
+version to support Entities 1.3.14 was framework version 0.14.5.
 
-With Entities 1.4.x, several APIs were marked deprecated that the Latios
-Framework uses. Some of these APIs only had replacements added in Entities 1.4,
-while others like `IAspect` do not have a replacement, and will take much more
-effort for the framework to migrate away from. The Latios Framework does not
-currently suppress these warnings.
+Entities 6.4.x is currently in an experimental status. Feel free to report any
+issues encountered if you attempt to use this version.
 
-Because the `IAspect` deprecation is quite annoying to several users, such users
-may prefer to remain on Entities 1.3.14, which remains the currently officially
-supported version of the Latios Framework. Please reach out on the Latios
-Framework discord server if you have concerns about the planned officially
-supported Entities and Editor versions in future Latios Framework releases.
+Entities 6.5.x is NOT supported at this time.
 
 ## Platform Support
 

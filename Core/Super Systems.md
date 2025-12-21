@@ -42,6 +42,11 @@ public class ExampleSuperSystem : SuperSystem
 }
 ```
 
+Note that creating a `SuperSystem` is not sufficient to make your systems
+update. You either need to create [RootSuperSystems](#root-super-systems) or
+create and inject your top-most `SuperSystem` types using the `BootstrapTools`
+API.
+
 ## Hierarchical Update Culling
 
 You can cull updates of `SubSystem`s or `SuperSystem`s by overriding
