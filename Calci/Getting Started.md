@@ -127,3 +127,9 @@ instead multiplied by `float4 s`, the result will be equivalent to performing
 
 `LatiosMath` contains random useful functions I purposely refactored because of
 frequent usage. It is best to look directly at the code to see what they do.
+
+## Math Shortcuts
+
+The `MathShortcuts` static class contains optimized calculation primitives for
+when you can make assumptions about their use, such as knowing specific
+properties about a matrix or knowing you don’t need cross-platform determinism.

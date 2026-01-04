@@ -6,6 +6,22 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic
 Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [0.14.8] – 2026-1-3
+
+Officially supports Entities [1.4.3]
+
+### Added
+
+-   Added `TlsfAllocator` for when you need a fast Collections
+    package-compatible allocator into pools of pre-allocated memory that is only
+    accessed by a single thread at a time
+-   Added `DynamicMultiList<T>` for when you need multiple dynamically-sized
+    lists packed into a single `DynamicBuffer`
+-   Added `Exposed` extension `EntityStorageInfoLookup.IsCreated()` which is
+    useful in union types
+-   Added Collections package bug workaround method `RemoveSafetyHandles` in
+    `Exposed`, which you should probably never call
+
 ## [0.14.6] – 2025-12-20
 
 Officially supports Entities [1.4.3]
