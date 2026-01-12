@@ -6,6 +6,18 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic
 Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [0.14.9] – 2026-1-11
+
+Officially supports Entities [1.4.4]
+
+### Fixed
+
+-   Fixed reflection errors for Unity 6.3 and newer
+
+### Removed
+
+-   Removed the *Text BackendMesh* from the *Asset/Create* menu
+
 ## [0.14.7] – 2025-12-21
 
 Officially supports Entities [1.4.3]

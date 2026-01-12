@@ -89,6 +89,9 @@ Unity 6.2 introduced Mesh LODs, but at the time of writing, Entities Graphics
 does not support them. However, Kinemation has fixed that. Mesh LODs are
 supported out-of-the-box.
 
+Kinemation also supports pure entity projected decals. You don’t need companion
+GameObjects to detail your world anymore.
+
 Lastly, if you ever needed to know which entities a frame rendered, Kinemation
 provides a feedback flag for this purpose. You can use this for animation
 culling or special game logic.
@@ -187,6 +190,10 @@ dumb things sometimes. Adreno GPUs have been susceptible to this.
     `AnimatorUtility`. Newer Unity versions will warn you about this.
 -   Older versions of Unity may delay updates of large Unique Mesh meshes to the
     GPU. This issue has disappeared in Unity 6000.2.8f1 and newer it seems.
+-   Decal rendering does not enforce any draw order between entities that can be
+    combined into a single draw call when structural changes occur, meaning you
+    might encounter z-order flipping behavior if you spawn decals projected onto
+    the same surface area using the same material and projection.
 
 ## Near-Term Roadmap
 
@@ -196,4 +203,4 @@ dumb things sometimes. Adreno GPUs have been susceptible to this.
 -   GPU Deformed Mesh Normals and Tangents Recalculation
 -   Blend Shape Animation Baking Helpers
 -   Unmanaged Texture APIs
--   Raytracing TLAS with Contribution Culling
+-   Raytracing Acceleration Structure Culling APIs
