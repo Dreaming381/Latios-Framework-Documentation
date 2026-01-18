@@ -6,6 +6,17 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic
 Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [0.14.10] – 2026-1-17
+
+Officially supports Entities [1.4.4]
+
+### Fixed
+
+-   Fixed `SkeletonClip.SampleBone()` producing garbage scale values
+-   Fixed bounds updates of exposed skeletons
+-   Fixed Kinemation Decal Shaders sample file DecalShaderGraphHelpers.hlsl
+    resolving issues when the camera was very near to the projected surface
+
 ## [0.14.9] – 2026-1-11
 
 Officially supports Entities [1.4.4]

@@ -82,14 +82,9 @@ rendered. If the camera were to move inside the mesh, the decal may disappear.
 For this reason, Unity’s decal projectors only render back faces and only render
 pixels behind the depth buffer values. This however can result in significant
 overdraw. Kinemation’s approach is to instead draw front faces with normal depth
-testing, and then in the vertex shader, push vertices that lie on the wrong side
-of the near clip plane so that they end up right in front of what the camera
-sees.
-
-**Warning: Right before release of 0.14.9, I discovered that the shader logic to
-perform this has some edge cases I did not account for. This will be resolved in
-a future version, but will likely require changes to the custom function
-signature.**
+testing, and then in the vertex shader, detect if the camera is really close to
+or inside the decal volume. If so, it flattens out the vertices of the mesh so
+that they end up right in front of what the camera sees.
 
 Additionally, projection requires the projector normal and tangent baselines are
 in the projection direction, which doesn’t match the projector mesh surface.

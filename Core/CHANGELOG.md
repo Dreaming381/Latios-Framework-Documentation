@@ -6,6 +6,17 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic
 Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [0.14.10] – 2026-1-17
+
+Officially supports Entities [1.4.4]
+
+### Added
+
+-   Added `ComponentBroker` method `IsAlive()` to match `EntityManager` and
+    `EntityStorageInfoLookup` extension methods
+-   Added Exposed `EntityManager` extension method `GetComponentDataRW<T>()`
+    which is useful for unifying wrapper interface APIs
+
 ## [0.14.9] – 2026-1-11
 
 Officially supports Entities [1.4.4]
