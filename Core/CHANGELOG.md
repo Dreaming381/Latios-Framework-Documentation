@@ -6,6 +6,28 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic
 Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [0.14.11] – 2026-1-31
+
+Officially supports Entities [1.4.4]
+
+### Added
+
+-   Added `IInstantiateCommand.Context` method `RequestDestroyEntity()` to
+    destroy an entity after playback
+-   Added `HasChecker` which provides the cache optimizations of
+    `ArchetypeChunk.Has()` using a `ComponentTypeHandle`, without the need for
+    the `ComponentTypeHandle`
+
+### Fixed
+
+-   Fixed various `ComponentBroker` methods indexing exceptions because of an
+    implicit conversion of `TypeIndex` to `int`
+-   Fixed an editor hang when an exception is thrown during
+    `SysncPointPlaybackSystem` when `zeroToleranceForExceptions` is enabled
+-   Some `syncPoint` methods involving `IInstantiateCommand` required a using
+    `Latios.Systems` statement in order to be accessible instead of just `using
+    Latios` as one would expect
+
 ## [0.14.10] – 2026-1-17
 
 Officially supports Entities [1.4.4]
