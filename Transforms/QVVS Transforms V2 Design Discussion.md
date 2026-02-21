@@ -171,10 +171,11 @@ What is especially interesting about (3) is that it only requires entities react
 to destruction if there are entities in the hierarchy not included in the
 `LinkedEntityGroup`. That can’t happen until an entity outside the
 `LinkedEntityGroup` is explicitly parented, or the hierarchy is prespawned in a
-subscene without `LinkedEntityGroupAuthoring` yet still destroyed by gameplay
-logic. Reparenting is something explicit that could require going through a
-custom API to detect. And prespawned hierarchies are much easier to deal with
-because there’s only one point in the frame where subscenes are loaded.
+subscene without `LinkedEntityGroupAuthoring,` yet is still destroyed by
+gameplay logic. Reparenting is something explicit that could require going
+through a custom API to detect. And prespawned hierarchies are much easier to
+deal with because there’s only one point in the frame where subscenes are
+loaded.
 
 This means that any entity can reference an alive root entity immediately after
 instantiation or subscene load, or after some specific transform manipulation
@@ -199,7 +200,7 @@ hierarchy order on the root. The latter has some very obvious advantages. Having
 the whole hierarchy in one place means less `DynamicBuffer` allocations, smaller
 child archetypes, and a central access for data which is more cache efficient.
 And when combined with `EntityQueryMask`, this makes for some very fast queries
-to find ancestors or descendants possessing a specific component. And most
+to find ancestors or descendants possessing a specific component. Most
 importantly, all of the lifecycle guarantees we worked out for the root also
 apply for the hierarchy on the root. This means that all of our parent and child
 relationships can be self-consistent at all times (other than destroyed entities
@@ -229,10 +230,10 @@ However, if it does have a hierarchy, then we need a hierarchy buffer. Each
 element `EntityInHierarchy` would contain the Entity, a parent index, the first
 child index, the number of children, and maybe some transform inheritance rule
 flags. There’s some `EntityInHierarchy` size vs max hierarchy size tradeoffs to
-be made yet. This is all the root needs for most cases, which means transforms
-only consume 64 bytes of chunk memory per entity, just like V1 again. In the
-cases where there’s a risk of the root being destroyed before a descendant, we
-can duplicate this buffer with a cleanup version.
+be made yet. This is all the root needs for most cases, which means root
+transforms only consume 64 bytes of chunk memory per entity, just like V1 again.
+In the cases where there’s a risk of the root being destroyed before a
+descendant, we can duplicate this buffer with a cleanup version.
 
 Each descendant in the hierarchy will need to know the root entity. And
 additionally, it would be helpful to know its element index in the
@@ -286,7 +287,7 @@ no change compared to V1 for any of these.
 ### `Reading Local Transform`
 
 To read a local transform, we need an entity’s `WorldTransform` and
-`RootReference` as read-only Then we also need a way to look up the
+`RootReference` as read-only. Then we also need a way to look up the
 `EntityInHierarchy` buffer as read-only.
 
 Entities 1.4.2 doesn’t have `IAspect` support, so we’ll need a way to guarantee
@@ -304,8 +305,8 @@ public static TransformQvs LocalTransformFrom(Entity entity,
 
 However, there are situations where using lookups is suboptimal. A user may
 instead want to promise that the `WorldTransform` and `RootReference` come from
-the same entity, because they got it from the Execute parameters of `IJobEntity`
-or something. In that case, we can expose another static class
+the same entity, because they got it from the `Execute()` parameters of
+`IJobEntity` or something. In that case, we can expose another static class
 `TransformTools.Unsafe` (it is nested inside `TransformTools`) with the
 following methods:
 
@@ -563,7 +564,7 @@ based on who we want to grant exclusive access. We might have a
 specify the same type, Unity throws. So really, this particular case isn’t all
 that different from the one above in how we represent it.
 
-#### No Exclusive Accessed
+#### No Exclusive Access
 
 In this case, we simply can’t write immediately safely. The best we can do is
 defer writes to a separate job. We’ll define a custom container for this:
@@ -669,6 +670,105 @@ Aside from that, V2 transforms have much stricter rules than Unity Transforms
 for writing. So abstract writers will generally have API patterns that conform
 towards QVVS V2 rules. This means there may be some performance regressions for
 Unity Transforms compatibility. I hope these won’t be that significant.
+
+## Implementation Lessons Learned
+
+Update: QVVS V2 has been in development, and there were some deviations from the
+original design along the way. Let’s talk about them.
+
+### EntityInHierarchyHandle Preferred
+
+Nearly all hierarchy traversal algorithms are implemented via
+`EntityInHierarchyHandle`, and not with static `TransformTools` methods. The
+handle can be easily retrieved from a `RootReference` with the right lookups or
+an `EntityManager`. And while this can lead to slightly more verbose user code
+for accessing a single parent, this pattern keeps the API surface smaller and
+keeps users on optimal pathways for accessing entities in the hierarchy.
+
+The hierarchy has a concept of *blood parents* and *blood children*, which are
+the stored entities in the hierarchy, dead or alive.
+
+### Ticking Rules and LEGs
+
+Originally, my idea was to have completely separate hierarchies for ticking and
+non-ticking. However, problems arose about how to resolve `LinkedEntityGroup`
+discrepancies. Thus the rule is that any parent must have the combination of
+ticked and unticked components across all of its children.
+
+### TransformAspect Returns
+
+`TransformTools` provides a good set of APIs, but it was extremely
+boilerplate-heavy. I wanted to package things up a little cleaner, and ended up
+reimplementing `TransformAspect`. However, this version is not an `IAspect`, and
+instead requires custom handle and lookup types to access. Some of its
+implementation is a little dirty, as except for when it is created with
+`EntityManager`, it assumes the type it is created with has a fixed location in
+memory for the `TransformAspect`’s lifecycle. This is a common practice in jobs,
+but something I still have to document very strongly.
+
+I think the improved ergonomics and simpler API outweigh that one footgun. Maybe
+someone can contribute a Roslyn Analyzer for it similar to `BlobArray`’s?
+
+### Local Transforms for Numerical Stability
+
+Remember how I said that the local transform could be accurately computed from
+the `WorldTransform` and the parent’s `WorldTransform`? Turns out that was only
+partially true. Over the span of many frames, the local position and scale can
+drift when this computation is repeated by transform propagations. Curiously,
+local rotation does not have this problem.
+
+I tried a few things to solve this, such as decomposing vector magnitudes of
+local positions and quantizing values. While these helped, they weren’t
+sufficient. I either needed to make transforms 64-bit, or I needed to add local
+transform information somewhere. Due to Unity’s ecosystem considerations, I
+chose the latter. As for where to store this data, I chose to hide it in the
+`EntityInHierarchy` buffer. This does mean that the buffer will need
+write-access when modifying transform values, which is a problem for
+expressivity.
+
+However, these local transform values always change with the entity’s
+`WorldTransform` in a 1-1 relationship, meaning that if I pretend that these
+specific values in the buffer are actually part of the safety rules of
+`WorldTransform`, then I can cheat by making these local transform values hidden
+to the user, and then writing via read-only pointers.
+
+Putting these values in the buffer ended up being very good for performance,
+because they have cache-friendly access during propagation. This did complicate
+some things regarding dead entities in the middle of the hierarchy, but I think
+I got a handle on it.
+
+### Instantiation Rules
+
+I added a new `InstantiateCommandBuffer` type that allows for user-programmable
+playback instructions. This eliminates nearly all use cases for
+`EntityCommandBuffer` for instantiation, and provides a clean API for
+instantiating hierarchies and setting `WorldTransforms` or assigning parents.
+
+Also, I’m currently disallowing instantiation of specific types of entities. If
+you try to instantiate an entity that is a child of another entity, and this
+entity to instantiate also has children, that is reported as an error.
+Similarly, instantiating a `LinkedEntityGroup` in which entities come from
+different hierarchies is also an error. These may be relaxed in the future, but
+a lot of code is required to make these work, and I believe these are rare use
+cases anyways.
+
+### Multi-Chunk Iteration
+
+I figured out an API that allows for grouping chunks in a query together that
+share hierarchies, and then dispatching those groups across threads. I even got
+this API to work with `IJobEntity`. I’ll still probably add a deferred API at
+some point, but I think this gets the job done for now.
+
+### Performance in LSSS
+
+V2 is only about 25% slower than V1 extreme transforms for propagation. This
+results in about 1-2 milliseconds per frame on stress-test scenes. Remember, at
+this scale, V1 without extreme transforms was 300-500% slower, and Unity
+Transforms was 200-400% slower. So V2 looks very competitive in comparison. In
+addition, V2 scales down much better, so if you compare V2 by default vs V1’s
+default setup, V2 is objectively faster.
+
+And I haven’t even tried to optimize V2s propagation algorithm yet!
 
 ## Open To Feedback
 
