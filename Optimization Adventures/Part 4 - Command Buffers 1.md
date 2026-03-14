@@ -36,94 +36,94 @@ explore are an extension of these concepts.
 
 Imagine we have an 8-bit computer with 4-byte cache lines.
 
-Let’s start with this 2D array with relative offset memory addresses. The bold
+Let’s start with this 2D array with relative offset memory addresses. The ${\color{red}red}$
 addresses represent a single cache line.
 
-|        |        |        |        |    |    |    |    |    |    |    |    |    |    |    |    |
-|--------|--------|--------|--------|----|----|----|----|----|----|----|----|----|----|----|----|
-| **00** | **01** | **02** | **03** | 04 | 05 | 06 | 07 | 08 | 09 | 0a | 0b | 0c | 0d | 0e | 0f |
-| 10     | 11     | 12     | 13     | 14 | 15 | 16 | 17 | 18 | 19 | 1a | 1b | 1c | 1d | 1e | 1f |
-| 20     | 21     | 22     | 23     | 24 | 25 | 26 | 27 | 28 | 29 | 2a | 2b | 2c | 2d | 2e | 2f |
-| 30     | 31     | 32     | 33     | 34 | 35 | 36 | 37 | 38 | 39 | 3a | 3b | 3c | 3d | 3e | 3f |
-| 40     | 41     | 42     | 43     | 44 | 45 | 46 | 47 | 48 | 49 | 4a | 4b | 4c | 4d | 4e | 4f |
-| 50     | 51     | 52     | 53     | 54 | 55 | 56 | 57 | 58 | 59 | 5a | 5b | 5c | 5d | 5e | 5f |
-| 60     | 61     | 62     | 63     | 64 | 65 | 66 | 67 | 68 | 69 | 6a | 6b | 6c | 6d | 6e | 6f |
-| 70     | 71     | 72     | 73     | 74 | 75 | 76 | 77 | 78 | 79 | 7a | 7b | 7c | 7d | 7e | 7f |
-| 80     | 81     | 82     | 83     | 84 | 85 | 86 | 87 | 88 | 89 | 8a | 8b | 8c | 8d | 8e | 8f |
-| 90     | 91     | 92     | 93     | 94 | 95 | 96 | 97 | 98 | 99 | 9a | 9b | 9c | 9d | 9e | 9f |
-| a0     | a1     | a2     | a3     | a4 | a5 | a6 | a7 | a8 | a9 | aa | ab | ac | ad | ae | af |
-| b0     | b1     | b2     | b3     | b4 | b5 | b6 | b7 | b8 | b9 | ba | bb | bc | bd | be | bf |
-| c0     | c1     | c2     | c3     | c4 | c5 | c6 | c7 | c8 | c9 | ca | cb | cc | cd | ce | cf |
-| d0     | d1     | d2     | d3     | d4 | d5 | d6 | d7 | d8 | d9 | da | db | dc | dd | de | df |
-| e0     | e1     | e2     | e3     | e4 | e5 | e6 | e7 | e8 | e9 | ea | eb | ec | ed | ee | ef |
-| f0     | f1     | f2     | f3     | f4 | f5 | f6 | f7 | f8 | f9 | fa | fb | fc | fd | fe | ff |
+|                     |                     |                     |                     |    |    |    |    |    |    |    |    |    |    |    |    |
+|---------------------|---------------------|---------------------|---------------------|----|----|----|----|----|----|----|----|----|----|----|----|
+| ${\color{red}00}$ | ${\color{red}01}$ | ${\color{red}02}$ | ${\color{red}03}$ | 04 | 05 | 06 | 07 | 08 | 09 | 0a | 0b | 0c | 0d | 0e | 0f |
+|         10          |         11          |         12          |         13          | 14 | 15 | 16 | 17 | 18 | 19 | 1a | 1b | 1c | 1d | 1e | 1f |
+|         20          |         21          |         22          |         23          | 24 | 25 | 26 | 27 | 28 | 29 | 2a | 2b | 2c | 2d | 2e | 2f |
+|         30          |         31          |         32          |         33          | 34 | 35 | 36 | 37 | 38 | 39 | 3a | 3b | 3c | 3d | 3e | 3f |
+|         40          |         41          |         42          |         43          | 44 | 45 | 46 | 47 | 48 | 49 | 4a | 4b | 4c | 4d | 4e | 4f |
+|         50          |         51          |         52          |         53          | 54 | 55 | 56 | 57 | 58 | 59 | 5a | 5b | 5c | 5d | 5e | 5f |
+|         60          |         61          |         62          |         63          | 64 | 65 | 66 | 67 | 68 | 69 | 6a | 6b | 6c | 6d | 6e | 6f |
+|         70          |         71          |         72          |         73          | 74 | 75 | 76 | 77 | 78 | 79 | 7a | 7b | 7c | 7d | 7e | 7f |
+|         80          |         81          |         82          |         83          | 84 | 85 | 86 | 87 | 88 | 89 | 8a | 8b | 8c | 8d | 8e | 8f |
+|         90          |         91          |         92          |         93          | 94 | 95 | 96 | 97 | 98 | 99 | 9a | 9b | 9c | 9d | 9e | 9f |
+|         a0          |         a1          |         a2          |         a3          | a4 | a5 | a6 | a7 | a8 | a9 | aa | ab | ac | ad | ae | af |
+|         b0          |         b1          |         b2          |         b3          | b4 | b5 | b6 | b7 | b8 | b9 | ba | bb | bc | bd | be | bf |
+|         c0          |         c1          |         c2          |         c3          | c4 | c5 | c6 | c7 | c8 | c9 | ca | cb | cc | cd | ce | cf |
+|         d0          |         d1          |         d2          |         d3          | d4 | d5 | d6 | d7 | d8 | d9 | da | db | dc | dd | de | df |
+|         e0          |         e1          |         e2          |         e3          | e4 | e5 | e6 | e7 | e8 | e9 | ea | eb | ec | ed | ee | ef |
+|         f0          |         f1          |         f2          |         f3          | f4 | f5 | f6 | f7 | f8 | f9 | fa | fb | fc | fd | fe | ff |
 
 Notice the shape of the cache line. It is not a square, but a long rectangle
 oriented horizontally. If you iterate by row, you only load 4 cache lines.
-(*Italics = Data read so far*)
+(${\underline{Underlines}}$ = Data read so far)
 
-|        |        |        |        |        |        |        |        |        |        |        |        |        |        |        |        |
-|--------|--------|--------|--------|--------|--------|--------|--------|--------|--------|--------|--------|--------|--------|--------|--------|
-| ***00*** | ***01*** | ***02*** | ***03*** | ***04*** | ***05*** | ***06*** | ***07*** | ***08*** | ***09*** | ***0a*** | ***0b*** | ***0c*** | **0d** | **0e** | **0f** |
-| 10     | 11     | 12     | 13     | 14     | 15     | 16     | 17     | 18     | 19     | 1a     | 1b     | 1c     | 1d     | 1e     | 1f     |
-| 20     | 21     | 22     | 23     | 24     | 25     | 26     | 27     | 28     | 29     | 2a     | 2b     | 2c     | 2d     | 2e     | 2f     |
-| 30     | 31     | 32     | 33     | 34     | 35     | 36     | 37     | 38     | 39     | 3a     | 3b     | 3c     | 3d     | 3e     | 3f     |
-| 40     | 41     | 42     | 43     | 44     | 45     | 46     | 47     | 48     | 49     | 4a     | 4b     | 4c     | 4d     | 4e     | 4f     |
-| 50     | 51     | 52     | 53     | 54     | 55     | 56     | 57     | 58     | 59     | 5a     | 5b     | 5c     | 5d     | 5e     | 5f     |
-| 60     | 61     | 62     | 63     | 64     | 65     | 66     | 67     | 68     | 69     | 6a     | 6b     | 6c     | 6d     | 6e     | 6f     |
-| 70     | 71     | 72     | 73     | 74     | 75     | 76     | 77     | 78     | 79     | 7a     | 7b     | 7c     | 7d     | 7e     | 7f     |
-| 80     | 81     | 82     | 83     | 84     | 85     | 86     | 87     | 88     | 89     | 8a     | 8b     | 8c     | 8d     | 8e     | 8f     |
-| 90     | 91     | 92     | 93     | 94     | 95     | 96     | 97     | 98     | 99     | 9a     | 9b     | 9c     | 9d     | 9e     | 9f     |
-| a0     | a1     | a2     | a3     | a4     | a5     | a6     | a7     | a8     | a9     | aa     | ab     | ac     | ad     | ae     | af     |
-| b0     | b1     | b2     | b3     | b4     | b5     | b6     | b7     | b8     | b9     | ba     | bb     | bc     | bd     | be     | bf     |
-| c0     | c1     | c2     | c3     | c4     | c5     | c6     | c7     | c8     | c9     | ca     | cb     | cc     | cd     | ce     | cf     |
-| d0     | d1     | d2     | d3     | d4     | d5     | d6     | d7     | d8     | d9     | da     | db     | dc     | dd     | de     | df     |
-| e0     | e1     | e2     | e3     | e4     | e5     | e6     | e7     | e8     | e9     | ea     | eb     | ec     | ed     | ee     | ef     |
-| f0     | f1     | f2     | f3     | f4     | f5     | f6     | f7     | f8     | f9     | fa     | fb     | fc     | fd     | fe     | ff     |
+|                               |                               |                               |                               |                               |                               |                               |                               |                               |                               |                               |                               |                               |                   |                   |                   |
+|-------------------------------|-------------------------------|-------------------------------|-------------------------------|-------------------------------|-------------------------------|-------------------------------|-------------------------------|-------------------------------|-------------------------------|-------------------------------|-------------------------------|-------------------------------|-------------------|-------------------|-------------------|
+| ${\color{red}\underline{00}}$ | ${\color{red}\underline{01}}$ | ${\color{red}\underline{02}}$ | ${\color{red}\underline{03}}$ | ${\color{red}\underline{04}}$ | ${\color{red}\underline{05}}$ | ${\color{red}\underline{06}}$ | ${\color{red}\underline{07}}$ | ${\color{red}\underline{08}}$ | ${\color{red}\underline{09}}$ | ${\color{red}\underline{0a}}$ | ${\color{red}\underline{0b}}$ | ${\color{red}\underline{0c}}$ | ${\color{red}0d}$ | ${\color{red}0e}$ | ${\color{red}0f}$ |
+|              10               |              11               |              12               |              13               |              14               |              15               |              16               |              17               |              18               |              19               |              1a               |              1b               |              1c               |        1d         |        1e         |        1f         |
+|              20               |              21               |              22               |              23               |              24               |              25               |              26               |              27               |              28               |              29               |              2a               |              2b               |              2c               |        2d         |        2e         |        2f         |
+|              30               |              31               |              32               |              33               |              34               |              35               |              36               |              37               |              38               |              39               |              3a               |              3b               |              3c               |        3d         |        3e         |        3f         |
+|              40               |              41               |              42               |              43               |              44               |              45               |              46               |              47               |              48               |              49               |              4a               |              4b               |              4c               |        4d         |        4e         |        4f         |
+|              50               |              51               |              52               |              53               |              54               |              55               |              56               |              57               |              58               |              59               |              5a               |              5b               |              5c               |        5d         |        5e         |        5f         |
+|              60               |              61               |              62               |              63               |              64               |              65               |              66               |              67               |              68               |              69               |              6a               |              6b               |              6c               |        6d         |        6e         |        6f         |
+|              70               |              71               |              72               |              73               |              74               |              75               |              76               |              77               |              78               |              79               |              7a               |              7b               |              7c               |        7d         |        7e         |        7f         |
+|              80               |              81               |              82               |              83               |              84               |              85               |              86               |              87               |              88               |              89               |              8a               |              8b               |              8c               |        8d         |        8e         |        8f         |
+|              90               |              91               |              92               |              93               |              94               |              95               |              96               |              97               |              98               |              99               |              9a               |              9b               |              9c               |        9d         |        9e         |        9f         |
+|              a0               |              a1               |              a2               |              a3               |              a4               |              a5               |              a6               |              a7               |              a8               |              a9               |              aa               |              ab               |              ac               |        ad         |        ae         |        af         |
+|              b0               |              b1               |              b2               |              b3               |              b4               |              b5               |              b6               |              b7               |              b8               |              b9               |              ba               |              bb               |              bc               |        bd         |        be         |        bf         |
+|              c0               |              c1               |              c2               |              c3               |              c4               |              c5               |              c6               |              c7               |              c8               |              c9               |              ca               |              cb               |              cc               |        cd         |        ce         |        cf         |
+|              d0               |              d1               |              d2               |              d3               |              d4               |              d5               |              d6               |              d7               |              d8               |              d9               |              da               |              db               |              dc               |        dd         |        de         |        df         |
+|              e0               |              e1               |              e2               |              e3               |              e4               |              e5               |              e6               |              e7               |              e8               |              e9               |              ea               |              eb               |              ec               |        ed         |        ee         |        ef         |
+|              f0               |              f1               |              f2               |              f3               |              f4               |              f5               |              f6               |              f7               |              f8               |              f9               |              fa               |              fb               |              fc               |        fd         |        fe         |        ff         |
 
 But if you iterate by column, you load 16 cache lines.
 
-|        |        |        |        |    |    |    |    |    |    |    |    |    |    |    |    |
-|--------|--------|--------|--------|----|----|----|----|----|----|----|----|----|----|----|----|
-| ***00*** | **01** | **02** | **03** | 04 | 05 | 06 | 07 | 08 | 09 | 0a | 0b | 0c | 0d | 0e | 0f |
-| ***10*** | **11** | **12** | **13** | 14 | 15 | 16 | 17 | 18 | 19 | 1a | 1b | 1c | 1d | 1e | 1f |
-| ***20*** | **21** | **22** | **23** | 24 | 25 | 26 | 27 | 28 | 29 | 2a | 2b | 2c | 2d | 2e | 2f |
-| ***30*** | **31** | **32** | **33** | 34 | 35 | 36 | 37 | 38 | 39 | 3a | 3b | 3c | 3d | 3e | 3f |
-| ***40*** | **41** | **42** | **43** | 44 | 45 | 46 | 47 | 48 | 49 | 4a | 4b | 4c | 4d | 4e | 4f |
-| ***50*** | **51** | **52** | **53** | 54 | 55 | 56 | 57 | 58 | 59 | 5a | 5b | 5c | 5d | 5e | 5f |
-| ***60*** | **61** | **62** | **63** | 64 | 65 | 66 | 67 | 68 | 69 | 6a | 6b | 6c | 6d | 6e | 6f |
-| ***70*** | **71** | **72** | **73** | 74 | 75 | 76 | 77 | 78 | 79 | 7a | 7b | 7c | 7d | 7e | 7f |
-| ***80*** | **81** | **82** | **83** | 84 | 85 | 86 | 87 | 88 | 89 | 8a | 8b | 8c | 8d | 8e | 8f |
-| ***90*** | **91** | **92** | **93** | 94 | 95 | 96 | 97 | 98 | 99 | 9a | 9b | 9c | 9d | 9e | 9f |
-| ***a0*** | **a1** | **a2** | **a3** | a4 | a5 | a6 | a7 | a8 | a9 | aa | ab | ac | ad | ae | af |
-| ***b0*** | **b1** | **b2** | **b3** | b4 | b5 | b6 | b7 | b8 | b9 | ba | bb | bc | bd | be | bf |
-| ***c0*** | **c1** | **c2** | **c3** | c4 | c5 | c6 | c7 | c8 | c9 | ca | cb | cc | cd | ce | cf |
-| ***d0*** | **d1** | **d2** | **d3** | d4 | d5 | d6 | d7 | d8 | d9 | da | db | dc | dd | de | df |
-| e0     | e1     | e2     | e3     | e4 | e5 | e6 | e7 | e8 | e9 | ea | eb | ec | ed | ee | ef |
-| f0     | f1     | f2     | f3     | f4 | f5 | f6 | f7 | f8 | f9 | fa | fb | fc | fd | fe | ff |
+|                               |                   |                   |                   |    |    |    |    |    |    |    |    |    |    |    |    |
+|-------------------------------|-------------------|-------------------|-------------------|----|----|----|----|----|----|----|----|----|----|----|----|
+| ${\color{red}\underline{00}}$ | ${\color{red}01}$ | ${\color{red}02}$ | ${\color{red}03}$ | 04 | 05 | 06 | 07 | 08 | 09 | 0a | 0b | 0c | 0d | 0e | 0f |
+| ${\color{red}\underline{10}}$ | ${\color{red}11}$ | ${\color{red}12}$ | ${\color{red}13}$ | 14 | 15 | 16 | 17 | 18 | 19 | 1a | 1b | 1c | 1d | 1e | 1f |
+| ${\color{red}\underline{20}}$ | ${\color{red}21}$ | ${\color{red}22}$ | ${\color{red}23}$ | 24 | 25 | 26 | 27 | 28 | 29 | 2a | 2b | 2c | 2d | 2e | 2f |
+| ${\color{red}\underline{30}}$ | ${\color{red}31}$ | ${\color{red}32}$ | ${\color{red}33}$ | 34 | 35 | 36 | 37 | 38 | 39 | 3a | 3b | 3c | 3d | 3e | 3f |
+| ${\color{red}\underline{40}}$ | ${\color{red}41}$ | ${\color{red}42}$ | ${\color{red}43}$ | 44 | 45 | 46 | 47 | 48 | 49 | 4a | 4b | 4c | 4d | 4e | 4f |
+| ${\color{red}\underline{50}}$ | ${\color{red}51}$ | ${\color{red}52}$ | ${\color{red}53}$ | 54 | 55 | 56 | 57 | 58 | 59 | 5a | 5b | 5c | 5d | 5e | 5f |
+| ${\color{red}\underline{60}}$ | ${\color{red}61}$ | ${\color{red}62}$ | ${\color{red}63}$ | 64 | 65 | 66 | 67 | 68 | 69 | 6a | 6b | 6c | 6d | 6e | 6f |
+| ${\color{red}\underline{70}}$ | ${\color{red}71}$ | ${\color{red}72}$ | ${\color{red}73}$ | 74 | 75 | 76 | 77 | 78 | 79 | 7a | 7b | 7c | 7d | 7e | 7f |
+| ${\color{red}\underline{80}}$ | ${\color{red}81}$ | ${\color{red}82}$ | ${\color{red}83}$ | 84 | 85 | 86 | 87 | 88 | 89 | 8a | 8b | 8c | 8d | 8e | 8f |
+| ${\color{red}\underline{90}}$ | ${\color{red}91}$ | ${\color{red}92}$ | ${\color{red}93}$ | 94 | 95 | 96 | 97 | 98 | 99 | 9a | 9b | 9c | 9d | 9e | 9f |
+| ${\color{red}\underline{a0}}$ | ${\color{red}a1}$ | ${\color{red}a2}$ | ${\color{red}a3}$ | a4 | a5 | a6 | a7 | a8 | a9 | aa | ab | ac | ad | ae | af |
+| ${\color{red}\underline{b0}}$ | ${\color{red}b1}$ | ${\color{red}b2}$ | ${\color{red}b3}$ | b4 | b5 | b6 | b7 | b8 | b9 | ba | bb | bc | bd | be | bf |
+| ${\color{red}\underline{c0}}$ | ${\color{red}c1}$ | ${\color{red}c2}$ | ${\color{red}c3}$ | c4 | c5 | c6 | c7 | c8 | c9 | ca | cb | cc | cd | ce | cf |
+| ${\color{red}\underline{d0}}$ | ${\color{red}d1}$ | ${\color{red}d2}$ | ${\color{red}d3}$ | d4 | d5 | d6 | d7 | d8 | d9 | da | db | dc | dd | de | df |
+|              e0               |        e1         |        e2         |        e3         | e4 | e5 | e6 | e7 | e8 | e9 | ea | eb | ec | ed | ee | ef |
+|              f0               |        f1         |        f2         |        f3         | f4 | f5 | f6 | f7 | f8 | f9 | fa | fb | fc | fd | fe | ff |
 
 Things get worse if you can only store 12 cache lines, as when you reach the
 next column, the cache is gone. And so is every one after as the cache lines
 keep shuffling.
 
-|        |        |        |        |    |    |    |    |    |    |    |    |    |    |    |    |
-|--------|--------|--------|--------|----|----|----|----|----|----|----|----|----|----|----|----|
-| ***00*** | ***01*** | **02** | **03** | 04 | 05 | 06 | 07 | 08 | 09 | 0a | 0b | 0c | 0d | 0e | 0f |
-| *10*   | 11     | 12     | 13     | 14 | 15 | 16 | 17 | 18 | 19 | 1a | 1b | 1c | 1d | 1e | 1f |
-| *20*   | 21     | 22     | 23     | 24 | 25 | 26 | 27 | 28 | 29 | 2a | 2b | 2c | 2d | 2e | 2f |
-| *30*   | 31     | 32     | 33     | 34 | 35 | 36 | 37 | 38 | 39 | 3a | 3b | 3c | 3d | 3e | 3f |
-| *40*   | 41     | 42     | 43     | 44 | 45 | 46 | 47 | 48 | 49 | 4a | 4b | 4c | 4d | 4e | 4f |
-| ***50*** | **51** | **52** | **53** | 54 | 55 | 56 | 57 | 58 | 59 | 5a | 5b | 5c | 5d | 5e | 5f |
-| ***60*** | **61** | **62** | **63** | 64 | 65 | 66 | 67 | 68 | 69 | 6a | 6b | 6c | 6d | 6e | 6f |
-| ***70*** | **71** | **72** | **73** | 74 | 75 | 76 | 77 | 78 | 79 | 7a | 7b | 7c | 7d | 7e | 7f |
-| ***80*** | **81** | **82** | **83** | 84 | 85 | 86 | 87 | 88 | 89 | 8a | 8b | 8c | 8d | 8e | 8f |
-| ***90*** | **91** | **92** | **93** | 94 | 95 | 96 | 97 | 98 | 99 | 9a | 9b | 9c | 9d | 9e | 9f |
-| ***a0*** | **a1** | **a2** | **a3** | a4 | a5 | a6 | a7 | a8 | a9 | aa | ab | ac | ad | ae | af |
-| ***b0*** | **b1** | **b2** | **b3** | b4 | b5 | b6 | b7 | b8 | b9 | ba | bb | bc | bd | be | bf |
-| ***c0*** | **c1** | **c2** | **c3** | c4 | c5 | c6 | c7 | c8 | c9 | ca | cb | cc | cd | ce | cf |
-| ***d0*** | **d1** | **d2** | **d3** | d4 | d5 | d6 | d7 | d8 | d9 | da | db | dc | dd | de | df |
-| ***e0*** | **e1** | **e2** | **e3** | e4 | e5 | e6 | e7 | e8 | e9 | ea | eb | ec | ed | ee | ef |
-| ***f0*** | **f1** | **f2** | **f3** | f4 | f5 | f6 | f7 | f8 | f9 | fa | fb | fc | fd | fe | ff |
+|                               |                               |                   |                   |    |    |    |    |    |    |    |    |    |    |    |    |
+|-------------------------------|-------------------------------|-------------------|-------------------|----|----|----|----|----|----|----|----|----|----|----|----|
+| ${\color{red}\underline{00}}$ | ${\color{red}\underline{01}}$ | ${\color{red}02}$ | ${\color{red}03}$ | 04 | 05 | 06 | 07 | 08 | 09 | 0a | 0b | 0c | 0d | 0e | 0f |
+|       ${\underline{10}}$      |              11               |         12        |         13        | 14 | 15 | 16 | 17 | 18 | 19 | 1a | 1b | 1c | 1d | 1e | 1f |
+|       ${\underline{20}}$      |              21               |         22        |         23        | 24 | 25 | 26 | 27 | 28 | 29 | 2a | 2b | 2c | 2d | 2e | 2f |
+|       ${\underline{30}}$      |              31               |         32        |         33        | 34 | 35 | 36 | 37 | 38 | 39 | 3a | 3b | 3c | 3d | 3e | 3f |
+|       ${\underline{40}}$      |              41               |         42        |         43        | 44 | 45 | 46 | 47 | 48 | 49 | 4a | 4b | 4c | 4d | 4e | 4f |
+| ${\color{red}\underline{50}}$ |       ${\color{red}51}$       | ${\color{red}52}$ | ${\color{red}53}$ | 54 | 55 | 56 | 57 | 58 | 59 | 5a | 5b | 5c | 5d | 5e | 5f |
+| ${\color{red}\underline{60}}$ |       ${\color{red}61}$       | ${\color{red}62}$ | ${\color{red}63}$ | 64 | 65 | 66 | 67 | 68 | 69 | 6a | 6b | 6c | 6d | 6e | 6f |
+| ${\color{red}\underline{70}}$ |       ${\color{red}71}$       | ${\color{red}72}$ | ${\color{red}73}$ | 74 | 75 | 76 | 77 | 78 | 79 | 7a | 7b | 7c | 7d | 7e | 7f |
+| ${\color{red}\underline{80}}$ |       ${\color{red}81}$       | ${\color{red}82}$ | ${\color{red}83}$ | 84 | 85 | 86 | 87 | 88 | 89 | 8a | 8b | 8c | 8d | 8e | 8f |
+| ${\color{red}\underline{90}}$ |       ${\color{red}91}$       | ${\color{red}92}$ | ${\color{red}93}$ | 94 | 95 | 96 | 97 | 98 | 99 | 9a | 9b | 9c | 9d | 9e | 9f |
+| ${\color{red}\underline{a0}}$ |       ${\color{red}a1}$       | ${\color{red}a2}$ | ${\color{red}a3}$ | a4 | a5 | a6 | a7 | a8 | a9 | aa | ab | ac | ad | ae | af |
+| ${\color{red}\underline{b0}}$ |       ${\color{red}b1}$       | ${\color{red}b2}$ | ${\color{red}b3}$ | b4 | b5 | b6 | b7 | b8 | b9 | ba | bb | bc | bd | be | bf |
+| ${\color{red}\underline{c0}}$ |       ${\color{red}c1}$       | ${\color{red}c2}$ | ${\color{red}c3}$ | c4 | c5 | c6 | c7 | c8 | c9 | ca | cb | cc | cd | ce | cf |
+| ${\color{red}\underline{d0}}$ |       ${\color{red}d1}$       | ${\color{red}d2}$ | ${\color{red}d3}$ | d4 | d5 | d6 | d7 | d8 | d9 | da | db | dc | dd | de | df |
+| ${\color{red}\underline{e0}}$ |       ${\color{red}e1}$       | ${\color{red}e2}$ | ${\color{red}e3}$ | e4 | e5 | e6 | e7 | e8 | e9 | ea | eb | ec | ed | ee | ef |
+| ${\color{red}\underline{f0}}$ |       ${\color{red}f1}$       | ${\color{red}f2}$ | ${\color{red}f3}$ | f4 | f5 | f6 | f7 | f8 | f9 | fa | fb | fc | fd | fe | ff |
 
 You’ve effectively made your algorithm 4 times slower. So yeah. Don’t iterate by
 column. That is a stupid thing to do.
@@ -133,46 +133,46 @@ If you start accessing adjacent cache lines, a prefetcher will try to stay ahead
 of you in fetching cache lines, predicting you to continue blasting through the
 adjacent addresses.
 
-|        |        |        |        |        |        |        |        |        |        |        |        |        |        |        |        |
-|--------|--------|--------|--------|--------|--------|--------|--------|--------|--------|--------|--------|--------|--------|--------|--------|
-| *00*   | *01*   | *02*   | *03*   | *04*   | *05*   | *06*   | *07*   | *08*   | *09*   | *0a*   | *0b*   | *0c*   | *0d*   | *0e*   | *0f*   |
-| *10*   | *11*   | *12*   | *13*   | ***14*** | ***15*** | ***16*** | ***17*** | ***18*** | ***19*** | ***1a*** | ***1b*** | ***1c*** | ***1d*** | ***1e*** | ***1f*** |
-| ***20*** | ***21*** | ***22*** | ***23*** | ***24*** | ***25*** | ***26*** | ***27*** | ***28*** | ***29*** | ***2a*** | ***2b*** | ***2c*** | ***2d*** | ***2e*** | ***2f*** |
-| ***30*** | ***31*** | ***32*** | ***33*** | ***34*** | ***35*** | ***36*** | ***37*** | ***38*** | ***39*** | ***3a*** | **3b** | **3c** | **3d** | **3e** | **3f** |
-| **40** | **41** | **42** | **43** | 44     | 45     | 46     | 47     | 48     | 49     | 4a     | 4b     | 4c     | 4d     | 4e     | 4f     |
-| 50     | 51     | 52     | 53     | 54     | 55     | 56     | 57     | 58     | 59     | 5a     | 5b     | 5c     | 5d     | 5e     | 5f     |
-| 60     | 61     | 62     | 63     | 64     | 65     | 66     | 67     | 68     | 69     | 6a     | 6b     | 6c     | 6d     | 6e     | 6f     |
-| 70     | 71     | 72     | 73     | 74     | 75     | 76     | 77     | 78     | 79     | 7a     | 7b     | 7c     | 7d     | 7e     | 7f     |
-| 80     | 81     | 82     | 83     | 84     | 85     | 86     | 87     | 88     | 89     | 8a     | 8b     | 8c     | 8d     | 8e     | 8f     |
-| 90     | 91     | 92     | 93     | 94     | 95     | 96     | 97     | 98     | 99     | 9a     | 9b     | 9c     | 9d     | 9e     | 9f     |
-| a0     | a1     | a2     | a3     | a4     | a5     | a6     | a7     | a8     | a9     | aa     | ab     | ac     | ad     | ae     | af     |
-| b0     | b1     | b2     | b3     | b4     | b5     | b6     | b7     | b8     | b9     | ba     | bb     | bc     | bd     | be     | bf     |
-| c0     | c1     | c2     | c3     | c4     | c5     | c6     | c7     | c8     | c9     | ca     | cb     | cc     | cd     | ce     | cf     |
-| d0     | d1     | d2     | d3     | d4     | d5     | d6     | d7     | d8     | d9     | da     | db     | dc     | dd     | de     | df     |
-| e0     | e1     | e2     | e3     | e4     | e5     | e6     | e7     | e8     | e9     | ea     | eb     | ec     | ed     | ee     | ef     |
-| f0     | f1     | f2     | f3     | f4     | f5     | f6     | f7     | f8     | f9     | fa     | fb     | fc     | fd     | fe     | ff     |
+|                               |                               |                               |                               |                               |                               |                               |                               |                               |                               |                               |                               |                               |                               |                               |                               |
+|-------------------------------|-------------------------------|-------------------------------|-------------------------------|-------------------------------|-------------------------------|-------------------------------|-------------------------------|-------------------------------|-------------------------------|-------------------------------|-------------------------------|-------------------------------|-------------------------------|-------------------------------|-------------------------------|
+|      ${\underline{00}}$       |      ${\underline{01}}$       |      ${\underline{02}}$       |      ${\underline{03}}$       |      ${\underline{04}}$       |      ${\underline{05}}$       |      ${\underline{06}}$       |      ${\underline{07}}$       |      ${\underline{08}}$       |      ${\underline{09}}$       |      ${\underline{0a}}$       |      ${\underline{0b}}$       |      ${\underline{0c}}$       |      ${\underline{0d}}$       |      ${\underline{0e}}$       |      ${\underline{0f}}$       |
+|      ${\underline{10}}$       |      ${\underline{11}}$       |      ${\underline{12}}$       |      ${\underline{13}}$       | ${\color{red}\underline{14}}$ | ${\color{red}\underline{15}}$ | ${\color{red}\underline{16}}$ | ${\color{red}\underline{17}}$ | ${\color{red}\underline{18}}$ | ${\color{red}\underline{19}}$ | ${\color{red}\underline{1a}}$ | ${\color{red}\underline{1b}}$ | ${\color{red}\underline{1c}}$ | ${\color{red}\underline{1d}}$ | ${\color{red}\underline{1e}}$ | ${\color{red}\underline{1f}}$ |
+| ${\color{red}\underline{20}}$ | ${\color{red}\underline{21}}$ | ${\color{red}\underline{22}}$ | ${\color{red}\underline{23}}$ | ${\color{red}\underline{24}}$ | ${\color{red}\underline{25}}$ | ${\color{red}\underline{26}}$ | ${\color{red}\underline{27}}$ | ${\color{red}\underline{28}}$ | ${\color{red}\underline{29}}$ | ${\color{red}\underline{2a}}$ | ${\color{red}\underline{2b}}$ | ${\color{red}\underline{2c}}$ | ${\color{red}\underline{2d}}$ | ${\color{red}\underline{2e}}$ | ${\color{red}\underline{2f}}$ |
+| ${\color{red}\underline{30}}$ | ${\color{red}\underline{31}}$ | ${\color{red}\underline{32}}$ | ${\color{red}\underline{33}}$ | ${\color{red}\underline{34}}$ | ${\color{red}\underline{35}}$ | ${\color{red}\underline{36}}$ | ${\color{red}\underline{37}}$ | ${\color{red}\underline{38}}$ | ${\color{red}\underline{39}}$ | ${\color{red}\underline{3a}}$ |       ${\color{red}3b}$       |       ${\color{red}3c}$       |       ${\color{red}3d}$       |       ${\color{red}3e}$       |       ${\color{red}3f}$       |
+|       ${\color{red}40}$       |       ${\color{red}41}$       |       ${\color{red}42}$       |       ${\color{red}43}$       |              44               |              45               |              46               |              47               |              48               |              49               |              4a               |              4b               |              4c               |              4d               |              4e               |              4f               |
+|              50               |              51               |              52               |              53               |              54               |              55               |              56               |              57               |              58               |              59               |              5a               |              5b               |              5c               |              5d               |              5e               |              5f               |
+|              60               |              61               |              62               |              63               |              64               |              65               |              66               |              67               |              68               |              69               |              6a               |              6b               |              6c               |              6d               |              6e               |              6f               |
+|              70               |              71               |              72               |              73               |              74               |              75               |              76               |              77               |              78               |              79               |              7a               |              7b               |              7c               |              7d               |              7e               |              7f               |
+|              80               |              81               |              82               |              83               |              84               |              85               |              86               |              87               |              88               |              89               |              8a               |              8b               |              8c               |              8d               |              8e               |              8f               |
+|              90               |              91               |              92               |              93               |              94               |              95               |              96               |              97               |              98               |              99               |              9a               |              9b               |              9c               |              9d               |              9e               |              9f               |
+|              a0               |              a1               |              a2               |              a3               |              a4               |              a5               |              a6               |              a7               |              a8               |              a9               |              aa               |              ab               |              ac               |              ad               |              ae               |              af               |
+|              b0               |              b1               |              b2               |              b3               |              b4               |              b5               |              b6               |              b7               |              b8               |              b9               |              ba               |              bb               |              bc               |              bd               |              be               |              bf               |
+|              c0               |              c1               |              c2               |              c3               |              c4               |              c5               |              c6               |              c7               |              c8               |              c9               |              ca               |              cb               |              cc               |              cd               |              ce               |              cf               |
+|              d0               |              d1               |              d2               |              d3               |              d4               |              d5               |              d6               |              d7               |              d8               |              d9               |              da               |              db               |              dc               |              dd               |              de               |              df               |
+|              e0               |              e1               |              e2               |              e3               |              e4               |              e5               |              e6               |              e7               |              e8               |              e9               |              ea               |              eb               |              ec               |              ed               |              ee               |              ef               |
+|              f0               |              f1               |              f2               |              f3               |              f4               |              f5               |              f6               |              f7               |              f8               |              f9               |              fa               |              fb               |              fc               |              fd               |              fe               |              ff               |
 
 But there isn’t just one prefetcher. There’s several, which means you **can**
 partially iterate by column. In fact, the rows don’t even need to be adjacent.
 
-|        |        |        |        |        |        |        |        |        |        |        |        |    |    |    |    |
-|--------|--------|--------|--------|--------|--------|--------|--------|--------|--------|--------|--------|----|----|----|----|
-| ***00*** | ***01*** | ***02*** | ***03*** | ***04*** | ***05*** | ***06*** | **07** | **08** | **09** | **0a** | **0b** | 0c | 0d | 0e | 0f |
-| ***10*** | ***11*** | ***12*** | ***13*** | ***14*** | ***15*** | ***16*** | **17** | **18** | **19** | **1a** | **1b** | 1c | 1d | 1e | 1f |
-| 20     | 21     | 22     | 23     | 24     | 25     | 26     | 27     | 28     | 29     | 2a     | 2b     | 2c | 2d | 2e | 2f |
-| ***30*** | ***31*** | ***32*** | ***33*** | ***34*** | ***35*** | ***36*** | **37** | **38** | **39** | **3a** | **3b** | 3c | 3d | 3e | 3f |
-| 40     | 41     | 42     | 43     | 44     | 45     | 46     | 47     | 48     | 49     | 4a     | 4b     | 4c | 4d | 4e | 4f |
-| 50     | 51     | 52     | 53     | 54     | 55     | 56     | 57     | 58     | 59     | 5a     | 5b     | 5c | 5d | 5e | 5f |
-| 60     | 61     | 62     | 63     | 64     | 65     | 66     | 67     | 68     | 69     | 6a     | 6b     | 6c | 6d | 6e | 6f |
-| 70     | 71     | 72     | 73     | 74     | 75     | 76     | 77     | 78     | 79     | 7a     | 7b     | 7c | 7d | 7e | 7f |
-| 80     | 81     | 82     | 83     | 84     | 85     | 86     | 87     | 88     | 89     | 8a     | 8b     | 8c | 8d | 8e | 8f |
-| 90     | 91     | 92     | 93     | 94     | 95     | 96     | 97     | 98     | 99     | 9a     | 9b     | 9c | 9d | 9e | 9f |
-| ***a0*** | ***a1*** | ***a2*** | ***a3*** | ***a4*** | ***a5*** | ***a6*** | **a7** | **a8** | **a9** | **aa** | **ab** | ac | ad | ae | af |
-| b0     | b1     | b2     | b3     | b4     | b5     | b6     | b7     | b8     | b9     | ba     | bb     | bc | bd | be | bf |
-| c0     | c1     | c2     | c3     | c4     | c5     | c6     | c7     | c8     | c9     | ca     | cb     | cc | cd | ce | cf |
-| d0     | d1     | d2     | d3     | d4     | d5     | d6     | d7     | d8     | d9     | da     | db     | dc | dd | de | df |
-| e0     | e1     | e2     | e3     | e4     | e5     | e6     | e7     | e8     | e9     | ea     | eb     | ec | ed | ee | ef |
-| f0     | f1     | f2     | f3     | f4     | f5     | f6     | f7     | f8     | f9     | fa     | fb     | fc | fd | fe | ff |
+|                               |                               |                               |                               |                               |                               |                               |                   |                   |                   |                   |                   |    |    |    |    |
+|-------------------------------|-------------------------------|-------------------------------|-------------------------------|-------------------------------|-------------------------------|-------------------------------|-------------------|-------------------|-------------------|-------------------|-------------------|----|----|----|----|
+| ${\color{red}\underline{00}}$ | ${\color{red}\underline{01}}$ | ${\color{red}\underline{02}}$ | ${\color{red}\underline{03}}$ | ${\color{red}\underline{04}}$ | ${\color{red}\underline{05}}$ | ${\color{red}\underline{06}}$ | ${\color{red}07}$ | ${\color{red}08}$ | ${\color{red}09}$ | ${\color{red}0a}$ | ${\color{red}0b}$ | 0c | 0d | 0e | 0f |
+| ${\color{red}\underline{10}}$ | ${\color{red}\underline{11}}$ | ${\color{red}\underline{12}}$ | ${\color{red}\underline{13}}$ | ${\color{red}\underline{14}}$ | ${\color{red}\underline{15}}$ | ${\color{red}\underline{16}}$ | ${\color{red}17}$ | ${\color{red}18}$ | ${\color{red}19}$ | ${\color{red}1a}$ | ${\color{red}1b}$ | 1c | 1d | 1e | 1f |
+|              20               |              21               |              22               |              23               |              24               |              25               |              26               |        27         |        28         |        29         |        2a         |        2b         | 2c | 2d | 2e | 2f |
+| ${\color{red}\underline{30}}$ | ${\color{red}\underline{31}}$ | ${\color{red}\underline{32}}$ | ${\color{red}\underline{33}}$ | ${\color{red}\underline{34}}$ | ${\color{red}\underline{35}}$ | ${\color{red}\underline{36}}$ | ${\color{red}37}$ | ${\color{red}38}$ | ${\color{red}39}$ | ${\color{red}3a}$ | ${\color{red}3b}$ | 3c | 3d | 3e | 3f |
+|              40               |              41               |              42               |              43               |              44               |              45               |              46               |        47         |        48         |        49         |        4a         |        4b         | 4c | 4d | 4e | 4f |
+|              50               |              51               |              52               |              53               |              54               |              55               |              56               |        57         |        58         |        59         |        5a         |        5b         | 5c | 5d | 5e | 5f |
+|              60               |              61               |              62               |              63               |              64               |              65               |              66               |        67         |        68         |        69         |        6a         |        6b         | 6c | 6d | 6e | 6f |
+|              70               |              71               |              72               |              73               |              74               |              75               |              76               |        77         |        78         |        79         |        7a         |        7b         | 7c | 7d | 7e | 7f |
+|              80               |              81               |              82               |              83               |              84               |              85               |              86               |        87         |        88         |        89         |        8a         |        8b         | 8c | 8d | 8e | 8f |
+|              90               |              91               |              92               |              93               |              94               |              95               |              96               |        97         |        98         |        99         |        9a         |        9b         | 9c | 9d | 9e | 9f |
+| ${\color{red}\underline{a0}}$ | ${\color{red}\underline{a1}}$ | ${\color{red}\underline{a2}}$ | ${\color{red}\underline{a3}}$ | ${\color{red}\underline{a4}}$ | ${\color{red}\underline{a5}}$ | ${\color{red}\underline{a6}}$ | ${\color{red}a7}$ | ${\color{red}a8}$ | ${\color{red}a9}$ | ${\color{red}aa}$ | ${\color{red}ab}$ | ac | ad | ae | af |
+|              b0               |              b1               |              b2               |              b3               |              b4               |              b5               |              b6               |        b7         |        b8         |        b9         |        ba         |        bb         | bc | bd | be | bf |
+|              c0               |              c1               |              c2               |              c3               |              c4               |              c5               |              c6               |        c7         |        c8         |        c9         |        ca         |        cb         | cc | cd | ce | cf |
+|              d0               |              d1               |              d2               |              d3               |              d4               |              d5               |              d6               |        d7         |        d8         |        d9         |        da         |        db         | dc | dd | de | df |
+|              e0               |              e1               |              e2               |              e3               |              e4               |              e5               |              e6               |        e7         |        e8         |        e9         |        ea         |        eb         | ec | ed | ee | ef |
+|              f0               |              f1               |              f2               |              f3               |              f4               |              f5               |              f6               |        f7         |        f8         |        f9         |        fa         |        fb         | fc | fd | fe | ff |
 
 The number of prefetchers varies by CPU but typically ranges from 2 to 16.
 
@@ -668,20 +668,20 @@ to a new chunk with a special archetype for cleanup. After that check and
 optional processing, the very last entity in the chunk has all of its data
 copied over the entity that was destroyed.
 
-|                        |   |   |       |   |   |   |   |   |   |       |
-|------------------------|---|---|-------|---|---|---|---|---|---|-------|
-| Translation            | 0 | 1 | **9** | 3 | 4 | 5 | 6 | 7 | 8 | **9** |
-| Rotation               | 0 | 1 | **9** | 3 | 4 | 5 | 6 | 7 | 8 | **9** |
-| LocalToWorld           | 0 | 1 | **9** | 3 | 4 | 5 | 6 | 7 | 8 | **9** |
-| Collider               | 0 | 1 | **9** | 3 | 4 | 5 | 6 | 7 | 8 | **9** |
-| Speed                  | 0 | 1 | **9** | 3 | 4 | 5 | 6 | 7 | 8 | **9** |
-| Damage                 | 0 | 1 | **9** | 3 | 4 | 5 | 6 | 7 | 8 | **9** |
-| BulletPreviousPosition | 0 | 1 | **9** | 3 | 4 | 5 | 6 | 7 | 8 | **9** |
-| BulletFirer            | 0 | 1 | **9** | 3 | 4 | 5 | 6 | 7 | 8 | **9** |
-| TimeToLive             | 0 | 1 | **9** | 3 | 4 | 5 | 6 | 7 | 8 | **9** |
-| TimeToLiveFadeStart    | 0 | 1 | **9** | 3 | 4 | 5 | 6 | 7 | 8 | **9** |
-| FadeProperty           | 0 | 1 | **9** | 3 | 4 | 5 | 6 | 7 | 8 | **9** |
-| {HR_V2_Kitchen_Sink}   | 0 | 1 | **9** | 3 | 4 | 5 | 6 | 7 | 8 | **9** |
+|                        |   |   |                   |   |   |   |   |   |   |                   |
+|------------------------|---|---|-------------------|---|---|---|---|---|---|------------------ |
+| Translation            | 0 | 1 | ${\underline{9}}$ | 3 | 4 | 5 | 6 | 7 | 8 | ${\underline{9}}$ |
+| Rotation               | 0 | 1 | ${\underline{9}}$ | 3 | 4 | 5 | 6 | 7 | 8 | ${\underline{9}}$ |
+| LocalToWorld           | 0 | 1 | ${\underline{9}}$ | 3 | 4 | 5 | 6 | 7 | 8 | ${\underline{9}}$ |
+| Collider               | 0 | 1 | ${\underline{9}}$ | 3 | 4 | 5 | 6 | 7 | 8 | ${\underline{9}}$ |
+| Speed                  | 0 | 1 | ${\underline{9}}$ | 3 | 4 | 5 | 6 | 7 | 8 | ${\underline{9}}$ |
+| Damage                 | 0 | 1 | ${\underline{9}}$ | 3 | 4 | 5 | 6 | 7 | 8 | ${\underline{9}}$ |
+| BulletPreviousPosition | 0 | 1 | ${\underline{9}}$ | 3 | 4 | 5 | 6 | 7 | 8 | ${\underline{9}}$ |
+| BulletFirer            | 0 | 1 | ${\underline{9}}$ | 3 | 4 | 5 | 6 | 7 | 8 | ${\underline{9}}$ |
+| TimeToLive             | 0 | 1 | ${\underline{9}}$ | 3 | 4 | 5 | 6 | 7 | 8 | ${\underline{9}}$ |
+| TimeToLiveFadeStart    | 0 | 1 | ${\underline{9}}$ | 3 | 4 | 5 | 6 | 7 | 8 | ${\underline{9}}$ |
+| FadeProperty           | 0 | 1 | ${\underline{9}}$ | 3 | 4 | 5 | 6 | 7 | 8 | ${\underline{9}}$ |
+| {HR_V2_Kitchen_Sink}   | 0 | 1 | ${\underline{9}}$ | 3 | 4 | 5 | 6 | 7 | 8 | ${\underline{9}}$ |
 
 Can you smell the poisonous stench? If not, perhaps replicate this page in a new
 tab and reread the first part.
@@ -696,20 +696,20 @@ Can we do better? Duh!
 Let’s suppose we gave this magic destruction a consecutive batch of entities in
 the chunk to destroy:
 
-|                        |   |       |       |       |       |   |       |       |       |       |
-|------------------------|---|-------|-------|-------|-------|---|-------|-------|-------|-------|
-| Translation            | 0 | **6** | **7** | **8** | **9** | 5 | **6** | **7** | **8** | **9** |
-| Rotation               | 0 | **6** | **7** | **8** | **9** | 5 | **6** | **7** | **8** | **9** |
-| LocalToWorld           | 0 | **6** | **7** | **8** | **9** | 5 | **6** | **7** | **8** | **9** |
-| Collider               | 0 | **6** | **7** | **8** | **9** | 5 | **6** | **7** | **8** | **9** |
-| Speed                  | 0 | **6** | **7** | **8** | **9** | 5 | **6** | **7** | **8** | **9** |
-| Damage                 | 0 | **6** | **7** | **8** | **9** | 5 | **6** | **7** | **8** | **9** |
-| BulletPreviousPosition | 0 | **6** | **7** | **8** | **9** | 5 | **6** | **7** | **8** | **9** |
-| BulletFirer            | 0 | **6** | **7** | **8** | **9** | 5 | **6** | **7** | **8** | **9** |
-| TimeToLive             | 0 | **6** | **7** | **8** | **9** | 5 | **6** | **7** | **8** | **9** |
-| TimeToLiveFadeStart    | 0 | **6** | **7** | **8** | **9** | 5 | **6** | **7** | **8** | **9** |
-| FadeProperty           | 0 | **6** | **7** | **8** | **9** | 5 | **6** | **7** | **8** | **9** |
-| {HR_V2_Kitchen_Sink}   | 0 | **6** | **7** | **8** | **9** | 5 | **6** | **7** | **8** | **9** |
+|                        |   |                   |                   |                   |                   |   |                   |                   |                   |                   |
+|------------------------|---|-------------------|-------------------|-------------------|-------------------|---|-------------------|-------------------|-------------------|------------------ |
+| Translation            | 0 | ${\underline{6}}$ | ${\underline{7}}$ | ${\underline{8}}$ | ${\underline{9}}$ | 5 | ${\underline{6}}$ | ${\underline{7}}$ | ${\underline{8}}$ | ${\underline{9}}$ |
+| Rotation               | 0 | ${\underline{6}}$ | ${\underline{7}}$ | ${\underline{8}}$ | ${\underline{9}}$ | 5 | ${\underline{6}}$ | ${\underline{7}}$ | ${\underline{8}}$ | ${\underline{9}}$ |
+| LocalToWorld           | 0 | ${\underline{6}}$ | ${\underline{7}}$ | ${\underline{8}}$ | ${\underline{9}}$ | 5 | ${\underline{6}}$ | ${\underline{7}}$ | ${\underline{8}}$ | ${\underline{9}}$ |
+| Collider               | 0 | ${\underline{6}}$ | ${\underline{7}}$ | ${\underline{8}}$ | ${\underline{9}}$ | 5 | ${\underline{6}}$ | ${\underline{7}}$ | ${\underline{8}}$ | ${\underline{9}}$ |
+| Speed                  | 0 | ${\underline{6}}$ | ${\underline{7}}$ | ${\underline{8}}$ | ${\underline{9}}$ | 5 | ${\underline{6}}$ | ${\underline{7}}$ | ${\underline{8}}$ | ${\underline{9}}$ |
+| Damage                 | 0 | ${\underline{6}}$ | ${\underline{7}}$ | ${\underline{8}}$ | ${\underline{9}}$ | 5 | ${\underline{6}}$ | ${\underline{7}}$ | ${\underline{8}}$ | ${\underline{9}}$ |
+| BulletPreviousPosition | 0 | ${\underline{6}}$ | ${\underline{7}}$ | ${\underline{8}}$ | ${\underline{9}}$ | 5 | ${\underline{6}}$ | ${\underline{7}}$ | ${\underline{8}}$ | ${\underline{9}}$ |
+| BulletFirer            | 0 | ${\underline{6}}$ | ${\underline{7}}$ | ${\underline{8}}$ | ${\underline{9}}$ | 5 | ${\underline{6}}$ | ${\underline{7}}$ | ${\underline{8}}$ | ${\underline{9}}$ |
+| TimeToLive             | 0 | ${\underline{6}}$ | ${\underline{7}}$ | ${\underline{8}}$ | ${\underline{9}}$ | 5 | ${\underline{6}}$ | ${\underline{7}}$ | ${\underline{8}}$ | ${\underline{9}}$ |
+| TimeToLiveFadeStart    | 0 | ${\underline{6}}$ | ${\underline{7}}$ | ${\underline{8}}$ | ${\underline{9}}$ | 5 | ${\underline{6}}$ | ${\underline{7}}$ | ${\underline{8}}$ | ${\underline{9}}$ |
+| FadeProperty           | 0 | ${\underline{6}}$ | ${\underline{7}}$ | ${\underline{8}}$ | ${\underline{9}}$ | 5 | ${\underline{6}}$ | ${\underline{7}}$ | ${\underline{8}}$ | ${\underline{9}}$ |
+| {HR_V2_Kitchen_Sink}   | 0 | ${\underline{6}}$ | ${\underline{7}}$ | ${\underline{8}}$ | ${\underline{9}}$ | 5 | ${\underline{6}}$ | ${\underline{7}}$ | ${\underline{8}}$ | ${\underline{9}}$ |
 
 Oh hey! We have consecutive data in memory being touched! So does the destroy
 function take advantage of this?
@@ -756,20 +756,20 @@ it if it happens to solve your use case.
 But there’s one other problem that severely limits this technique, and is also
 holding back Unity. And that’s that Unity doesn’t batch this scenario:
 
-|                        |       |   |       |   |       |   |   |       |       |       |
-|------------------------|-------|---|-------|---|-------|---|---|-------|-------|-------|
-| Translation            | **7** | 1 | **8** | 3 | **9** | 5 | 6 | **7** | **8** | **9** |
-| Rotation               | **7** | 1 | **8** | 3 | **9** | 5 | 6 | **7** | **8** | **9** |
-| LocalToWorld           | **7** | 1 | **8** | 3 | **9** | 5 | 6 | **7** | **8** | **9** |
-| Collider               | **7** | 1 | **8** | 3 | **9** | 5 | 6 | **7** | **8** | **9** |
-| Speed                  | **7** | 1 | **8** | 3 | **9** | 5 | 6 | **7** | **8** | **9** |
-| Damage                 | **7** | 1 | **8** | 3 | **9** | 5 | 6 | **7** | **8** | **9** |
-| BulletPreviousPosition | **7** | 1 | **8** | 3 | **9** | 5 | 6 | **7** | **8** | **9** |
-| BulletFirer            | **7** | 1 | **8** | 3 | **9** | 5 | 6 | **7** | **8** | **9** |
-| TimeToLive             | **7** | 1 | **8** | 3 | **9** | 5 | 6 | **7** | **8** | **9** |
-| TimeToLiveFadeStart    | **7** | 1 | **8** | 3 | **9** | 5 | 6 | **7** | **8** | **9** |
-| FadeProperty           | **7** | 1 | **8** | 3 | **9** | 5 | 6 | **7** | **8** | **9** |
-| {HR_V2_Kitchen_Sink}   | **7** | 1 | **8** | 3 | **9** | 5 | 6 | **7** | **8** | **9** |
+|                        |                   |   |                   |   |                   |   |   |                   |                   |                   |
+|------------------------|-------------------|---|-------------------|---|-------------------|---|---|-------------------|-------------------|-------------------|
+| Translation            | ${\underline{7}}$ | 1 | ${\underline{8}}$ | 3 | ${\underline{9}}$ | 5 | 6 | ${\underline{7}}$ | ${\underline{8}}$ | ${\underline{9}}$ |
+| Rotation               | ${\underline{7}}$ | 1 | ${\underline{8}}$ | 3 | ${\underline{9}}$ | 5 | 6 | ${\underline{7}}$ | ${\underline{8}}$ | ${\underline{9}}$ |
+| LocalToWorld           | ${\underline{7}}$ | 1 | ${\underline{8}}$ | 3 | ${\underline{9}}$ | 5 | 6 | ${\underline{7}}$ | ${\underline{8}}$ | ${\underline{9}}$ |
+| Collider               | ${\underline{7}}$ | 1 | ${\underline{8}}$ | 3 | ${\underline{9}}$ | 5 | 6 | ${\underline{7}}$ | ${\underline{8}}$ | ${\underline{9}}$ |
+| Speed                  | ${\underline{7}}$ | 1 | ${\underline{8}}$ | 3 | ${\underline{9}}$ | 5 | 6 | ${\underline{7}}$ | ${\underline{8}}$ | ${\underline{9}}$ |
+| Damage                 | ${\underline{7}}$ | 1 | ${\underline{8}}$ | 3 | ${\underline{9}}$ | 5 | 6 | ${\underline{7}}$ | ${\underline{8}}$ | ${\underline{9}}$ |
+| BulletPreviousPosition | ${\underline{7}}$ | 1 | ${\underline{8}}$ | 3 | ${\underline{9}}$ | 5 | 6 | ${\underline{7}}$ | ${\underline{8}}$ | ${\underline{9}}$ |
+| BulletFirer            | ${\underline{7}}$ | 1 | ${\underline{8}}$ | 3 | ${\underline{9}}$ | 5 | 6 | ${\underline{7}}$ | ${\underline{8}}$ | ${\underline{9}}$ |
+| TimeToLive             | ${\underline{7}}$ | 1 | ${\underline{8}}$ | 3 | ${\underline{9}}$ | 5 | 6 | ${\underline{7}}$ | ${\underline{8}}$ | ${\underline{9}}$ |
+| TimeToLiveFadeStart    | ${\underline{7}}$ | 1 | ${\underline{8}}$ | 3 | ${\underline{9}}$ | 5 | 6 | ${\underline{7}}$ | ${\underline{8}}$ | ${\underline{9}}$ |
+| FadeProperty           | ${\underline{7}}$ | 1 | ${\underline{8}}$ | 3 | ${\underline{9}}$ | 5 | 6 | ${\underline{7}}$ | ${\underline{8}}$ | ${\underline{9}}$ |
+| {HR_V2_Kitchen_Sink}   | ${\underline{7}}$ | 1 | ${\underline{8}}$ | 3 | ${\underline{9}}$ | 5 | 6 | ${\underline{7}}$ | ${\underline{8}}$ | ${\underline{9}}$ |
 
 Unfortunately, there’s not really a great excuse either. The small buffer
 required to track the indices could be reset prior to the recursion call. And
@@ -913,37 +913,37 @@ When instantiating an entity via EntityCommandBuffer, a new entity is added to a
 chunk with a matching archetype. Then the prefab entity’s compontents are copied
 one-by-one to the newly instantiated entity.
 
-|                        |   |   |   |   |   |   |       |   |   |   |
-|------------------------|---|---|---|---|---|---|-------|---|---|---|
-| Translation            | 0 | 1 | 2 | 3 | 4 | 5 | **6** |   |   |   |
-| Rotation               | 0 | 1 | 2 | 3 | 4 | 5 | **6** |   |   |   |
-| LocalToWorld           | 0 | 1 | 2 | 3 | 4 | 5 | **6** |   |   |   |
-| Collider               | 0 | 1 | 2 | 3 | 4 | 5 | **6** |   |   |   |
-| Speed                  | 0 | 1 | 2 | 3 | 4 | 5 | **6** |   |   |   |
-| Damage                 | 0 | 1 | 2 | 3 | 4 | 5 | **6** |   |   |   |
-| BulletPreviousPosition | 0 | 1 | 2 | 3 | 4 | 5 | **6** |   |   |   |
-| BulletFirer            | 0 | 1 | 2 | 3 | 4 | 5 | **6** |   |   |   |
-| TimeToLive             | 0 | 1 | 2 | 3 | 4 | 5 | **6** |   |   |   |
-| TimeToLiveFadeStart    | 0 | 1 | 2 | 3 | 4 | 5 | **6** |   |   |   |
-| FadeProperty           | 0 | 1 | 2 | 3 | 4 | 5 | **6** |   |   |   |
-| {HR_V2_Kitchen_Sink}   | 0 | 1 | 2 | 3 | 4 | 5 | **6** |   |   |   |
+|                        |   |   |   |   |   |   |                   |   |   |   |
+|------------------------|---|---|---|---|---|---|-------------------|---|---|---|
+| Translation            | 0 | 1 | 2 | 3 | 4 | 5 | ${\underline{6}}$ |   |   |   |
+| Rotation               | 0 | 1 | 2 | 3 | 4 | 5 | ${\underline{6}}$ |   |   |   |
+| LocalToWorld           | 0 | 1 | 2 | 3 | 4 | 5 | ${\underline{6}}$ |   |   |   |
+| Collider               | 0 | 1 | 2 | 3 | 4 | 5 | ${\underline{6}}$ |   |   |   |
+| Speed                  | 0 | 1 | 2 | 3 | 4 | 5 | ${\underline{6}}$ |   |   |   |
+| Damage                 | 0 | 1 | 2 | 3 | 4 | 5 | ${\underline{6}}$ |   |   |   |
+| BulletPreviousPosition | 0 | 1 | 2 | 3 | 4 | 5 | ${\underline{6}}$ |   |   |   |
+| BulletFirer            | 0 | 1 | 2 | 3 | 4 | 5 | ${\underline{6}}$ |   |   |   |
+| TimeToLive             | 0 | 1 | 2 | 3 | 4 | 5 | ${\underline{6}}$ |   |   |   |
+| TimeToLiveFadeStart    | 0 | 1 | 2 | 3 | 4 | 5 | ${\underline{6}}$ |   |   |   |
+| FadeProperty           | 0 | 1 | 2 | 3 | 4 | 5 | ${\underline{6}}$ |   |   |   |
+| {HR_V2_Kitchen_Sink}   | 0 | 1 | 2 | 3 | 4 | 5 | ${\underline{6}}$ |   |   |   |
 
 Then, a series of SetComponentData calls re-initializes some of the values.
 
-|                        |   |   |   |   |   |   |       |   |   |   |
-|------------------------|---|---|---|---|---|---|-------|---|---|---|
-| Translation            | 0 | 1 | 2 | 3 | 4 | 5 | **6** |   |   |   |
-| Rotation               | 0 | 1 | 2 | 3 | 4 | 5 | **6** |   |   |   |
-| LocalToWorld           | 0 | 1 | 2 | 3 | 4 | 5 | 6     |   |   |   |
-| Collider               | 0 | 1 | 2 | 3 | 4 | 5 | 6     |   |   |   |
-| Speed                  | 0 | 1 | 2 | 3 | 4 | 5 | 6     |   |   |   |
-| Damage                 | 0 | 1 | 2 | 3 | 4 | 5 | 6     |   |   |   |
-| BulletPreviousPosition | 0 | 1 | 2 | 3 | 4 | 5 | 6     |   |   |   |
-| BulletFirer            | 0 | 1 | 2 | 3 | 4 | 5 | **6** |   |   |   |
-| TimeToLive             | 0 | 1 | 2 | 3 | 4 | 5 | 6     |   |   |   |
-| TimeToLiveFadeStart    | 0 | 1 | 2 | 3 | 4 | 5 | 6     |   |   |   |
-| FadeProperty           | 0 | 1 | 2 | 3 | 4 | 5 | 6     |   |   |   |
-| {HR_V2_Kitchen_Sink}   | 0 | 1 | 2 | 3 | 4 | 5 | 6     |   |   |   |
+|                        |   |   |   |   |   |   |                   |   |   |   |
+|------------------------|---|---|---|---|---|---|-------------------|---|---|---|
+| Translation            | 0 | 1 | 2 | 3 | 4 | 5 | ${\underline{6}}$ |   |   |   |
+| Rotation               | 0 | 1 | 2 | 3 | 4 | 5 | ${\underline{6}}$ |   |   |   |
+| Collider               | 0 | 1 | 2 | 3 | 4 | 5 |         6         |   |   |   |
+| Speed                  | 0 | 1 | 2 | 3 | 4 | 5 |         6         |   |   |   |
+| LocalToWorld           | 0 | 1 | 2 | 3 | 4 | 5 |         6         |   |   |   |
+| Damage                 | 0 | 1 | 2 | 3 | 4 | 5 |         6         |   |   |   |
+| BulletPreviousPosition | 0 | 1 | 2 | 3 | 4 | 5 |         6         |   |   |   |
+| BulletFirer            | 0 | 1 | 2 | 3 | 4 | 5 | ${\underline{6}}$ |   |   |   |
+| TimeToLive             | 0 | 1 | 2 | 3 | 4 | 5 |         6         |   |   |   |
+| TimeToLiveFadeStart    | 0 | 1 | 2 | 3 | 4 | 5 |         6         |   |   |   |
+| FadeProperty           | 0 | 1 | 2 | 3 | 4 | 5 |         6         |   |   |   |
+| {HR_V2_Kitchen_Sink}   | 0 | 1 | 2 | 3 | 4 | 5 |         6         |   |   |   |
 
 It should be pretty obvious that this is terrible on cache memory. And once
 again, we can look to the EntityManager to see if it offers a better batching
@@ -963,20 +963,20 @@ same prefab.
 
 The former, however, can instantiate in batches like this:
 
-|                        |   |   |   |   |   |   |       |       |       |   |
-|------------------------|---|---|---|---|---|---|-------|-------|-------|---|
-| Translation            | 0 | 1 | 2 | 3 | 4 | 5 | **6** | **7** | **8** |   |
-| Rotation               | 0 | 1 | 2 | 3 | 4 | 5 | **6** | **7** | **8** |   |
-| LocalToWorld           | 0 | 1 | 2 | 3 | 4 | 5 | **6** | **7** | **8** |   |
-| Collider               | 0 | 1 | 2 | 3 | 4 | 5 | **6** | **7** | **8** |   |
-| Speed                  | 0 | 1 | 2 | 3 | 4 | 5 | **6** | **7** | **8** |   |
-| Damage                 | 0 | 1 | 2 | 3 | 4 | 5 | **6** | **7** | **8** |   |
-| BulletPreviousPosition | 0 | 1 | 2 | 3 | 4 | 5 | **6** | **7** | **8** |   |
-| BulletFirer            | 0 | 1 | 2 | 3 | 4 | 5 | **6** | **7** | **8** |   |
-| TimeToLive             | 0 | 1 | 2 | 3 | 4 | 5 | **6** | **7** | **8** |   |
-| TimeToLiveFadeStart    | 0 | 1 | 2 | 3 | 4 | 5 | **6** | **7** | **8** |   |
-| FadeProperty           | 0 | 1 | 2 | 3 | 4 | 5 | **6** | **7** | **8** |   |
-| {HR_V2_Kitchen_Sink}   | 0 | 1 | 2 | 3 | 4 | 5 | **6** | **7** | **8** |   |
+|                        |   |   |   |   |   |   |                   |                   |                   |   |
+|------------------------|---|---|---|---|---|---|-------------------|-------------------|-------------------|---|
+| Translation            | 0 | 1 | 2 | 3 | 4 | 5 | ${\underline{6}}$ | ${\underline{7}}$ | ${\underline{8}}$ |   |
+| Rotation               | 0 | 1 | 2 | 3 | 4 | 5 | ${\underline{6}}$ | ${\underline{7}}$ | ${\underline{8}}$ |   |
+| LocalToWorld           | 0 | 1 | 2 | 3 | 4 | 5 | ${\underline{6}}$ | ${\underline{7}}$ | ${\underline{8}}$ |   |
+| Collider               | 0 | 1 | 2 | 3 | 4 | 5 | ${\underline{6}}$ | ${\underline{7}}$ | ${\underline{8}}$ |   |
+| Speed                  | 0 | 1 | 2 | 3 | 4 | 5 | ${\underline{6}}$ | ${\underline{7}}$ | ${\underline{8}}$ |   |
+| Damage                 | 0 | 1 | 2 | 3 | 4 | 5 | ${\underline{6}}$ | ${\underline{7}}$ | ${\underline{8}}$ |   |
+| BulletPreviousPosition | 0 | 1 | 2 | 3 | 4 | 5 | ${\underline{6}}$ | ${\underline{7}}$ | ${\underline{8}}$ |   |
+| BulletFirer            | 0 | 1 | 2 | 3 | 4 | 5 | ${\underline{6}}$ | ${\underline{7}}$ | ${\underline{8}}$ |   |
+| TimeToLive             | 0 | 1 | 2 | 3 | 4 | 5 | ${\underline{6}}$ | ${\underline{7}}$ | ${\underline{8}}$ |   |
+| TimeToLiveFadeStart    | 0 | 1 | 2 | 3 | 4 | 5 | ${\underline{6}}$ | ${\underline{7}}$ | ${\underline{8}}$ |   |
+| FadeProperty           | 0 | 1 | 2 | 3 | 4 | 5 | ${\underline{6}}$ | ${\underline{7}}$ | ${\underline{8}}$ |   |
+| {HR_V2_Kitchen_Sink}   | 0 | 1 | 2 | 3 | 4 | 5 | ${\underline{6}}$ | ${\underline{7}}$ | ${\underline{8}}$ |   |
 
 Of course this requires that we can combine instantiated instances in a
 deterministic manner to reap the benefits. But that’s something we can totally
@@ -999,20 +999,20 @@ So one observation that we can make from the batch instantiation is that new
 entities tend to be grouped together at the ends of their chunks. That means we
 may also be able to do our initialization in chunks like so:
 
-|                        |   |   |   |   |   |   |       |       |       |   |
-|------------------------|---|---|---|---|---|---|-------|-------|-------|---|
-| Translation            | 0 | 1 | 2 | 3 | 4 | 5 | **6** | **7** | **8** |   |
-| Rotation               | 0 | 1 | 2 | 3 | 4 | 5 | **6** | **7** | **8** |   |
-| LocalToWorld           | 0 | 1 | 2 | 3 | 4 | 5 | 6     | 7     | 8     |   |
-| Collider               | 0 | 1 | 2 | 3 | 4 | 5 | 6     | 7     | 8     |   |
-| Speed                  | 0 | 1 | 2 | 3 | 4 | 5 | 6     | 7     | 8     |   |
-| Damage                 | 0 | 1 | 2 | 3 | 4 | 5 | 6     | 7     | 8     |   |
-| BulletPreviousPosition | 0 | 1 | 2 | 3 | 4 | 5 | 6     | 7     | 8     |   |
-| BulletFirer            | 0 | 1 | 2 | 3 | 4 | 5 | **6** | **7** | **8** |   |
-| TimeToLive             | 0 | 1 | 2 | 3 | 4 | 5 | 6     | 7     | 8     |   |
-| TimeToLiveFadeStart    | 0 | 1 | 2 | 3 | 4 | 5 | 6     | 7     | 8     |   |
-| FadeProperty           | 0 | 1 | 2 | 3 | 4 | 5 | 6     | 7     | 8     |   |
-| {HR_V2_Kitchen_Sink}   | 0 | 1 | 2 | 3 | 4 | 5 | 6     | 7     | 8     |   |
+|                        |   |   |   |   |   |   |                   |                   |                   |   |
+|------------------------|---|---|---|---|---|---|-------------------|-------------------|-------------------|---|
+| Translation            | 0 | 1 | 2 | 3 | 4 | 5 | ${\underline{6}}$ | ${\underline{7}}$ | ${\underline{8}}$ |   |
+| Rotation               | 0 | 1 | 2 | 3 | 4 | 5 | ${\underline{6}}$ | ${\underline{7}}$ | ${\underline{8}}$ |   |
+| LocalToWorld           | 0 | 1 | 2 | 3 | 4 | 5 |         6         |         7         |         8         |   |
+| Collider               | 0 | 1 | 2 | 3 | 4 | 5 |         6         |         7         |         8         |   |
+| Speed                  | 0 | 1 | 2 | 3 | 4 | 5 |         6         |         7         |         8         |   |
+| Damage                 | 0 | 1 | 2 | 3 | 4 | 5 |         6         |         7         |         8         |   |
+| BulletPreviousPosition | 0 | 1 | 2 | 3 | 4 | 5 |         6         |         7         |         8         |   |
+| BulletFirer            | 0 | 1 | 2 | 3 | 4 | 5 | ${\underline{6}}$ | ${\underline{7}}$ | ${\underline{8}}$ |   |
+| TimeToLive             | 0 | 1 | 2 | 3 | 4 | 5 |         6         |         7         |         8         |   |
+| TimeToLiveFadeStart    | 0 | 1 | 2 | 3 | 4 | 5 |         6         |         7         |         8         |   |
+| FadeProperty           | 0 | 1 | 2 | 3 | 4 | 5 |         6         |         7         |         8         |   |
+| {HR_V2_Kitchen_Sink}   | 0 | 1 | 2 | 3 | 4 | 5 |         6         |         7         |         8         |   |
 
 So now, we have three steps:
 
