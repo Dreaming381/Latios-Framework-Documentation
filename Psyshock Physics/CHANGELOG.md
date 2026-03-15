@@ -6,6 +6,15 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic
 Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [0.14.15] – 2026-3-14
+
+Officially supports Entities [1.4.4]
+
+### Fixed
+
+-   Fixed an indexing issue for FindPairs using multiple `CollisionWorld.Mask`
+    instances
+
 ## [0.14.14] – 2026-3-7
 
 Officially supports Entities [1.4.4]

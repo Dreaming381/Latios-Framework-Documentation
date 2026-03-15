@@ -6,6 +6,15 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic
 Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [0.14.15] – 2026-3-14
+
+Officially supports Entities [1.4.4]
+
+### Improved
+
+-   Updated AclUnity plugins for linux to increase the chances of dynamic
+    linking succeeding (still flaky)
+
 ## [0.14.13] – 2026-3-1
 
 Officially supports Entities [1.4.4]
