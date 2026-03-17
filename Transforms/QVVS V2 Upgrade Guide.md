@@ -282,18 +282,6 @@ partial struct Job : IJobEntity, IJobEntityChunkBeginEnd, IJobChunkParallelTrans
 }
 ```
 
-### Explicit EntityQuery and IJobChunk
-
-If scheduling with an `EntityQuery` explicitly, you can make the following
-substitution:
-
-```csharp
-// Instead of this:
-job.ScheduleByRef(m_query);
-// You can do this:
-state.Dependency = job.transformHandle.ScheduleChunkCaptureForQuery(m_query, state.Dependency);
-```
-
 ### IJobChunk
 
 The only difference between `IJobEntity` and `IJobChunk` is that you need to
@@ -307,6 +295,15 @@ if (!transformHandle.OnChunkBegin(in chunk, unfilteredChunkIndex, useEnabledMask
 
 // If using ScheduleChunkCaptureForQuery() - though the above will work too
 transformHandle.OnChunkBegin(in chunk, unfilteredChunkIndex, useEnabledMask, chunkEnabledMask);
+```
+
+Optionally, you can make the following substitution:
+
+```csharp
+// Instead of this:
+job.ScheduleByRef(m_query);
+// You can do this:
+state.Dependency = job.transformHandle.ScheduleChunkCaptureForQuery(m_query, state.Dependency);
 ```
 
 ## Other Noteworthy APIs
