@@ -272,12 +272,16 @@ don’t have to do those workarounds anymore.
 Just be warned. They really truly are a gun eager to put a bullet through your
 foot.
 
-### DynamicHashMap
+### DynamicHashMap and DynamicMultiList
 
-This is a wrapper around a `DynamicBuffer` that provides hashmap-like
-functionality. Unlike other implementations, this implementation can correctly
-handle serialization of Entity and blob asset references. Although explicit API
-calls must be made if a key’s hashcode changes before and after serialization.
+`DynamicHashMap` is a wrapper around a `DynamicBuffer` that provides
+hashmap-like functionality. Unlike other implementations, this implementation
+can correctly handle serialization of Entity and blob asset references. Although
+explicit API calls must be made if a key’s hashcode changes before and after
+serialization.
+
+Similarly, `DynamicMultiList` allows embedding multiple resizeable lists inside
+a `DynamicBuffer`.
 
 See more: [DynamicHashmap](Dynamic%20Hashmap.md)
 
@@ -309,6 +313,27 @@ Unika.
 See more: [Component Broker](Component%20Broker.md) and [Temp
 Queries](Temp%20Queries.md)
 
+### Live Baking Tracking
+
+Live baking is powerful. But sometimes overwriting runtime components with
+newly-baked values can break assumptions in your runtime systems. If you need
+extra logic to handle these edge-cases, then `LiveBakedTag` can help you
+identify entities of concern. And `BeforeLiveBakingSuperSystem` and
+`AfterLiveBakingSuperSystem` will help you only run that extra logic when you
+actually need it.
+
+See more: [Live Baking Tracking](Live%20Baking%20Tracking.md)
+
+### VPtr
+
+VPtr is a source-generation solution for performing Burst-compatible
+struct-based polymorphism using pointers to struct data. You can combine it with
+`NativeStream` to perform polymorphic events, type-erase data down to the
+interface level for complex method chains, or maintain untyped storage with the
+option for callbacks for specific things.
+
+See more: [VPtr](VPtr.md)
+
 ### Extensions, Exposed, and ECS Cleanups
 
 Sometimes Unity is missing API for no good reason other than DOTS still being
@@ -336,7 +361,7 @@ in Core.
     builds” option.
 -   Blackboard Entities do not retain blob asset reference counts.
 
-## Near-Term Roadmap
+## Potential Future Roadmap Items
 
 -   `ThreadStackAllocator` `AllocatorManager` support
 -   Entity create/change/destroy pipeline

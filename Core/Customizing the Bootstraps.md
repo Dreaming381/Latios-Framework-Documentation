@@ -78,4 +78,6 @@ common use-cases.
     `SimulationSystemGroup` after rendering. This can sometimes be useful for
     eliminating logical artifacts (such as intersecting geometry) by ensuring
     structural changes (like entity destruction) happen before rendering. This
-    is also referred to as *N – 1 Rendering*.
+    is also referred to as *N – 1 Rendering*. If rendering is skipped for a
+    frame, the simulation happens at the beginning of the next frame as a
+    fallback (and that frame may simulate twice).

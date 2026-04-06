@@ -10,7 +10,7 @@ powerful tool in DOTS for the following reasons:
 
 -   It removes a sync point
 -   Worker threads can be better occupied during the sync point
--   Transforms stay in sync
+-   Transforms stay in sync (Unity Transforms)
 -   Event-driven visuals are rendered on the same frame as their cause
 -   Transform dependencies are easier to reason about
 
@@ -20,12 +20,12 @@ The following outlines the order of events in a frame using n – 1 rendering:
 2.  Command Buffer Playback
 3.  Scene and Subscene Managements
 4.  Reactive and other Structural Change Systems
-5.  Sync Transforms
+5.  Sync Transforms (Unity Transforms)
 6.  Process `MonoBehaviours`
 7.  Rendering
 8.  Process Inputs
 9.  Movement and Physics
-10. Sync Transforms
+10. Sync Transforms (Unity Transforms)
 11. Process Triggers, Events, AI, and other Gameplay (No Transform Modification)
 12. Roll into Next Frame
 
@@ -65,6 +65,10 @@ public class GamePostTransformSuperSystem : RootSuperSystem
 }
 ```
 
+Additionally if using Unity Transforms, you may want to manually call
+`TransformSystemGroup.Update()` at the very end of `InitializationSystemGroup`
+(such as in `PostSyncPointGroup`).
+
 ## Usage
 
 Every system typically performs one kind of action. Depending on that action,
@@ -73,8 +77,8 @@ likely best fit for your system.
 
 1.  If your system performs structural change operations using `EntityManager`,
     place the system in `LatiosWorldSyncGroup`.
-2.  If your system modifies `TransformAspect`, place the system in
-    `GamePreTransformSuperSystem`.
+2.  If your system modifies `LocalTransform` or `TransformAspect`, place the
+    system in `GamePreTransformSuperSystem`.
 3.  If your system reads input, place the system in
     `GamePreTransformSuperSystem` before all other systems.
 4.  If your system generates jobs which can run during a sync point, place the

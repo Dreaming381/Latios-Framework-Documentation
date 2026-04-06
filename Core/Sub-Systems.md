@@ -6,7 +6,9 @@ as you would a `SystemBase`, and frequently you will want to do just that.
 However, there are some additional features to take advantage of.
 
 Nearly all `SubSystem` features are [extended](ISystem%20Support.md) to
-`ISystem`. `ISystem` is the preferred system type for performance.
+`ISystem`. `ISystem` is the preferred system type for performance. `SubSystems`
+are only allowed in a `LatiosWorld`, which currently does not support baking and
+streaming worlds.
 
 ## Fluent Queries
 
@@ -61,4 +63,22 @@ disable those, add `[AlwaysUpdateSystem]` to the `SubSystem`.
 method is invoked. Only EntityManager, EntityQuery, and BlackboardEntity
 operations are recommended.*
 
-*Caution 2: SubSystems as baking systems are not currently supported.*
+## Disabling Multi-Update Sync Points
+
+Unity ECS systems are designed to always sync the jobs they scheduled the
+previous update. This prevents multiple frames of jobs being queued up and never
+completing. However, for systems that may update multiple times per frame, such
+as those which update in `FixedRateSimulationSystemGroup`, these sync points can
+hurt performance.
+
+In a `LatiosWorld`, you can add the `[DontSyncPreviousUpdatesThisFrame(int
+maxUpdatesWithoutSync)]` attribute to any system. This will cause the system to
+skip syncing after the first time it updates in a frame, up to the maximum
+number of updates.
+
+**Warning:** *The Dependency property is not guaranteed to account for all jobs
+scheduled in the previous update. It only examines component read-write
+accesses, and treats the previous update’s Dependency value as coming from a
+different system. This can cause safety errors if your system only reads
+components, but writes to a persistent collection stored on the system via a
+job.*

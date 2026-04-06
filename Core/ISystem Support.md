@@ -9,12 +9,13 @@ how to utilize them.
 
 These exist via the interfaces `ISystemNewScene` and `ISystemShouldUpdate`. A
 struct implementing these should also implement `ISystem`. Currently these
-functions do not support Burst compilation.
+functions do not support Burst compilation. They require the system belong to a
+`LatiosWorld`.
 
 ## Fluent Queries
 
 Fluent query API can be accessed via the `SystemState.Fluent()` extension
-method.
+method. Fluent queries work in any ECS world.
 
 ## Latios World
 
@@ -72,3 +73,8 @@ is performed.
 The `Rng` type works very well in Burst systems. The only pitfall is that it
 can’t be seeded with a `string` in Burst. Additionally, you may find `SystemRng`
 to be more useful when paired with `IJobEntityChunkBeginEnd`.
+
+## Disabling Multi-Update Sync-Points
+
+The `[DontSyncPreviousUpdatesThisFrame]` attribute works for any `ISystem` in a
+`LatiosWorld`.

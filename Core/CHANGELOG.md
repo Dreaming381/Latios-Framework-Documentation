@@ -6,6 +6,70 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic
 Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [0.15.0] – 2026-4-?
+
+Officially supports Entities [1.4.4]
+
+### Added
+
+-   *New Feature:* Added `LiveBakedTag` for detecting entities which may be
+    altered by live baking
+-   *New Feature:* Added `LatiosWorldUnmanaged.liveBakedThisFram`e,
+    `BeforeLiveBakingSuperSystem`, and `AfterLiveBakingSuperSystem` for
+    performing custom logic whenever live baking occurs
+-   *New Feature:* Added `[DontSyncPreviousUpdatesThisFrame]` attribute, which
+    can stop a system that updates multiple times per frame (such as in
+    `FixedRateSimulationSystemGroup`) from creating sync points
+-   *New Feature:* Added VPtr, a source-generator solution for Burst-compatible
+    struct-based polymorphism across assemblies based on pointers and Burst
+    FunctionPointers
+-   Added `AutoDestroyExpirationJournal` which records the operations
+    `IAutoDestroyExpirablesSystem` performs
+-   Exposed ticking components to public API so that other modules can start
+    depending on them, although they should not be used yet
+-   Added `UnsafeList<uint2>` support for `GapAllocator`
+-   Added `Latios.IAspect` to replace some of the old `Unity.Entities.IAspect`
+    API
+-   Added `BlobBuilder` extension method `ConstructFromList<T>()` which accepts
+    a `System.Collections.Generic.List<T>`
+-   Added `Exposed` `EntityQuery` extension method
+    `SetOverrideChangeFilterVersion()` to explicitly set a `LastSystemVersion`
+    version used by the `EntityQuery`
+-   Added `Exposed` `ComponentLookup<T>` and `BufferLookup<T>` extension method
+    `ToHandle()` to convert to the `ComponentTypeHandle` or `BufferTypeHandle`
+    for convenience
+-   Added `Exposed` `EntityManager` extension method `GetEntityManagerPtr()` for
+    getting a pinned pointer to the `EntityManager` stored in the
+    `WorldUnmanaged`
+-   Added `Exposed` `SystemState` extension method `GetLastScheduledJobHandle()`
+    for accessing the `JobHandle` a system last left inside `Dependency`
+
+### Changed
+
+-   `AutoDestroyExpirablesSystem` now updates every frame to populate the
+    journal, even if there are no expirable entities
+
+### Fixed
+
+-   Fixed wrong size being returned in `GapAllocator.CoalesceGaps()` on an empty
+    list
+
+### Improved
+
+-   `BootstrapTools.AddWorldToCurrentPlayerLoopWithDelayedSimulation()` will now
+    allow simulation to occur at the start of the next frame if no rendering
+    occurred in the previous frame
+
+### Removed
+
+-   Removed `FluentQuery.WithAspect<T>()` and
+    `FluentQuery.WithAspectPresent<T>()` as `Unity.Entities.IAspect` is
+    deprecated
+-   Removed `ComponentBrokerBuilder.WithAspect<T, …>()` as
+    `Unity.Entities.IAspect` is deprecated
+-   Removed `SystemState` extension method `GetLiveBakeSafeLastSystemVersion()`
+    as the new live baking tracking APIs should be used instead
+
 ## [0.14.11] – 2026-1-31
 
 Officially supports Entities [1.4.4]
