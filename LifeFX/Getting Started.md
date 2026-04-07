@@ -133,7 +133,7 @@ The `TrackedWorldTransform` component can be attached to an entity to have it
 automatically be tracked on the GPU. Tracked Transforms are stored in global
 buffer resource with the shader property name `_latiosTrackedWorldTransforms`.
 
-The two most-significant bits of `worldIndex` are used to encode alive and
+The two most-significant bits of `context32` are used to encode alive and
 enabled states of the transform on the GPU.
 
 ## Making Your First LifeFX Effect
