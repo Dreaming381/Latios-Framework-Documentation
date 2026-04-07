@@ -51,12 +51,22 @@ the collections package, this algorithm finds the partitioning of an inequality.
 It is especially useful when you want a range of values within a sorted list,
 which is often the reason to have a sorted list over a hashmap anyways.
 
+Calci also has a `NativePriorityQueue` implementation that uses a quaternary
+comparison heap.
+
 ### QCP
 
 QCP is a lesser-known algorithm that has some very useful properties. Given a
 set of point pairs between two objects, it will calculate a rotation and
 optionally an additional translation to apply to the first of the two objects,
 such that the overall distances between point pairs are minimized.
+
+### Computational Geometry 2D
+
+Calci internally has a Burst-compatible port of Clipper2. It was added to aid
+Calligraphics with fonts that have ill-formed geometry. A wrapper static class
+`ComputationalGeometry2D` provides an API for performing a small subset of
+Clipper2 operations.
 
 ### Math
 

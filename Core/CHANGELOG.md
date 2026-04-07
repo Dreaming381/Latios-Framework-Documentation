@@ -62,13 +62,14 @@ Officially supports Entities [1.4.4]
 
 ### Removed
 
--   Removed `FluentQuery.WithAspect<T>()` and
+-   **Breaking:** Removed `FluentQuery.WithAspect<T>()` and
     `FluentQuery.WithAspectPresent<T>()` as `Unity.Entities.IAspect` is
     deprecated
--   Removed `ComponentBrokerBuilder.WithAspect<T, …>()` as
+-   **Breaking:** Removed `ComponentBrokerBuilder.WithAspect<T, …>()` as
     `Unity.Entities.IAspect` is deprecated
--   Removed `SystemState` extension method `GetLiveBakeSafeLastSystemVersion()`
-    as the new live baking tracking APIs should be used instead
+-   **Breaking:** Removed `SystemState` extension method
+    `GetLiveBakeSafeLastSystemVersion()` as the new live baking tracking APIs
+    should be used instead
 
 ## [0.14.11] – 2026-1-31
 
