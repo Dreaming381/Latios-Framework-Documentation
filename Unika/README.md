@@ -76,10 +76,9 @@ other cache-efficiently.
     return values. This is because `ref structs` cannot be generic arguments,
     and unsafe code compilation is not guaranteed for source generators.
 
-## Near-Term Roadmap
+## Potential Future Roadmap Items
 
 -   Script Authoring Interface Serialization
 -   Blob Scripts
--   Message Buffers
 -   ECS Native Remap
 -   Debugger Support

@@ -134,8 +134,9 @@ Unity!
     Edit menu allows for enabling a managed audio driver, which works around the
     issue but alters the behavior slightly compared to what happens in a build.
 
-## Near-Term Roadmap
+## Potential Future Roadmap Items
 
 -   Hierarchical Mixing
 -   Conversion from DSP Graph to Unity 6.3+ scriptable audio APIs
--   Programmable Effects on the DSP Thread vis Effect Stacks
+-   Programmable Audio on the DSP Thread via Audio ECS
+-   Programmable Effects on the DSP Thread via Effect Stacks

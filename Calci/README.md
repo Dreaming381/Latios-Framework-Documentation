@@ -81,7 +81,7 @@ See more: [Math](Math.md)
 -   There is no automatic algorithm to subdivide large curves to improve
     resolution
 
-## Near-Term Roadmap
+## Potential Future Roadmap Items
 
 -   Unity Splines integration APIs
 -   More algorithms

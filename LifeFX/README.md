@@ -51,7 +51,7 @@ transforms as QVVS Transforms.
     Graph parser. Please help report bugs to Unity when you encounter them. And
     if you find workarounds, please share them with the community.
 
-## Near-Term Roadmap
+## Potential Future Roadmap Items
 
 -   High Fidelity Mesh Cloth
 -   VFX Graph Sample Effects
