@@ -1,14 +1,14 @@
 # QVVS Transforms
 
-QVVS Transforms is a collection of 3D transform systems based on a concept of a
-QVVS representation. A QVVS is a vector-based representation of an object
-transform that can account for position, rotation, and uniform scale in both
-local space and world space. In addition, it can also account for a flavor of
-non-uniform scale in local space referred to as **stretch**. Stretch influences
-children positions as one would expect, but does not influence children in such
-a way that would introduce shear. This makes QVVS transforms ideal for
-representing skeletal squash-and-stretch animations or physics-based elastic
-compounds.
+QVVS Transforms is a set of 3D transform mathematics and complementary runtime
+system based on a concept of a QVVS representation. A QVVS is a vector-based
+representation of an object transform that can account for position, rotation,
+and uniform scale in both local space and world space. In addition, it can also
+account for a flavor of non-uniform scale in local space referred to as
+**stretch**. Stretch influences children positions as one would expect, but does
+not influence children in such a way that would introduce shear. This makes QVVS
+transforms ideal for representing skeletal squash-and-stretch animations or
+physics-based elastic compounds.
 
 Check out the [Getting Started](Getting%20Started.md) page!
 
@@ -21,18 +21,35 @@ which you can use in any of your own types regardless of which flavor of
 transform system you use. For math operations using these transform types, look
 no further than the static `qvvs` class.
 
+### Always Up-To-Date Transforms
+
+The QVVS Transform System is designed to keep the full hierarchy in-sync at all
+times, similar to how `UnityEngine.Transform` works. This is different from
+other ECS transform systems which require a dedicated system to explicitly
+synchronize the hierarchy.
+
+Always up-to-date transforms means more freedom in the order systems can execute
+without worrying about stale data. And it eliminates overhead of inactive
+hierarchies, making it especially effective in rollback environments.
+
+### Hierarchy-First Design
+
+Because of the always up-to-date mechanisms, hierarchies are immediately
+traversable the moment an entity is instantiated. Additionally, the APIs make it
+easy to obtain exclusive write access to all entities in a hierarchy within a
+parallel job, making many gameplay systems easier to build and parallelize.
+
 ### Motion History
 
 Motion History allows for tracking world transforms of previous frames. This can
 be used for various things, such as position-based dynamics, kinematic
 platforms, or motion vectors.
 
-### Hierarchy Update Modes
+### Inheritance Flags
 
-Hierarchy Update Modes allow for specifying the various properties of a child
-transform that should be “locked” to world-space values. This brings ECS
-transforms much closer to the single-threaded expressiveness of classic
-`GameObject` transforms.
+Inheritance Flags allow for specifying the various properties of a child
+transform that should be “locked” to world-space values during propagation. This
+brings a greater level of expressiveness to ECS transforms.
 
 ### GameObjectEntity
 
@@ -45,11 +62,12 @@ like the main camera.
 ### Chunk Efficiency
 
 QVVS Transform systems try to be as efficient as possible when it comes to chunk
-storage. Dynamic buffers are stored outside the chunk. Entities that purely copy
-their parent world transform replace their local transform component with a tag
-component. And entities without parents or children can function with a single
-world transform component as small as 48 bytes that is sufficient for physics
-and rendering.
+storage. Dynamic buffers are stored outside the chunk. The `WorldTransform`
+component is only 48 bytes, and is sufficient for solo entities for physics and
+rendering. Root entities with children will typically use 64 bytes (80 in the
+worst-case). And child entities only require 60 bytes total. This all contrasts
+to Unity Transforms which use 64 bytes for `LocalToWorld` plus 32 bytes for
+`LocalTransform`.
 
 ### Deterministic and High Performance
 
@@ -58,20 +76,6 @@ change filters, chunk ordering, and child buffer ordering when dealing with
 complex dynamically-changing hierarchies. Not only do QVVS transform systems fix
 these issues, but they do so using special optimization techniques to outperform
 Unity’s systems as well.
-
-But if the baseline performance isn’t enough, there are multiple algorithms
-provided which are each suited for different simulation scales, especially at
-very high entity counts.
-
-### Archetype Correction
-
-No matter what weird entity archetypes you throw at the system, the transforms
-will correct themselves to be a valid configuration, and do the most intuitive
-thing. It doesn’t matter if you set a `Parent` to `Entity.Null` or remove it
-altogether. Both will result in the Entity being parentless after the transform
-system updates, and the entity won’t even teleport. If you add a `Parent`
-component but no `LocalTransform`, the `LocalTransform` will be set to identity.
-But if the `LocalTransform` is already there, it will be left untouched.
 
 ### Baking Ready
 
@@ -105,8 +109,20 @@ those who need better compatibility with other offerings.
     subscenes.
 -   Some representations of Unity Transforms don’t map to QVVS cleanly in
     abstract APIs, and information may be discarded in both directions.
+-   The always up-to-date transform system requires a bit more boilerplate to
+    use than might be expected. This is primarily due to limitations in Unity’s
+    ECS APIs.
+-   Instantiating live entities requires some extra care, as otherwise an
+    instantiated entity might retain its reference to a hierarchy slot it
+    doesn’t belong to.
+-   Modifying authoring transforms while in play mode does not work correctly
+    currently, as Unity’s live patcher can desynchronize the transform
+    hierarchy. Editor World systems which modify transforms may also cause
+    problems for the same reason.
 
 ## Near-Term Roadmap
 
--   Hierarchy-centric ECS Redesign
 -   Fixed-Rate Transforms
+-   Improved live baking support
+-   More transform writing APIs
+-   Improved support for instantiating child entities

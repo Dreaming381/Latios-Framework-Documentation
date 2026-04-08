@@ -7,24 +7,24 @@ processes *flags*.
 
 ## Tags
 
-There are three optional transform components that can be added to an entity:
-`PreviousTransform`, `TwoAgoTransform`, and `CopyParentWorldTransformTag`. All
-three components can be added using the [Request Any Reactive
+There are two optional transform components that can be added to an entity:
+`PreviousTransform`, and `TwoAgoTransform`. Both components can be added using
+the [Request Any Reactive
 Pattern](../Level%20Up%20Your%20ECS/Baking%20Systems%20Recipes/Part%202%20-%20Request%20Any%20Reactive%20Pattern.md)
-inside a baker. Adding a `CopyParentWorldTransformTag` inside a baker may be
-done as follows:
+inside a baker. Adding a `PreviousTransform` inside a baker may be done as
+follows:
 
 ```csharp
-class MyCopyParentTransformAuthoring : UnityEngine.MonoBehaviour { }
+class MyPreviousTransformAuthoring : UnityEngine.MonoBehaviour { }
 
-class MyBaker : Baker<MyCopyParentTransformAuthoring>
+class MyBaker : Baker<MyPreviousTransformAuthoring>
 {
     [BakingType]
-    struct MyCopyParentRequestTag : IRequestCopyParentTransform { }
+    struct MyPreviousTransformRequestTag : IRequestPreviousTransform { }
 
-    public override void Bake(MyCopyParentTransformAuthoring authoring)
+    public override void Bake(MyPreviousTransformAuthoring authoring)
     {
-        AddComponent<MyCopyParentRequestTag>();
+        AddComponent<MyPreviousTransformRequestTag>();
     }
 }
 ```
@@ -40,37 +40,35 @@ motion history components will be initialized at runtime in the
 
 QVVS Transform baking accounts for `TransformUsageFlags`. However, the meaning
 of these flags is slightly different with QVVS Transforms. It only adds or
-removes the following four components: `WorldTransform`, `LocalTransform`,
-`ParentToWorldTransform`, and `Parent`.
+removes the following three components: `WorldTransform`, `RootReference`, and
+`EntityInHierarchy`.
 
 ### None
 
-The `TransformBakingSystem` will remove all four of the considered components.
+The `TransformBakingSystem` will remove all three of the considered components.
 
 ### Renderable
 
 A `Renderable` entity will always receive a `WorldTransform` component. If the
 entity does not have a parent that has the `Dynamic` flag nor has the `Dynamic`
-flag itself, then `WorldTransform` will be the only component of the four to
-exist once the baking system completes. Otherwise, it is treated as if it were
-`Dynamic`. This is a good flag for bakers that know the transform will need to
-be read but may or may not need to move.
+flag itself, then it is treated as if it was assigned the `WorldSpace` flag.
+Otherwise, it is treated as if it was assigned the `Dynamic` flag.
 
 ### Dynamic
 
 A `Dynamic` entity will always receive a `WorldTransform` component. If it has a
-parent, it will also receive a `Parent` component. However, only if it has a
-parent but does not have the `CopyParentWorldTransformTag` (which is set up by
-the previous baking system) will it receive the `LocalTransform` and
-`ParentToWorldTransform` components. Otherwise, those latter two components will
-be removed. If the entity does not have a parent, the `Parent` component will be
-removed.
+parent, it will also receive a `RootReference` component. If the entity does not
+have a parent, the `RootReference` component will be removed. If it does not
+have a parent but has a child, then `EntityInHierarchy` will be added.
+Otherwise, `EntityInHierarchy` will be removed.
 
 ### WorldSpace
 
 A `WorldSpace` entity will always receive a `WorldTransform` component, and the
-other three components will always be removed. If the entity has the `Static`
-component, this flag is implied.
+`RootReference` component will always be removed. The entity might receive an
+`EntityInHierarchy` if it has a child. If the entity has the `Static` component,
+this flag is implied. A `WorldSpace` entity is never counted as a child of
+another entity.
 
 ### NonUniformScale
 
@@ -86,13 +84,26 @@ components, which may result in incorrect results during incremental baking.
 Such results will be resolved upon closing the subscene. A workaround for this
 issue is planned for a future release.
 
-## HierarchyUpdateMode
+## Inheritance Flags
 
-`HierarchyUpdateMode` uses a flag system similar to `TransformUsageFlags`, and
-can be added to any entity in a baker, including entities obtained via
-`GetEntity()`. To do so, simply call the `IBaker.AddHierarchyModeFlags()`
+`InheritanceFlags` baking uses a flag system similar to `TransformUsageFlags`,
+and can be added to any entity in a baker, including entities obtained via
+`GetEntity()`. To do so, simply call the `IBaker.AddInheritanceFlags()`
 extension method and pass in the desired world-space lock flags. All requests
 targeting a specific entity will be combined with bitwise-OR logic.
+
+## Partial Overrides
+
+You can override the local transform or parent in a baker without using
+`ManualOverride`. To do so, add the `BakedLocalTransformOverride` or
+`BakedParentOverride` components respectively, and initialize their values to
+what you want them to be.
+
+## Order Preservation
+
+Unless you override the parent, the order of siblings of a Game Object are
+preserved when baked into entities. Entities that do not come from Game Objects
+will follow all those that do in the sibling sequence.
 
 ## Systems
 

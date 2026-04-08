@@ -6,6 +6,62 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic
 Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [0.15.0] – 2026-4-?
+
+Officially supports Entities [1.4.4]
+
+### Added
+
+-   Added new `qvvs` APIs which automatically normalize quaternions
+-   Added `AuthoringSiblingIndex`, `BakedLocalTransformOverride`, and
+    `BakedParentOverride` to improve transform baking experience for both QVVS
+    and Unity Transforms
+-   Added new API to `TransformAspect` to provide full hierarchy access
+
+### Changed
+
+-   **Breaking:** Completely replaced all ECS components, systems, and utility
+    APIs related to hierarchy management
+-   **Breaking:** `TransformAspect` is no longer a `Unity.Entities.IAspect`, and
+    must be obtained via special APIs
+-   **Breaking:** Renamed `HierarchyUpdateMode.Flags` to `InheritanceFlags`,
+    which now includes `CopyParent` to replace `CopyParentWorldTransformTag`,
+    and also changed baking APIs appropriately
+-   **Breaking:** `WorldTransformReadOnlyAspect` is no longer a
+    `Unity.Entities.IAspect`, and now has enhanced implementations for much of
+    the code it used to generate, removing the need for the separate
+    `WorldTransformReadOnlyTypeHandle`
+-   **Breaking:** Renamed `TransformQvvs.worldIndex` to `context32` and all
+    associated API to better represent that this is a context-dependent 32-bit
+    value
+-   **Breaking:** Replaced `PostTransformSuperSystem` with
+    `ExportToGameObjectTransformsEndInitializationSuperSystem` and
+    `ExportToGameObjectTransformsEndSimulationSuperSystem`
+-   **Breaking:** Changed or removed `TransformAspect` API that involved parent
+    access to reflect the new hierarchy paradigm
+-   **Breaking:** Changed the API for accessing `TransformAspect` from
+    `ComponentBroker`
+-   **Breaking:** `TransformsBootstrap.InstallTransforms()` now only has a
+    single parameter for the `LatiosWorld`
+-   When QVVS Transforms are used, Unity’s
+    `BakingOnlyEntityAuthoringBakingSystem` is forced to update at the beginning
+    of `TransformBakingSystemGroup` rather than in the middle of the default
+    group
+-   Writing to a `TransformAspect` when the inheritance mode is `CopyParent` is
+    now silently ignored rather than throwing an exception
+
+### Improved
+
+-   Hierarchy propagation will now ensure rotation quaternions are normalized
+    for improved robustness
+
+### Removed
+
+-   **Breaking:** Removed all Abstract aspects except
+    `WorldTransformReadOnlyAspect`
+-   **Breaking:** Removed `CopyTransformToEntity` for `GameObjectEntity`, as the
+    appropriate time for this is no longer understood
+
 ## [0.14.8] – 2026-1-3
 
 Officially supports Entities [1.4.3]

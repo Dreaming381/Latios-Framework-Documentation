@@ -30,8 +30,8 @@ trigger volumes.
 
 ### Is it really worth adding an extra 16 bytes to chunks?
 
-QVVS replaces `LocalToWorld` and `LocalTransform` for root entities, so it uses
-considerably less memory in chunks. Static object will often use non-uniform
+QVVS replaces both `LocalToWorld` and `LocalTransform` for root entities, so it
+actually uses less memory in chunks. Static objects will often use non-uniform
 scaling for decorative effect. And if dynamic objects are characters, they’ll
 benefit from the improved animation capabilities.
 
@@ -55,6 +55,30 @@ Yes. There are several tools that make it much easier and more performant to set
 world-space properties on child entities. Hierarchy handling in general is
 better.
 
+### How does QVVS compare to the new Unified Transforms?
+
+At the time of writing, the new unified transform system is still under
+development, but I know enough about it to answer some of this.
+
+QVVS Transforms is an always up-to-date system, which means writing to a
+transform causes immediate propagation to all descendant entities. Unity’s new
+system seems to allow writing world-space transforms, but reading may require a
+lazy sync-up, and I’m not sure how deterministic this is in a parallel context.
+
+QVVS Transforms is same-hardware deterministic, and can be cross-platform
+deterministic with the LATIOS_BURST_DETERMINISM scripting define. Unified
+Transforms hooks into the engine, and therefore some of its code is in C++ and
+unaffected by Burst’s float mode.
+
+QVVS Transforms makes it easy for parallel jobs to operate on hierarchies, as it
+has special schedulers for ensuring each thread has exclusive access to all
+entities in a given hierarchy.
+
+Unified Transforms works with GameObjects, while QVVS Transforms requires
+explicitly synchronizing with GameObjects. However, the Latios Framework allows
+a lot more things to be entities and not so dependent on Game Objects, so this
+tradeoff might not be as significant.
+
 ## Compatibility
 
 ### Does QVVS Transforms support Unity Physics?
@@ -76,9 +100,10 @@ in Psyshock and the various add-ons.
 
 ### But there’s got to be a way to make QVVS Transforms and Unity Transforms work together, right?
 
-QVVS Transforms are world-space centric, whereas Unity Transforms are
-local-space centric. I have yet to find a way to rectify this difference without
-ruining all the things that makes QVVS Transforms great in the first place.
+QVVS Transforms are world-space centric and always up-to-date, whereas Unity
+Transforms are local-space centric and use deferred syncing. I have yet to find
+a way to rectify these differences without ruining all the things that makes
+QVVS Transforms great in the first place.
 
 If you still aren’t convinced, I’d love to see a design proposal!
 
@@ -95,6 +120,6 @@ determine whether to use Latios.Transforms or Unity Transforms.
 
 You should prefer to use the `TransformAspect` type, as writing to
 `WorldTransform` directly for an entity with a parent will cause your hierarchy
-to get corrupted. Unity’s `IAspect` is going away in the future, but QVVS
-Transforms are also getting a redesign, so for now, stick with
-`TransformAspect`.
+to get corrupted. `TransformAspect` retains its name from when it used to be a
+Unity `IAspect`, but it is no longer such a thing. It is the main workhorse for
+ensuring hierarchy propagation is handled correctly.
