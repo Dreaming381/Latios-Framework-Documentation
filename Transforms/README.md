@@ -120,7 +120,7 @@ those who need better compatibility with other offerings.
     hierarchy. Editor World systems which modify transforms may also cause
     problems for the same reason.
 
-## Near-Term Roadmap
+## Potential Future Roadmap Items
 
 -   Fixed-Rate Transforms
 -   Improved live baking support

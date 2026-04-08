@@ -235,7 +235,7 @@ character controllers or magical forces.
     Colliders
 -   This Readme has too many words and not enough pictures.
 
-## Near-Term Roadmap
+## Potential Future Roadmap Items
 
 -   More QuickTests
 -   More Character Controller Utilities

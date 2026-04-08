@@ -6,6 +6,33 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic
 Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [0.15.0] – 2026-4-?
+
+Officially supports Entities [1.4.4]
+
+### Added
+
+-   Added `triangleCount` property to `TerrainColliderBlob` for convenience
+-   Added `SafeEntity.CreateTransformsKey()` when using QVVS Transforms, which
+    allows a root `SafeEntity` to access the remainder of its hierarchy safely
+
+### Fixed
+
+-   Fixed reporting hits for raycasts that start on the surface of spheres and
+    capsules
+-   Fixed incorrect `subColliderIndex` in `RaycastResult` produced by the
+    `Physics.Raycast()` overload that accepts the `subCollider` parameter
+
+### Improved
+
+-   Improved pointer handling for better CoreCLR support
+
+### Removed
+
+-   Removed `PhysicsAspectLookup`, `PhysicsTransformAspectLookup`, and
+    `ComponentBroker.TryGetTransformAspect()` extension due to the removal of
+    `Unity.Entities.IAspect`
+
 ## [0.14.15] – 2026-3-14
 
 Officially supports Entities [1.4.4]
