@@ -113,6 +113,11 @@ Renderers are invalid if they do not have the appropriate world-space transform
 component for the transform system in use (`WorldTransform` for QVVS and
 `LocalToWorld` for Unity Transforms).
 
+Baked renderers that use mipmap streaming textures will be baked so that
+Kinemation can evaluate and update the mipmap streaming textures at runtime.
+Entities procedurally created at runtime (that is, not using a baked
+`RenderMeshArray`) do not support mipmap streaming at this time.
+
 ### Renderer Extras
 
 Renderer entities can be given the `RendererVisibilityFeedbackFlag` which is an
@@ -286,10 +291,10 @@ not commonly used.
 
 A large number of changes are made to skinned mesh entities at runtime during
 the binding phase. The skinned mesh entity is reparented directly to the
-skeleton entity and given the `CopyParentWorldTransformTag` component. In Unity
-Transforms, the `LocalTransform` is also set to `Identity` and further
-modification of it by the user will result in undefined behavior. The entity
-will also be given the internal cleanup component `SkeletonDependent`.
+skeleton entity with `InheritanceFlag.CopyParent`. In Unity Transforms, the
+`LocalTransform` is set to `Identity` and further modification of it by the user
+will result in undefined behavior. The entity will also be given the internal
+cleanup component `SkeletonDependent`.
 
 The skinned mesh entity will go through a skeleton binding phase where an
 attempt is made to compute bone indices for the bind poses. If this operation
@@ -445,11 +450,6 @@ cache locality for updating their transform hierarchy and culling bounds.
 an optimized skeleton. Some of these features are exclusive to optimized
 skeletons.
 
-Optimized skeletons require an initialization step. This typically happens in
-`MotionHistoryUpdateSystem`, but if the entity was instantiated after this point
-in the frame (sometime during `SimulationSystemGroup`), you may need to
-initialize the entity manually via the `ForceInitialize()` method.
-
 An optimized skeleton can either be in a synced or unsynced state. Accessing
 `rawLocalTransformsRW`, sampling poses from skeleton clips (more on that in a
 later part), or applying inertial blending will put the skeleton in an unsynced
@@ -468,19 +468,6 @@ be used if no blending were applied. You can start an inertial blend with
 `InertialBlend()`. It is safe to interrupt an inertial blend with a new inertial
 blend.
 
-#### OptimizedRootDeltaROAspect
-
-The root bone of an optimized skeleton typically contains the root motion delta
-when sampling from animation clips. However, Unity’s source generators sometimes
-get tripped up when attempting to use `OptimizedSkeletonAspect` and
-`TransformAspect` in the same job. This makes it difficult to apply the root
-motion to the skeleton entity’s transform.
-
-`OptimizedRootDeltaROAspect` provides read-only access to just the root bone of
-an optimized skeleton to assist with root motion operations. Root motion can be
-computed in one job using `OptimizedSkeletonAspect`, and applied in another
-using `OptimizedRootDeltaROAspect`.
-
 #### Sockets
 
 A *socket* (formerly known as “exported bone”) is an entity that copies the
@@ -498,11 +485,12 @@ skeleton’s import settings. You can also use the *Socket* authoring component 
 a child Game Object of the *Animator* to set up sockets in a nondestructive
 workflow.
 
-Sockets update during either `TransformSuperSystem` or `TransformSystemGroup`
+Sockets update either directly on change or in Unity’s `TransformSystemGroup`
 depending on which transform system you use. The *optimized skeleton* does not
-know about nor care about sockets, which means you can have multiple sockets
-track the same optimized bone. Be careful though, because sockets can be
-relatively costly to update.
+know about nor care about sockets, which means you can add and remove sockets on
+the fly. Currently, QVVS Transforms only allows one socket per bone, while Unity
+Transforms supports multiple sockets targeting the same bone. Be careful though,
+because sockets can be relatively costly to update.
 
 ## On to Part 2
 

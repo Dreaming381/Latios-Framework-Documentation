@@ -6,6 +6,67 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic
 Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [0.15.0] – 2026-4-?
+
+Officially supports Entities [1.4.4]
+
+### Added
+
+-   *New Feature:* Added mipmap streaming support and associated APIs
+-   Added `EnableUpdatingInCustomGraphics` which allows toggling which features
+    are needed for custom graphics
+-   Added `DispatchContext` property `isCustomGraphicsDispatch` for systems that
+    may want to only or never update in the custom graphics dispatch phase
+-   Added `CullingComputeDispatchData` method `DoUpdateManaged()` allowing it to
+    be used in managed systems
+
+### Changed
+
+-   **Breaking:** `DependentSkinnedMesh` and `SkeletonDependent` are now public
+    components due to the removal of `Unity.Entities.IAspect`, though you should
+    never ever modify them yourself
+-   **Breaking:** `SkinBoneBindingsCollectionAspect` now indexes on
+    `SkeletonDependent` and `DependentSkinnedMesh` directly
+-   **Breaking:** `BlendShapeAspect`, `DynamicMeshAspect`, and
+    `OptimizedSkeletonAspect` are no longer `Unity.Entities.IAspect` and must
+    now be constructed explicitly in user code
+-   **Breaking:** Unique Meshes now always upload in the custom graphics pass
+    and no longer account for culling, and therefore upload options have been
+    removed
+-   The custom graphics dispatch pass now always runs; however, deformation and
+    other systems no longer update in it by default
+-   Sockets are now updated immediately upon change to the skeleton when using
+    QVVS Transforms
+-   QVVS Transforms now only supports a single socket per bone index
+-   Live baking changes to chunks containing Unique Mesh entities will now cause
+    `UniqueMeshConfig` to be enabled at runtime automatically for all entities
+    in the chunk
+-   System scheduling orders have been reworked for various optimizations
+
+### Improved
+
+-   Optimized skeletons now self-initialize upon construction of
+    `OptimizedSkeletonAspect`
+-   It is now possible to safely modify an `OptimizedSkeletonAspect` and its
+    transform within the same job
+-   Culling systems will no longer sync on their previous culling pass when
+    there are multiple culling passes in a single frame, for up to 32 culling
+    passes
+-   Reduced component type dependencies between systems by switching some jobs
+    to use `HasChecker<T>`
+
+### Removed
+
+-   **Breaking:** Removed `OptimizedRootDeltaROAspect`,
+    `SkinnedMeshBindingAspect` and `SkeletonSkinBindingsAspect` due to the
+    removal of `Unity.Entities.IAspect`
+-   **Breaking:** Removed `EnableCustomGraphicsTag`, as custom graphics always
+    is enabled
+-   **Breaking:** Removed `OptimizedSkeletonAspect.ForceInitialize()` as it is
+    now automatic
+-   **Breaking:** Removed `CullingComputeDispatchSubSystemBase`, as
+    `ICulingComputeDispatchSystem` now supports managed systems
+
 ## [0.14.15] – 2026-3-14
 
 Officially supports Entities [1.4.4]

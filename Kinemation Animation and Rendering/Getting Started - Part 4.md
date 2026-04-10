@@ -21,6 +21,19 @@ skeletons maintain their own root-space hierarchy in dynamic buffers and blob
 assets. Due to this complexity, it is not recommended to work with the raw
 components. Instead, we will be using `OptimizedSkeletonAspect`.
 
+**Important:** *Unity deprecated/removed IAspect, and Latios Framework 0.15 is
+the first version to react to this change. The documentation below shows code
+samples for Latios Framework 0.14.x. To adapt the samples for 0.15, you must
+construct the* `OptimizedSkeletonAspect` *as a local variable using its
+constructor. The constructor is different between QVVS Transforms and Unity
+Transforms. For QVVS Transforms specifically, you also need to pass a*
+`ComponentLookup<Socket>` *and a properly-obtained* `TransformAspect`*.*
+
+*If you struggle to perform these substitutions, please inform me on the Latios
+Framework Discord, but also complain to Unity that their removal of IAspect has
+made the Latios Framework significantly harder to use. They are more likely to
+do something about it if they hear it directly from you.*
+
 ```csharp
 [BurstCompile]
 partial struct OptimizedJob : IJobEntity

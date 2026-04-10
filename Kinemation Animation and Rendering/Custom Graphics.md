@@ -21,10 +21,10 @@ goes like this:
     -   LatiosEntitiesGraphicsSystem
     -   KinemationPostRenderSystemGroup
         -   Systems performing various frame preparation tasks and cache setups
-        -   KinemationCustomGraphicsSuperSystem – skips update if disabled
-            (disabled by default)
-            -   KinemationCustomGraphicsSetupSuperSystem – user injectable
-            -   Systems which setup deform renderer material properties
+        -   KinemationCustomGraphicsSetupSuperSystem – user injectable
+        -   Systems which setup deform renderer material properties and allocate
+            new unique meshes
+        -   Kinemation Post Render Collect Super System
             -   CustomGraphicsRoundRobinDispatchSuperSystem – systems within
                 participate in round-robin scheduling
                 -   DispatchRoundRobinEarlyExtensionsSuperSystem – user
@@ -33,20 +33,30 @@ goes like this:
                 -   Systems performing deformations
                 -   DispatchRoundRobinLateExtensionsSuperSystem – user
                     injectable
--   KinemationCullingSuperSystem – once per camera and shadow casting light per
-    frame (including paused frames)
-    -   Currently, culling systems are exclusively built-in, though user
-        injection points could be added upon request
--   KinemationCullingDispatchSuperSystem
-    -   Systems which setup deform renderer material properties
-    -   CullingRoundRobinDispatchSuperSystem – systems within participate in
-        round-robin scheduling
-        -   DispatchRoundRobinEarlyExtensionsSuperSystem – user injectable
-        -   System to upload unique meshes
-        -   Systems performing deformations
-        -   DispatchRoundRobinLateExtensionsSuperSystem – user injectable
-        -   System to upload material properties
-    -   Systems to update frame frame masks and visibility feedback
+                -   System to upload material property overrides
+            -   Systems to start uploads of deformable reference meshes and
+                mipmap streaming levels
+        -   Kinemation Post Render Write Super System
+            -   CustomGraphicsRoundRobinDispatchSuperSystem – see above
+            -   Systems to update AABBs and light probes
+            -   Systems to set rendering flags
+            -   System to finish deformable reference mesh uploads
+        -   Kinemation Post Render Dispatch Super System
+            -   CustomGraphicsRoundRobinDispatchSuperSystem – see above
+    -   KinemationCullingSuperSystem – once per camera and shadow casting light
+        per frame (including paused frames)
+        -   Currently, culling systems are exclusively built-in, though user
+            injection points could be added upon request
+    -   KinemationCullingDispatchSuperSystem
+        -   Systems which setup deform renderer material properties
+        -   CullingRoundRobinDispatchSuperSystem – systems within participate in
+            round-robin scheduling
+            -   DispatchRoundRobinEarlyExtensionsSuperSystem – user injectable
+            -   Systems performing deformations
+            -   DispatchRoundRobinLateExtensionsSuperSystem – user injectable
+            -   System to upload material properties
+        -   Systems to update frame frame masks and visibility feedback
+        -   System to evaluate mipmip streaming levels
 
 There’s a lot going on. But we’ll explore it more in detail. One thing I’d like
 to point out though is that `KinemationCullingSuperSystem` and
@@ -369,17 +379,16 @@ value starts at 0 and counts up until the next world update.
 
 Sometimes, custom graphics require sending data to the GPU before culling even
 begins. A common example of this is VFX Graph, which updates between
-`PresentationSystemGroup` and the culling phases. If your project requires this,
-you can enable the Custom Graphics Systems. You do this by adding the
-`EnableCustomGraphicsTag` to the `worldBlackboardEntity`. When this is enabled,
-a form of round-robin dispatch takes place at the end of
-`PresentationSystemGroup`. This introduces a partial sync point, so it is
-disabled by default.
+`PresentationSystemGroup` and the culling phases. Because of this, there is a
+form of round-robin dispatch that takes place at the end of
+`PresentationSystemGroup`. This introduces a partial sync point by systems that
+update in it, so many of the deformation and material property systems disable
+updating inside of it by default. You can enable them individually via
+`EnableUpdatingInCustomGraphics` on the `worldBlackboardEntity`.
 
-When the custom graphics systems are enabled, there is a special
-`KinemationCustomGraphicsSetupSuperSystem` prior to the round-robin dispatch
-where systems can be added. One of the main purposes of this system is to flag
-entities that require the early dispatch. This means writing to
-`ChunkPerDispatchCullingMask`. For entities that should only be processed in
-this phase, and always be culled, add the `UsedOnlyForCustomGraphicsTag`
-component to them.
+There is a special `KinemationCustomGraphicsSetupSuperSystem` prior to the
+round-robin dispatch where systems can be added. One of the main purposes of
+this system is to flag entities that require the early dispatch. This means
+writing to `ChunkPerDispatchCullingMask`. For entities that should only be
+processed in this phase, and always be culled, add the
+`UsedOnlyForCustomGraphicsTag` component to them.

@@ -27,6 +27,22 @@ Entities Graphics.
 Users are often surprised when switching to Kinemation that “everything just
 works”.
 
+### Extended Features
+
+Kinemation supports more features than Entities Graphics.
+
+Need runtime mesh modification?
+
+Kinemation has an easy workflow to do it.
+
+Need mipmap streaming?
+
+Kinemation can do it.
+
+Need LOD Crossfades?
+
+You guessed it! Kinemation can do it!
+
 ### Character Ready
 
 Kinemation abstracts away the complexities of skin matrices and deforms your
@@ -85,9 +101,10 @@ solutions available for spammed entities (especially dynamic ones). LOD Pack has
 built-in LOD Crossfade support too. *Note: LOD Pack does not support deforming
 meshes.*
 
-Unity 6.2 introduced Mesh LODs, but at the time of writing, Entities Graphics
-does not support them. However, Kinemation has fixed that. Mesh LODs are
-supported out-of-the-box.
+Unity 6.2 introduced Mesh LODs, but Entities Graphics did not support them. But
+Kinemation did. Mesh LODs were added to Entities Graphics 6.5 but still did not
+support LOD Crossfades. Meanwhile, Kinemation supports Mesh LODs with crossfades
+out-of-the-box.
 
 Kinemation also supports pure entity projected decals. You don’t need companion
 GameObjects to detail your world anymore.
@@ -195,7 +212,7 @@ dumb things sometimes. Adreno GPUs have been susceptible to this.
     might encounter z-order flipping behavior if you spawn decals projected onto
     the same surface area using the same material and projection.
 
-## Near-Term Roadmap
+## Potential Future Roadmap Items
 
 -   Sync-less `LatiosEntitiesGraphicsSystem`
 -   Automatic Batch Combining
