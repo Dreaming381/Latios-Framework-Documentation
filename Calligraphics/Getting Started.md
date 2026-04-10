@@ -1,139 +1,190 @@
 # Getting Started with Calligraphics
 
-*Originally written by Sovogal – Edited by DreamingImLatios*
-
-From damage numbers to simply labeling world space objects, text rendering is
-one of those engine features that we don't spend a lot of time thinking about,
-but we feel its absence like a missing limb. Like a lot of developers braving
-the wilderness of Unity ECS, you were probably surprised to find zero TextMesh
-support. That's why I wrote Calligraphics.
+Calligraphics has evolved to be fully independent of Unity’s text rendering
+features. And while some aspects of its implementation have been inspired by
+TextMesh Pro, its workflow has evolved to something a bit more original. This
+guide will walk through everything from setting up text, modifying it at
+runtime, and even how to use some of its advanced features.
 
 ## Main Camera
 
 Make sure your main camera is not using FXAA anti-aliasing. FXAA does a poor job
-at preserving text crispness, but unfortunately is the default anti-aliasing
-method in URP.
+at preserving text crispness. Other anti-aliasing solutions tend to work better,
+but your milage may vary.
 
-## Authoring
+## Fonts and Font Collections
+
+Calligraphics loads fonts directly from font files. Supported font types are
+OpenType (.otf), TrueType (.ttf), and TrueType Collection (.ttc).
+
+In order to load fonts, Calligraphics needs to know where to find them. This is
+typically done through a **Font Collection Asset**. You can create one in
+*Assets* -\> *Create* -\> *Latios* -\> *Calligraphics* -\> *Font Collection
+Asset*. This asset is an editor-only asset and will not be included in the
+build, so you can put it anywhere in your project, including an *Editor* folder.
+
+Font Collection Asset supports loading system fonts and Streaming Asset fonts.
+For system fonts, you must copy the system font from the target device into the
+Unity project. The font can be stored in an *Editor* folder. Streaming Asset
+fonts must be in a *StreamingAssets* folder.
+
+Drag the fonts into the Font Collection Asset inspector, then press the
+**Process!** button.
+
+![](media/5b216b7d55885344e6d82be06828c77d.png)
+
+After you press the button, *Font Load Descriptions* and *Font Families* will be
+populated. If you need to make changes to the list of fonts, you will need to
+press *Process!* again.
+
+A Font Asset Collection is typically baked into a `FontLoadDescriptionsBlob`,
+typically stored in a `FontLoadDescriptionsBlobReference` component. At runtime,
+Calligraphics iterates through all component instances and loads all fonts. Once
+a font is loaded, it is never unloaded until the `LatiosWorld` is disposed. If
+you want to load fonts at runtime, use
+`FontLoadDescription.GetDescriptionsFromPath()` and pass in the filepath of each
+font you want to load. Then use the results to construct a
+`FontLoadDescriptionsBlob`.
+
+## Shaders and Materials
+
+Calligraphics provides several Shader Graph shaders which can be installed from
+the Latios Framework package samples in the *Package Manager* window. Each
+shader supports both HDRP and URP.
+
+While most of the shader properties are generally self-explanatory, there are a
+few that require a little extra explanation. Note that these values do not
+affect emoji.
+
+### Dilate
+
+Dilation is a value typically in the range of [-1, 1] where a value of 0 draws
+the edges where the font edges occur, a positive value inflates the edges
+outward, and a negative value pulls the edges inward. Calligraphics defines the
+maximum inflation or deflation as 1/8th the font size. For fonts that do not
+include a bold-face, the dilation value is typically averaged with +3/16 to
+emulate boldness. Otherwise, the dilation value is divided by two. It is
+actually the result of this averaging or division which must be in the range
+(-1, 1), meaning that for non-bold text, dilation values of (-2, 2) are
+acceptable.
+
+### Softness
+
+Softness is a value that comes from TextMesh Pro and is typically in the range
+of [0, 3]. It controls how softly the edges of the text fade to transparent.
+Small nonzero values can sometimes help text appear less aliased, while larger
+values create a soft blur effect.
+
+### GradientScale
+
+This value is no longer used and should be ignored.
+
+## Authoring Text
 
 Calligraphics provides a single component for authoring text. You can find it in
 *Latios* -\> *Calligraphics* -\> *Text Renderer* in the *Add Component Menu*.
-For animating the text, an additional component can be found in *Latios* -\>
-*Calligraphics* -\> *Text Animation*.
-
-### Text Renderer
 
 The *Text Renderer* component exposes all of the settings required to render
 Rich Text to world space.
 
 -   **Text** – The Rich Text to render.
+-   **Font Collection Asset** – The Font Collection Asset used to populate the
+    Default Font dropdown (and will also be baked)
+-   **Default Font** – The font family that should be used to render the text
+    when rich text tags do not override the font
+-   **Font Styles** – Base styling options to apply to the text. The buttons are
+    ordered as follows:
+    -   Normal (selecting this clears all other options)
+    -   Bold
+    -   Italics
+    -   Lower Case
+    -   Upper Case
+    -   Small Caps
+    -   Superscript
+    -   Subscript
+    -   Fraction
 -   **Font Size** – The size to use for the text
--   **Word Wrap** – Whether to wrap the text should it exceed **Max Line
-    Width**.
+-   **Color** – The base color of the text
 -   **Max Line Width** – The maximum line width for a single line of text. If
     **Word Wrap** is false, this setting does nothing.
+-   **Word Spacing, Line Spacing, and Paragraph Spacing** – Additional spacing
+    values in font units where a value of 1 equals 1/00em
+-   **Word Wrap** – Whether to wrap the text should it exceed **Max Line Width**
+-   **Is Orthographic** – Controls how the text reacts to scaling
+-   **Language** – The IETF BCP 47 language string used to help HarfBuzz format
+    text to a particular locale
 -   **Horizontal Alignment** and **Vertical Alignment** – These two settings
     provide a pivot point for the text rendering. They not only affect text
     alignment, but also in which directions to expand the text relative to the
     authoring transform.
--   **Is Orthographic** – Controls how the text reacts to scaling
--   **Enable Kerning** – Enable kerning pair adjustments
--   **Font Style** – Base styling options to apply to the text
--   **Word Spacing, Line Spacing, and Paragraph Spacing** – Additional spacing
-    values in font units where a value of 1 equals 1/00em
--   **Color** – The base color of the text when no Color tag is in scope.
--   **Fonts and Materials** – The font-material pairs used by the renderer. All
-    fonts/materials called out by font rich text tags will need to be specified
-    here. There should always be at least one entry for the base font.
-    Calligraphics includes a Liberations-Sans Font set up for URP to get started
-    quickly.
--   **Gpu Resident** – When checked, the text uses GPU-resident mode in which
-    text changes are always uploaded and stored on the GPU regardless of
-    visibility. However, visible text is not reuploaded each frame when no
-    changes occur.
+-   **Font Texture Size** – How big text should be rasterized into the SDF and
+    bitmap textures
+    -   **Normal** – A value suitable for most text
+    -   **Big** – Use for large text and titles
+    -   **Massive** – Use only if Big is not big enough, extremely expensive and
+        can easily exhaust GPU memory if more than \~10 unique characters are
+        drawn with this across all renderers within a frame
+-   **Material** – The material used to render the text
 
-*Warning: GPU Resident Text can be prone to fragmentation, so be wary of
-modification patterns.*
+## Working with Text in Code
 
-### Fonts and Materials
+Many of the authoring options for text can be found in the
+`TextBaseConfiguration` component at runtime. All properties can generally be
+freely modified at any time.
 
-Calligraphics fonts are generated using Unity’s TextCore and use SDF rendering.
-To create a new font, make sure an imported font file is selected in the project
-folder. Then right-click on it, and select Create Text Core Font Asset SDF.
+The text string itself is stored in a `DynamicBuffer<CalliByte>()`. Pass this
+value into the constructor of a `CalliString` in order to work with it using the
+Collections package string APIs.
 
-![](media/73c606af1e0c965ffc59b93ae86d32fa.png)
+Calligraphics evaluates text during `UpdatePresentationSystemGroup`. At this
+time, it will populate the `RenderGlyph` buffer describing the quad mesh data to
+be sent to the GPU. It will also update `MaterialMeshInfo` and `RenderBounds` to
+reflect the length and size of the text.
 
-Next, set the atlas type to *Static*, then press the *Update Atlas Texture*
-button to open the Font Asset Creator window. All parameters in this window will
-affect Calligraphics in the same way as traditional TextMeshPro or UI Toolkit.
-However, it is worth calling out some common settings.
+The `RenderGlyph` buffer can be animated by adding the
+`DynamicBuffer<AnimatedRenderGlyph>` to the entity, and then populating it with
+animated `RenderGlyph` instances using the `RenderGlyph` buffer as reference.
+This can be done by injecting systems into `CalligraphicsAnimationSuperSystem`,
+which runs after populating `RenderGlyph` buffer, but before updating the other
+rendering components.
 
-First, some level of padding is required for bold or text outlines, as otherwise
-the rendered quads won’t be large enough. Second, because this is a static
-atlas, you must specify which characters will be baked into the font atlas.
-Lastly, be sure to select *Get Font Features* for kerning support.
+A RenderGlyph is composed of several values. Of interest for animation are the
+Position, UVB, and Color values. Each of these are prefixed with a two letter
+code representing the quad corner they correspond to:
 
-![](media/9272a5c4777200cad8988fcfc50782f3.png)
+-   bl – bottom left
+-   br – bottom right
+-   tl – top left
+-   tr – top right
 
-Once you are happy with your selection, press *Generate Font Atlas* and then
-*Save*.
+Note that these corners are for the full quad, which includes padding for
+outline effects and shader bold emulation. For position information, the
+z-ordinate is always assumed to be `0f`.
 
-In a font-material pair, if you leave the material empty, Calligraphics will use
-the material from the font. The material must use a Calligraphics-compatible
-shader in order to read the Calligraphics glyph buffer. Two shaders, one for URP
-and one for HDRP are provided out-of-the-box by Calligraphics. These shaders are
-created with Shader Graph, so you can copy them and modify them for custom
-effects.
+## Other Features
 
-### Text Animation
+There are a few other features of Calligraphics.
 
-This one is a bit of a work in progress. You can specify animation transitions
-scoped to specific portions of text. Are there other ways to accomplish this
-through shaders? Yep! However, this allows you to animate a single glyph, word,
-or line in very basic ways to give a little life to some world space text.
+In the *Add Component* menu, you can add a *Latios* -\> *Calligraphics* -\>
+*Font Collection* authoring component. This let’s you bake a
+`FontLoadDescriptionBlob` without a *Text Renderer*.
 
-Each transition has the following properties:
+You can create a *Font Utility* asset, which allows you to inspect various font
+properties from a font file. This is a `ScriptableObject` used as a tool, and
+not something you should include in builds.
 
--   **Glyph Property** - The property of the glyph to transition. These are
-    currently: Opacity, Scale, Color, PositionNoise, RotationNoise, and
-    Position.
--   **Animation Style** - Progressive or Simultaneous. This setting exposes
-    appropriate properties to render the animation as progressive (iterating
-    through each glyph, word, or line in order) or simultaneous (affecting all
-    glyphs, words, or lines at once).
--   **Interpolation** - The type of tweening interpolation to use for the
-    transition.
--   **Unit Scope** - Whether to scope the animation to Glyph, Word, or Line
--   **Start Index** - The start index of the animation
--   **End Index** - The end index of the animation. This is inclusive, so the
-    element at the end index will receive animation as well.
--   **End Behavior** - The behavior at the end of the transition (Revert, Keep
-    Final, Loop)
--   **Loop Count** - The number of times to loop the animation if the **End
-    Behavior** is set to Loop
--   **Loop Delay** - The delay time between loops if the **End Behavior** is set
-    to Loop
--   **Transition Time Offset** - The delay before the transition begins
--   **Transition Duration** - The duration of the transition, once it begins
--   **Progressive Time Offset** - The time offset between each progressive
-    animation, if the transition is using a Progressive **Animation Style**
+`TextRendererUtility` offers various runtime APIs for creating IETF BCP 47
+language strings packed as blob assets, and setting up a
+`TextBaseConfiguration`.
 
-## API
+*Resources* includes a *LatiosTextBackendMesh* which contains the mesh used for
+rendering all text in Calligraphics. The `MaterialMeshInfo` should be configured
+to use a single mesh and material (no range). Note that the mesh has multiple
+submeshes, but the submesh index is modified at runtime in order to select the
+number of quads that should be drawn. If you choose to configure a text
+rendering entity from scratch at runtime, initially set the submesh index to 0.
 
-Calligraphics exposes its primary API through a `TextRendererAspect`. The
-back-end uses a dynamic buffer of `CalliBytes`, where each element is just a
-single byte, to represent a string, but `TextRendererAspect` exposes this buffer
-as a `CalliString` to allow you to interact with it similar to the `NativeText`
-type.
-
-## Under The Hood
-
-Calligraphics bakes fonts and materials as pairs to a blob asset that contains
-Unity TextCore metadata about each font and font-supported glyph (size, vertex
-positioning, UVs for the font atlas, glyph-to-glyph positioning specifics, and
-so on). At runtime, `GenerateGlyphsSystem` then parses the
-`DynamicBuffer<CalliBytes>` and generates the `DynamicBuffer<RenderGlyphs>`. It
-also generates the `DynamicBuffer<GlyphMappingElement>` which is used by the
-`AnimateTextTransitionSystem`. This system post-processes the glyphs. Finally,
-the glyphs are fed raw into a compute shader by the Kinemation rendering
-systems.
+`DynamicBuffer<TextColorGradient>` optionally lives on the
+`worldBlackboardEntity`, and allows defining named gradients that can be called
+out via rich text tag. The *Text Color Gradient* authoring component provides an
+authoring experience for it.

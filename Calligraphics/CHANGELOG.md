@@ -6,6 +6,51 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic
 Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [0.15.0] – 2026-4-?
+
+Officially supports Entities [1.4.4]
+
+### Added
+
+-   *New Feature:* Added support for diacritics, non-latin scripts, emoji, and
+    other advanced text rendering features
+-   *New Feature:* Added support for dynamic font atlases and loading fonts at
+    runtime
+-   Added support for individually animating each vertex corner of a glyph quad
+    on the CPU
+-   Added support for HDR vertex colors
+
+### Changed
+
+-   **Breaking:** The entire text pipeline has been reworked to no longer depend
+    on Unity’s TextCore and instead rely on HarfBuzz directly, meaning
+    everything involving management of fonts and materials has been altered to a
+    new workflow featuring font-independent materials and single-entity text
+    renderers
+-   **Breaking:** RenderGlyph now uses a new 128-byte per glyph format
+-   GPU Resident Text is now determined automatically based on usage patterns
+-   Shaders are now distributed as samples rather than as part of the package
+    (and there’s more shaders to choose from)
+
+### Fixed
+
+-   Fixed comparison exceptions for CalliString
+
+### Improved
+
+-   Animation no longer requires reprocessing the input UTF-8 text
+-   The size of the text backend mesh on disk has been reduced significantly
+
+### Removed
+
+-   **Breaking:** Removed built-in text animation system and all associated
+    APIs, although user animation can still be done within
+    `CalligraphicsAnimationSuperSystem` using `AnimatedRenderGlyph`
+-   **Breaking:** Removed `GlyphMapper`, `GlyphMappingElement`, and
+    `GlyphMappingMask`, as these are incompatible with HarfBuzz shaping
+-   **Breaking:** Removed `TextRenderControl`, as there is a completely new
+    upload pipeline
+
 ## [0.14.9] – 2026-1-11
 
 Officially supports Entities [1.4.4]

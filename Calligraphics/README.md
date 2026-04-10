@@ -1,10 +1,16 @@
 # Calligraphics
 
-*Written by Sovogal – Edited by DreamingImLatios*
+Calligraphics is a module responsible for rendering world-space UI elements
+(primarily text) in pure ECS fashion, largely inspired by TextMesh Pro. It
+combines Kinemation’s rendering utilities, the HarfBuzz library, and a custom
+signed-distance-field implementation to generate and render beautiful
+world-space text.
 
-Calligraphics is a small module that leverages the Kinemation backend rendering
-systems, Unity’s Shader Graph, and a little bit of pixie dust to render
-world-space text in a similar manner to TextMesh Pro.
+This module has a strong collaborative history, first started by Sovogal, it was
+brought closer to TextMesh Pro parity by Fribur. Fribur then went on to create
+the [TextMeshDOTS](https://github.com/Fribur/TextMeshDOTS) fork, developed the
+HarfBuzz integration, and then further collaboration has evolved both packages
+to where they are today.
 
 Check out the [Getting Started](Getting%20Started.md) page!
 
@@ -12,75 +18,67 @@ Check out the [Getting Started](Getting%20Started.md) page!
 
 ### Out-of-the-Box
 
-Calligraphics can parse Unity-supported [Rich
-Text](https://docs.unity3d.com/Packages/com.unity.ugui@1.0/manual/StyledText.html)
-tags with rendering support for a subset of those. What Calligraphics supports,
-it will render, and what it does not, it will ignore, so you can port existing
-Rich Text without concern that you'll expose any unseemly alligator brackets to
-your players.
+Calligraphics does not require any user code in order to render text in your
+world. Everything can be configured in the editor, with a workflow that is
+intuitive and just works.
 
-### Solid-State
+### Advanced Text
 
-Unless you're animating text, Calligraphics is essentially idle after it has
-parsed and rendered once.
+Calligraphics supports various text features, such as kerning, diacritics, and
+even emoji in various formats, such as PNG, COLR, SVG, and BMP. With HarfBuzz it
+will automatically attempt to format text based on the detected writing system,
+and allows you to further hint it with language tags.
 
-### Compatible with any Signed Distance Field (SDF) Font
+### Plenty of Formatting and Layouting
 
-Just like TextMesh Pro, Calligraphics supports any SDF Font via a
-custom-included shader. Custom shader graph nodes, subgraphs, and SDF utilities
-are provided if you need more control.
+Many of the essential formatting options are available, including bold, italics,
+case conversion, superscripts and subscripts, and even fraction rendering. Even
+more formatting can be unlocked through rich text tags.
 
-### Entities Graphics Pipeline
+In addition, Calligraphics supports various text alignment options as well as
+customizations in text size and resource use, so you can be sure text is crisp
+at whatever size and place you need.
 
-Calligraphics leverages Kinemation’s rendering pipeline, and supports Entities
-Graphics material property workflows. It uses batching and instancing for all
-text at once, so you know it's fast!
+### Any Font Any Time
 
-### Rich Text Support
+Calligraphics is designed to decouple rendering from the fonts used. Fonts can
+be included from the build, loaded from the operating system, or even loaded
+from downloaded files or custom paths at runtime. Any Calligraphics-compatible
+material can render any font, or any combination of fonts, thanks to a global
+texture atlas array mechanism that all Calligraphics shaders can tap into.
 
-Calligraphics supports many of the rich text tags offered by TextCore and
-TextMeshPro. The results often overlap the generation of TextMeshPro perfectly,
-but with the power of Burst, Jobs, and ECS!
+Calligraphics comes with several shader-graph shaders with supports for various
+outlines and effects, with support for both URP and HDRP.
 
-### Animation
+### Fast SDF Rendering
 
-Calligraphics provides some basic animation tools to give your world space text
-a little pep. Animations are independent of the main rendering system, so they
-produce overhead only if you want to use them. Calligraphics currently supports
-five types of animation:
+Calligraphics dynamically generates signed-distance field textures of new
+characters at runtime using a custom SIMD-optimized rasterizer. Rendering text
+from SDFs is very efficient on modern GPUs, including mobile GPUs. SDF texture
+data is uploaded sparsely with a custom sparse texture uploader that outperforms
+Unity’s texture upload process.
 
--   Color
--   Position
--   Rotation
--   Opacity
--   Scale
+### Animatable
+
+Calligraphics provides an API that allows for animating the generated glyph
+quads it has generated from the text before sending them to the GPU. The system
+automatically recognizes which text is being animated and which isn’t, and
+optimizes GPU allocations appropriately to account for this.
 
 ## Known Issues
 
--   Animation systems require glyphs to regenerate each frame in order for
-    transitions to work, even when the transition is complete. This performance
-    overhead is not ideal.
--   Limited authoring support. Unity native support for Rich Text editing keeps
-    finding itself on the back-burner. A rich text editor would offer the most
-    comfortable authoring experience, but creating one from scratch is a TON of
-    work.
--   The Calligraphics shader suffers heavily from FXAA on the camera, and you
-    should not use this anti-aliasing method when using Calligraphics.
-    Unfortunately, FXAA is the default in some URP projects, so please check
-    your settings.
--   While Calligraphics represents strings internally as UTF-8, it does not
-    handle glyph generation mechanisms for all languages correctly. Feel free to
-    get involved to help support your native language.
+-   RTL, BiDi, and advanced unicode line-breaking are not yet supported.
+-   There is no way to map output glyphs to input UTF-8 text for animation
+    currently.
+-   Some advanced effects such as highlighting, underlines, and strikethrough do
+    not work.
 
-## Near-Term Roadmap
+## Potential Future Roadmap Items
 
--   Dynamic and System Fonts
--   Font-Independent Materials
--   Font Images and Vector Graphics
--   Harfbuzz Text Shaping
--   Diacritics
+-   More text formatting and layouting features
 -   Custom Sprites
--   Voxel Vertex Stride Mode (for raymarching)
+-   Culling Optimizations
+-   Voxel per glyph mode (for raymarched text)
 -   Billboards
 -   9-Slice Panels
 -   Decals
