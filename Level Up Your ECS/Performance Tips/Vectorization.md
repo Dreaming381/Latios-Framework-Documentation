@@ -470,6 +470,19 @@ system on its own. I haven’t really invested in trying to help it yet. Audio i
 a rare use case where the probability of vectorization happening automatically
 is a bit higher.
 
+Actually, I have an interesting story about LLVM vectorization. While
+collaborating with Fribur on TextMeshDOTS, we were looking to optimize the SDF
+rasterizer. I had suggested rewriting the logic so that it was vectorized.
+Fribur started by rewriting the algorithm to be less branchy, and then made a
+Vector Math vectorized solution. This was faster than before. However, the
+scalar reference was even faster. Fribur initially thought this was due to some
+early-outs in the algorithm, but upon closer inspection, Burst was actually
+completely ignoring the early outs and branches in the reference version, and
+vectorizing the whole thing. The reason it was faster was because it invoked
+AVX2 vectorization, processing 8 pixels at a time instead of 4. I did eventually
+rewrite the algorithm to fix some rendering artifacts. The new solution also
+uses LLVM vectorization.
+
 So far, I’ve only broken out the intrinsics in situations where I need to
 perform multiple vector comparison operations, and then boil that down into a
 single integer value or boolean. There’s not really a good way to express these

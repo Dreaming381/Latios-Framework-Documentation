@@ -1,4 +1,4 @@
-# Upgrade Guide [0.13.7] [0.14.0]
+# Upgrade Guide [0.14.15] [0.15.0]
 
 If you are not using version control, please back up your project in a separate
 directory before upgrading! You may need to reference the pre-upgraded project
@@ -9,12 +9,19 @@ See the changelogs of each module for a complete list of changes.
 
 ## Core
 
-### Math Moved Out
+### IAspect Removal
 
-All of the math-related APIs in Core, such as SIMD, RNG, QCP, and various other
-utilities and extensions have been moved to the new Calci module. Simply
-reference the new module in your assembly and add a `using Latios.Calci;` to
-your files, and things should be back to normal.
+Unity has deprecated `IAspect` for a while now, and it is removed in Unity 6.5.
+Latios Framework 0.15.x is the first version to formally remove `IAspect`
+support. Now, Core defines its own `IAspect` type which will be expanded over
+time to bring back some of the functionality of Unity’s old `IAspect` type. Some
+types that used to implement Unity’s `IAspect` still exist, but can no longer be
+used in source generated entity iteration.
+
+### Live Baking Changes
+
+`SystemState.GetLiveBakeSafeLastSystemVersion()` has been removed, as it has
+been replaced with a much more powerful set of live bake tracking APIs.
 
 ## Psyshock
 
@@ -23,76 +30,79 @@ your files, and things should be back to normal.
 Some static methods and constants which used to be in the Physics class are now
 in the `TrueSim` class. They otherwise act the same as before.
 
-## Myri
+## Transforms
 
-### AudioClipBlob Compression Support
+### worldIndex Renamed to context32
 
-Myri no longer exposes the raw samples in the `AudioClipBlob`, as they may now
-be optionally stored in a compressed form. If you need APIs to extract the
-audio, please make a feature request.
+This field on `TransformQvvs` has been renamed to better reflect how the
+variable is used in practice.
 
-### SampleUtilities Renamed to DspTools
+### QVVS V2
 
-The static class `SampleUtilities` was renamed to `DspTools` to better reflect
-the variety of features this class will provide.
+The QVVS Transform system runtime (ECS components and systems) have been
+completely overhauled. There’s a dedicated upgrade guide
+[here](Transforms/QVVS%20V2%20Upgrade%20Guide.md).
 
 ## Kinemation
 
-### Major Bounds Overhaul
+### OptimizedSkeletonAspect Redesign
 
-Renderer bounds handling received a major overhaul. Deforming renderers now use
-`WorldRenderBounds` and `ChunkWorldRenderBounds` like all other entities. In
-addition, systems responsible for computing these bounds have been moved to run
-after `LatiosEntitiesGraphicsSystem`, which is much later than when Entities
-Graphics normally performs these tasks. Update any manually-created archetypes
-and system orders accordingly.
+`OptimizedSkeletonAspect` has been redesigned. With the removal of Unity
+`IAspect`, this type can now be constructed explicitly, which allows it to do
+initialization automatically. Thus, `ForceInitialize()` is gone. Also, when
+using QVVS Transforms, the type now requires a mutable `TransformAspect` and a
+`SocketLookup`, because sockets are evaluated immediately. This also means that
+it is possible to modify the skeleton’s transform in the same job the skeleton
+is modified, so `OptimizedRootDeltaROAspect` has been removed.
 
-### LODs Update
+`DependentSkinnedMesh` and `SkeletonDependent` are now public API, replacing
+`SkinnedMeshBindingAspect` and `SkeletonSkinBindingsAspect` for custom graphics
+purposes.
 
-MMI Range LODs no longer contain a `height` field. They use the
-`WorldRenderBounds` now. Just delete that field from custom bakers and runtime
-code. Additionally, if you were adding `LodCrossfade` to entities yourself in
-bakers, please use `MeshRendererBakeSettings.requireLodCrossfade` instead, as
-otherwise you may get baking errors.
+### New Culling Pipeline Changes
 
-### Skeleton Culling Changes
+The system order has been reworked to better optimize for projects using LifeFX,
+and to prepare for improved batching management in the future. The custom
+graphics pass is now always enabled, meaning `EnableCustomGraphicsTag` has been
+removed. However, deformations and other dispatch systems are disabled by
+default. They can be enabled via `EnableUpdatingInCustomGraphics` on the
+`worldBalckboardEntity`.
 
-Skeletons are no longer directly culled, and therefore skeletons without skinned
-meshes will no longer have `RenderVisibilityFeedbackFlag` updated. A
-`CullingGroup`-like API may be provided in the future to address this feature
-regression, but the implementation of such a feature will be based on user
-requests for it. If you are missing this functionality, please share your use
-case through one of the various communication channels.
+Additionally, UniqueMesh now uploads before culling, in accordance to Unity’s
+updated `BatchRendererGroup` documentation. Some flags and bootstrap APIs have
+been removed as a result.
 
-Additionally, Unity Transforms mode no longer requires the use of
-`PostProcessMatrix` in any scenario.
+## Calligraphics
+
+### Calligraphics V2
+
+Calligraphics has been heavily overhauled with the latest TextMeshDOTS changes.
+There’s a dedicated upgrade guide
+[here](Calligraphics/Calligraphics%20V2%20Upgrade%20Guide.md).
 
 ## New Things to Try!
 
 ### Core
 
-`UnsafeParallelBlockList` now has generically typed versions, making it easier
-to express your intent when you don’t need type punning.
+You can add the `[DontSyncPreviousUpdatesThisFrame]` attribute on your systems
+to avoid partial sync points for systems that update multiple times per frame.
 
-### New Module – Calci
+There’s also a new feature VPtr which is an advanced API for polymorphic struct
+pointers that supports implementations across multiple assemblies. It works
+similarly to Unika interfaces.
 
-Calci is a new module focused on math and algorithms. In addition to housing
-former Core APIs, it comes with new Bezier curve APIs.
+### New Module – Aux ECS
 
-### Psyshock Physics
+Aux ECS is a complimentary single-threaded ECS for when you need to track
+additional data on entities without invoking structural changes in Unity’s ECS.
 
-Psyshock now has a much more extensible API for drawing outlines of colliders,
-allowing you to feed lines into your own line renderer.
+### Calci
+
+The Latios Framework finally has an official `NativePriorityQueue` type, which
+lives in Calci. It is a quaternary comparison-based heap queue.
 
 ### Kinemation
 
-Kinemation now supports Mesh LODs for Unity 6.2 and newer. This means there are
-now 3 different LOD systems which are able to crossfade. And now, these systems
-coordinate with each other so that you can combine multiple techniques. You can
-use Mesh LODs up until at a distance where you use LOD Pack to switch to an
-imposter or fade out. And you can combine Mesh LOD with LOD Group for your
-skinned meshes.
-
-On the animation side, Kinemation’s new `UnityRig` class provides 2-bone IK. Use
-this in combination with `OptimizedSkeletonAspect`’s new multi-bone writing APIs
-to commit your IK changes in batch with ensured correctness.
+Kinemation now supports mipmap texture streaming for all baked entities. This
+works silently out-of-the-box. Just enable mipmap streaming on your textures,
+and let Kinemation do the rest!

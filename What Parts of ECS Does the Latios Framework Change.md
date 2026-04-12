@@ -6,7 +6,8 @@ Discord](https://discord.gg/DHraGRkA4n), you may hear misinformation about it.
 
 1.  **No** feature requires a change in workflow, except to the functionality it
     directly pertains to.
-2.  The Latios Framework does **not** change anything unless you ask it to.
+2.  The Latios Framework does **not** change anything unless you ask it to
+    (except to work around Unity shortcomings).
 3.  Many “alternative” features **co-exist** with existing ECS features (i.e.
     singletons and blackboard entities, or Unity Physics and Psyshock)
 
@@ -46,7 +47,8 @@ members have proven it to be a viable approach.
 Okay, you’ll find that you need to add a couple of scripting defines to get it
 to compile, with one being ENTITY_STORE_V1, which might be a little disruptive.
 This is a stopgap to ensure full per-hardware determinism, something that the
-framework guarantees.
+framework guarantees. There is a plan in place to phase out this requirement,
+but the transition is not complete yet.
 
 You will probably want to add the scripting define LATIOS_TRANSFORMS_UNITY if
 you decide to only go this far.
@@ -57,9 +59,17 @@ during a `ComponentSystemGroup` update. These hooks simply check for specific
 Latios Framework features being used (none are yet) and then return back to the
 normal Unity way of doing things.
 
+There is an editor script that makes Scene View Focus work better for entities.
+And there is also a hack fix for URP and HDRP to enable the vertex shader stage
+in shader graph for decal targets, which is required for Kinemation’s pure ECS
+decal feature.
+
 Nearly all Latios Framework systems use the `[DisableAutoCreation]` attribute,
-so they won’t be around. The exceptions are some baking systems and a
-`ProcessAfterLoad` system for Unika.
+so they won’t be around. The exceptions are some baking systems that process
+framework-exclusive types and a `ProcessAfterLoad` system for Unika.
+
+The framework also bakes an `AuthoringSiblingIndex` baking component to
+complement `TransformAuthoring`.
 
 Features made available in this state include:
 
@@ -73,11 +83,13 @@ Features made available in this state include:
 -   Fluent Queries
 -   `EntityWith<>` and `EntityWithBuffer<>`
 -   `DynamicHashMap`
--   `ThreadStackAllocator` and `GapAllocator`
+-   `ThreadStackAllocator`, `TlsfAllocator`, and `GapAllocator`
 -   `TempQuery`
 -   `ComponentBroker`
 -   `TypePack`, `Bits`, and other extensions
 -   The `TransformQvvs` type and operations
+-   VPtr
+-   The entire Aux ECS runtime
 -   All static runtime methods of Psyshock (Psyshock at runtime is system-free)
 -   NetCode Bootstrap and utility APIs (when NetCode package is installed)
 -   Kinemation’s `GraphicsUnmanaged` and `GraphicsBufferUnmanaged` APIs
@@ -93,7 +105,7 @@ same project, or if you just want Unika.
 
 This is a popular way to use the framework. It preserves compatibility with the
 Unity ecosystem, while still offering many of the benefits Kinemation has to
-offer (plus modules like Myri and Calligraphics).
+offer (plus modules like Myri, Calligraphics, and LifeFX).
 
 Adding the bootstrap is what activates the hooks and turns on many of the core
 features of the framework. However, these core features do not break any
@@ -127,6 +139,7 @@ Features made available with this bootstrap include:
 -   Auto-Destroy Expirables
 -   `ISystemShouldUpdate` callbacks and hierarchical system culling (skip
     updates based on something other than emptiness of `EntityQueries`)
+-   Live Baking Tracking APIs
 
 Features installed by default in this bootstrap:
 
@@ -134,6 +147,7 @@ Features installed by default in this bootstrap:
 -   Kinemation
 -   Calligraphics
 -   Unika default entity remap systems
+-   LifeFX
 
 ### Myri
 
@@ -209,7 +223,7 @@ highlighting functions as normal.
 
 Features and improvements made available with Kinemation include:
 
--   F and Shift + F for runtime entities (and closed subscenes) support
+-   Mipmap Streaming support
 -   LOD Crossfade support
 -   Mesh LOD support
 -   LOD Pack which allows packing up to 3 LOD levels (the last level can be an
@@ -251,9 +265,11 @@ Calligraphics makes no modifications to existing workflows.
 
 Features made available include:
 
--   World-space text renderer with TextCore font support
+-   World-space SDF text renderer using HarfBuzz for advanced text generation
+    and emoji support
 -   Support for material property components and custom shader graphs
--   Animated properties and rich text tags
+-   Rich text tags
+-   Animation API
 -   Changing text at runtime
 
 ### Unika Default Entity Remapping Systems
@@ -266,15 +282,15 @@ enabled `UnikaEntitySerializationController` instances and serialize such
 entities at the beginning of `InitializationSystemGroup` and deserialize them at
 the end of `InitializationSystemGroup`.
 
-## Changes When Enabling LifeFX
+### LifeFX
 
-LifeFX is disabled by default with the installers commented out in the
-bootstrap, because it introduces a partial sync point at the end of
-`PresentationSystemGroup`. This happens because VFX Graph updates between
-`PresentationSystemGroup` and rendering and buffers need to be fully synced with
-the main thread before that point. When you enable LifeFX in the bootstrap, all
-functionality including graphics events, global buffers, and tracked transforms
-are enabled.
+LifeFX makes no modifications to existing workflows.
+
+Features made available include:
+
+-   Driving VFX Graphs with entities
+-   Sending arbitrary messages to the GPU
+-   Tracking transforms on the GPU
 
 ## Changes When Enabling GameObjectEntity
 
@@ -364,10 +380,11 @@ features across the framework, as well as example projects and extra technical
 support.
 
 QVVS Transforms leverage the same `TransformUsageFlags` system during baking to
-compute the correct components to apply. They also use a `Parent` component for
-parenting, and a cached `Child` buffer. However, when writing transforms, you
-always want to use `TransformAspect`, because it keeps local and world
-transforms in-sync.
+compute the correct components to apply. But the runtime representation is very
+different. QVVS Transforms is an always up-to-date transform system, meaning
+that every modification is immediately propagated through the hierarchy.
+Therefore, when writing transforms, you always want to use `TransformAspect`,
+because it keeps local and world transforms in-sync.
 
 Early experimental NetCode support for QVVS Transforms was added in 0.11.0, and
 slightly improved for 0.12.0. However, development will likely not continue due
@@ -378,12 +395,10 @@ Features and improvements made available include:
 -   Stretch (shear-resistant non-uniform scaling)
 -   GameObjectEntity (always on)
 -   Motion History
--   Hierarchy Update Modes (lock world-space attributes on children)
+-   Inheritance Flags (lock world-space attributes on children)
 -   World-space persistence when deparenting
--   `CopyParentWorldTransformTag`
--   Greatly improved chunk occupancy for root entities
--   Extreme Transforms mode for high entity count optimization
--   Parenting and reparenting system jobification optimizations
+-   Greatly improved chunk occupancy for all entities
+-   Always up-to-date transforms meaning no hierarchy sync systems required
 -   Improved determinism (for now)
 -   Greatly improved performance accessing world-space rotation (affects all
     modules)

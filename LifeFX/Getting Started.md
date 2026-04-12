@@ -32,14 +32,9 @@ custom graphics, it may be worth considering LifeFX to help with such use cases.
 
 LifeFX requires that GameObjectEntity be installed when using Unity Transforms.
 
-LifeFX is disabled in the bootstrap templates, and must be enabled by
-uncommenting its installer in the `LatiosBootstrap` class. LifeFX currently has
-no baking installation requirements and does not need to be installed in the
-Editor world. When LifeFX is installed, it will add
-`Kinemation.EnableCustomGraphicsTag` to the `worldBlackboardEntity`, which will
-enable the early dispatch systems. To understand what this means and when LifeFX
-systems update, refer to [Kinemation Custom
-Graphics](../Kinemation%20Animation%20and%20Rendering/Custom%20Graphics.md).
+Beginning in 0.15, LifeFX is enabled by default in the bootstrap templates. It
+has no baking installation requirements and does not need to be installed in the
+Editor world.
 
 ## Terminology
 

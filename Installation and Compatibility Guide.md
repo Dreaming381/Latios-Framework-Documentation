@@ -14,7 +14,7 @@ When you first install the package, you may experience compiler errors due to
 lack of special scripting defines. Add the requested scripting defines to
 continue.
 
-Latios Framework 0.14 uses a custom transform system rather than Unity’s
+Latios Framework 0.15 uses a custom transform system rather than Unity’s
 Transforms by default. This system will bake `GameObject` `Transform`s fine, but
 may pose compatibility issues with other ECS packages. If compatibility is a
 larger concern to you than the performance and feature advantages of this custom
@@ -66,8 +66,9 @@ which bootstraps it needs to be called within.
 
 ## Entities Supported Versions
 
-Entities 1.4.x is currently the officially supported version. The last framework
-version to support Entities 1.3.14 was framework version 0.14.5.
+Entities 1.4.x is currently the officially supported version. The framework
+should work with Unity 6.0 LTS, but version 0.15.x of the framework is generally
+tested against Unity 6.3 LTS.
 
 Entities 6.4.x is currently in an experimental status. Feel free to report any
 issues encountered if you attempt to use this version.
@@ -88,15 +89,23 @@ following platforms:
 -   Windows
 -   Linux Desktop
 -   Mac OS
--   Android (including Meta Quest headsets)
+-   Android ARM (including Meta Quest headsets)
 
-Other platforms are possible, but will require compiling a required [native
-plugin](https://github.com/Dreaming381/AclUnity) for the platform. You can also
-add the scripting define `LATIOS_DISABLE_ACL` to disable all usage of the native
-plugin if your project doesn’t need it and you’d like to target other platforms.
+Other platforms are possible, but will require compiling one or two required
+native plugins for the platform. You can also add scripting defines to disable
+the native plugins if your project doesn’t need them and you’d like to target
+other platforms.
 
-In addition, if building for IL2CPP, you might need to set the code generation
-mode to *Faster (Smaller) Builds*.
+These are the native plugins:
+
+-   AclUnity – Used for skeletal animation
+    -   To disable, add LATIOS_DISABLE_ACL
+-   HarfBuzz – Used for Calligraphics
+    -   Additionally has out-of-the-box support for Android x86 and iOS
+    -   To disable, add LATIOS_DISABLE_CALLIGRAPHICS
+
+If building for IL2CPP, you might need to set the code generation mode to
+*Faster (Smaller) Builds*.
 
 If there is some other unexpected behavior, that is likely a bug. Please report
 the issue!
@@ -108,27 +117,29 @@ following lists the areas where reflection is used on otherwise inaccessible
 members. They should be correctly preserved, but if not, please report them.
 
 -   Core
-    -   Any `ICollectionComponent` or `IManagedStructComponent` implementing
-        type will have generated code which will need to be preserved.
+    -   Any `IVInterface`, `ICollectionComponent` or `IManagedStructComponent`
+        implementing type will have generated code which will need to be
+        preserved.
 -   Psyshock
     -   Psyshock calls `EarlyJobInit()` on generic jobs for
-        `IFindPairsProcessor` and `IFindObjectsProcessor`. The `EarlyJobInit()`
-        method may accidentally be stripped for these jobs.
+        `IFindPairsProcessor`, `IFindObjectsProcessor,` and
+        `IForEachPairProcessor`. The `EarlyJobInit()` method may accidentally be
+        stripped for these jobs.
 -   Unika
     -   All Unika types and interfaces that are handled by codegen need to be
         preserved.
 
 ## Cross-Platform Determinism
 
-The Latios Framework experimentally supports Burst’s deterministic floating
-point mode for the following modules:
+The Latios Framework experimentally supports Burst’s deterministic
+floating-point mode for systems in the following modules:
 
 -   Core
 -   QVVS Transforms
 -   Calci
 -   Psyshock
 -   Unika
--   Kinemation (partial)
+-   Kinemation (partially)
 
 You can enable this mode using the scripting define LATIOS_BURST_DETERMINISM.
 
@@ -142,4 +153,4 @@ bones, sockets, or transforms are deterministic. Systems which calculate
 `WorldRenderBounds` and `RenderVisibilityFeedbackFlag` are NOT deterministic.
 Also, sampling animation clips is NOT deterministic, not even in contexts that
 use `FloatMode.Deterministic`, as ACL does not have a deterministic compilation
-mode at this time
+mode at this time.
