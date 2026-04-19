@@ -66,14 +66,12 @@ which bootstraps it needs to be called within.
 
 ## Entities Supported Versions
 
-Entities 1.4.x is currently the officially supported version. The framework
-should work with Unity 6.0 LTS, but version 0.15.x of the framework is generally
-tested against Unity 6.3 LTS.
+Entities 1.4.x is currently the officially supported version. The framework is
+designed to work with Unity 6.3 LTS. Other versions are not supported at this
+time.
 
-Entities 6.4.x is currently in an experimental status. Feel free to report any
-issues encountered if you attempt to use this version.
-
-Entities 6.5.x is NOT supported at this time.
+Entities 6.4.x is NOT supported due to the messy divergence of `instanceId` and
+`EntityId` between Entities 1.4.x for Unity 6.3 LTS and future versions.
 
 ## Platform Support
 
@@ -135,10 +133,11 @@ The Latios Framework experimentally supports Burst’s deterministic
 floating-point mode for systems in the following modules:
 
 -   Core
+-   Aux ECS (no floats in module)
 -   QVVS Transforms
 -   Calci
 -   Psyshock
--   Unika
+-   Unika (no floats in module)
 -   Kinemation (partially)
 
 You can enable this mode using the scripting define LATIOS_BURST_DETERMINISM.

@@ -465,4 +465,54 @@ only valid for the hierarchy that entity belongs to.
 With this, you now have the ability to iterate entire hierarchies in parallel,
 and write to any component of any entity in a hierarchy safely. Reasoning about
 full hierarchies rather than individual entities can be very freeing for
-gameplay logic. .
+gameplay logic.
+
+## Recipes for Special Use Cases
+
+Sometimes, you find yourself in a situation where you have data that does not
+conform to the existing APIs, but you know enough assumptions that you still
+want to process the data in parallel. There are a few situations where this is
+safe.
+
+### NativeArray\<Entity\> Full of Roots
+
+If you have a `NativeArray<Entity>` that contains a set of root entities, you
+can still operate on this safely in parallel. Although you have to be a little
+careful to follow this pattern precisely, as safety isn’t watertight.
+
+For this, we’ll assume that your job is of type `IJobFor` or
+`IJobParallelForDefer`, scheduled with an index per entity in your
+`NativeArray`. In this job, you will need a `TransformAspectRootHandle`. This
+`handle` has an `entityStorageInfoLookup` property. Use this to acquire the
+storage info of the entity. Next, call `handle.SetupChunk()` on the chunk
+contained in the storage info. Then access the `TransformAspect` using the
+storage info’s `IndexInChunk`.
+
+For the `TransformsKey`, call
+`TransformsKey.CreateFromExclusivelyAccessedRoot()` passing in the entity and
+the `entityStorageInfoLookup`. Do this only after obtaining the
+`TransformAspect`.
+
+**Do not use** `handle.transformsKey`**!** That assumes you have thread-safe
+access to the full ECS chunk, which you don’t have.
+
+```csharp
+struct ExampleJob : Unity.Jobs.IJobParallelForDefer
+{
+    [ReadOnly] public NativeArray<Entity>       rootEntities;
+    public            TransformAspectRootHandle handle;
+    // Other job fields go here...
+
+    public void Execute(int index)
+    {
+        var entity = rootEntities[index];
+
+        var storageInfo = handle.entityStorageInfoLookup[entity];
+        handle.SetupChunk(storageInfo.Chunk);
+        var transformAspect = handle[storageInfo.IndexInChunk];
+        var transformsKey   = TransformsKey.CreateFromExclusivelyAccessedRoot(entity, handle.entityStorageInfoLookup);
+
+        // Your logic goes here...
+    }
+}
+```
