@@ -6,6 +6,16 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic
 Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [0.15.2] – 2026-4-25
+
+Officially supports Entities [1.4.6]
+
+### Changed
+
+-   `LatiosClientServerBootstrap` has been deprecated, and will no longer
+    function correctly in a future framework version targeting a newer Unity
+    Editor version
+
 ## [0.15.1] – 2026-4-19
 
 Officially supports Entities [1.4.4]

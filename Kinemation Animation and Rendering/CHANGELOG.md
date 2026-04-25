@@ -6,6 +6,23 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic
 Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [0.15.2] – 2026-4-25
+
+Officially supports Entities [1.4.6]
+
+### Added
+
+-   Added the ability to disable shadow casting and motion vectors in LOD Pack
+    via authoring and via a new `MmiRangeLodFlags` component
+
+### Fixed
+
+-   Fixed AclUnity compression exceptions being thrown for characters that have
+    base pose scaling
+-   Fixed blend shape deforming when multiple blend shapes share the same target
+    vertices
+-   Fixed evaluation of LOD Pack fadeouts which did not handle signs correctly
+
 ## [0.15.1] – 2026-4-19
 
 Officially supports Entities [1.4.4]

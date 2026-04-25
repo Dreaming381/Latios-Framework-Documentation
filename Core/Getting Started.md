@@ -48,13 +48,15 @@ of the framework, and you must use a Unity Transforms bootstrap. QVVS
 alternatives for some of these packages may be found in the Latios Framework
 Add-Ons package at various stages of development.
 
-For NetCode Projects, the Latios Framework will detect the NetCode package and
-enable additional C\# files for compilation. One of these provides a dedicated
-NetCode bootstrap type called `LatiosClientServerBootstrap`, which offers Latios
-Framework equivalents of `ClientServerBootstrap`. You can further customize each
-type of world with the additional bootstrap interfaces provided, which you can
-automatically generate from the *NetCode Standard – Injection Workflow*
-bootstrap. The *NetCode QVVS – Explicit Workflow* bootstrap is experimental.
+For NetCode Projects (NetCode support is deprecated and will no longer work in a
+Unity version later than 6.3), the Latios Framework will detect the NetCode
+package and enable additional C\# files for compilation. One of these provides a
+dedicated NetCode bootstrap type called `LatiosClientServerBootstrap`, which
+offers Latios Framework equivalents of `ClientServerBootstrap`. You can further
+customize each type of world with the additional bootstrap interfaces provided,
+which you can automatically generate from the *NetCode Standard – Injection
+Workflow* bootstrap. The *NetCode QVVS – Explicit Workflow* bootstrap is
+experimental.
 
 After the bootstrap is created, it can be
 [customized](Customizing%20the%20Bootstraps.md).

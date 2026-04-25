@@ -19,10 +19,13 @@ Transforms by default. This system will bake `GameObject` `Transform`s fine, but
 may pose compatibility issues with other ECS packages. If compatibility is a
 larger concern to you than the performance and feature advantages of this custom
 transform system, you can enable a compatibility mode for Unity Transforms via
-the LATIOS_TRANSFORMS_UNITY scripting define. Note that Unity Transforms is
-required for full NetCode support as QVVS support is experimental. Additionally,
-Unity Transforms are required for Unity Physics unless you modify the Unity
-Physics package.
+the LATIOS_TRANSFORMS_UNITY scripting define. Note that Unity Transforms has
+been required for full NetCode support as QVVS support has always been
+experimental (the framework’s support for NetCode is expected to terminate after
+Unity 6.3 LTS due to a change in the NetCode package in later Editor versions
+that is severely incompatible with the framework). Additionally, Unity
+Transforms are required for Unity Physics unless you modify the Unity Physics
+package.
 
 Nearly all Latios Framework functionality requires that the `World` instance be
 a subclass instance called `LatiosWorld`. If your project currently uses default
@@ -72,6 +75,10 @@ time.
 
 Entities 6.4.x is NOT supported due to the messy divergence of `instanceId` and
 `EntityId` between Entities 1.4.x for Unity 6.3 LTS and future versions.
+
+NetCode support is deprecated for as long as the framework targets Unity 6.3
+LTS. Later versions of NetCode targeting later Unity versions are incompatible
+with the framework.
 
 ## Platform Support
 

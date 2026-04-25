@@ -14,8 +14,9 @@ populates `InitializationSystemGroup` with necessary framework systems and a
 custom `IRateManager`. For more details, see [LatiosWorld in
 detail](LatiosWorld%20in%20Detail.md).
 
-For NetCode projects, there is a `NetCodeBootstrapTools` as well as a
-`LatiosClientServerBootstrap`.
+For NetCode projects (NetCode support is deprecated and will not function in a
+Unity version later than 6.3 LTS), there is a `NetCodeBootstrapTools` as well as
+a `LatiosClientServerBootstrap`.
 
 ## Customizing Features
 
