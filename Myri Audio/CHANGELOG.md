@@ -6,6 +6,23 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic
 Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [0.15.3] – 2026-5-2
+
+Officially supports Entities [1.4.6]
+
+### Added
+
+-   Added `worldBlackboardEntity` to `IAudioEcsSystemRunner`
+    `AudioFromatChangedContext`, `UpdateContext`, and `ShutdownContext`
+-   Added `AudioSettings.kDefault`, which is the default settings used in Myri
+    when no settings are authored
+-   Added `BrickwallLimiter.HasNonZeroValueInQueue()` that can be used to check
+    for potential fast-paths
+-   Added `MyriBootstrap.ShutdownCustomAudioEcsRuntime()` which ensures all
+    processing within Audio ECS has stopped and it is safe to dispose runtime
+    resources after this method returns
+-   Added work-in-progress implementations for Audio ECS listener processing
+
 ## [0.15.1] – 2026-4-19
 
 Officially supports Entities [1.4.4]
