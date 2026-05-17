@@ -6,6 +6,35 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic
 Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [0.15.4] – 2026-5-16
+
+Officially supports Entities [1.4.6]
+
+### Added
+
+-   Added optional `IAudioEcsBootstrap` parameter to
+    `MyriBootstrap.InstallMyri()`
+
+### Changed
+
+-   Myri now uses Audio ECS as the backend for sources and listeners
+-   Audio updates are now dispatched to the audio thread from the main thread
+    after `PresentationSystemGroup`, rather than whenever the jobs finished
+
+### Fixed
+
+-   Fixed a rare crashed caused by DSP Graph in some projects, by removing DSP
+    Graph
+
+### Improved
+
+-   Added smoothing to volume adjustments made to listeners and the master
+    output
+
+### Removed
+
+-   Removed DSP Graph as a dependency
+
 ## [0.15.3] – 2026-5-2
 
 Officially supports Entities [1.4.6]

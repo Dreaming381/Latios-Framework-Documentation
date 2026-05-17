@@ -6,6 +6,17 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic
 Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [0.15.4] – 2026-5-16
+
+Officially supports Entities [1.4.6]
+
+### Fixed
+
+-   Fixed various issues with `TlsfAllocator`
+-   Fixed exception upon creation of the `LatiosWorld` due to a null system type
+    added to a system list that was normally caught without logging, but would
+    trigger exception breakpoints when debugging
+
 ## [0.15.3] – 2026-5-2
 
 Officially supports Entities [1.4.6]

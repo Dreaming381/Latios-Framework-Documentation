@@ -1,9 +1,9 @@
 # Myri Audio
 
 Myri Audio is a pure DOTS audio solution designed for handling a myriad of audio
-sources. It leverages the C\# job system, the Burst compiler, and the DSPGraph.
-At the time of its latest release (when this page was last modified), no
-official Unity Entities-based audio solution exists.
+sources. It leverages the C\# job system, the Burst compiler, and the Scriptable
+Audio API. At the time of its latest release (when this page was last modified),
+no official Unity Entities-based audio solution exists.
 
 Check out the [Getting Started](Getting%20Started.md) page!
 
@@ -100,6 +100,16 @@ those familiar with classical Unity terminology, audio sources always exhibit
 instantiating a prefab. You can even command Myri to automatically destroy the
 entity when the clip is done playing.
 
+### Extensible with Audio ECS
+
+Myri contains a fully extensible ECS backend for processing audio built on Aux
+ECS. This backend allows custom code to run inside the audio thread with Burst.
+It provides a realtime allocator for the thread, as well as a scalable
+thread-safe messaging API with the rest of the application. Blob assets from
+subscenes are automatically kept alive even after the subscene unloads until the
+Audio ECS backend has at least one update to process unload events. Scriptable
+generators are supported.
+
 ## Known Issues
 
 -   Myri may drop the first samples of a newly instantiated audio source if the
@@ -109,34 +119,11 @@ entity when the clip is done playing.
 -   Myri will only use up to `n` worker threads when performing sampling, where
     `n` is the sum of spatialization channels across all listeners. A default
     listener has six spatialization channels.
--   A job which manages listeners and the DSP graph is not Bursted due to
-    DSPGraph limitations.
 -   A high number of listeners can have a heavy load on the DSP thread and
     potentially overwhelm it due to the heavy processing required for each
     limiter.
--   Sudden changes in listener or master volumes can cause temporary clicking
-    noises as the effects are applied instantaneously. A remedy will be provided
-    in a future release. It should be noted that audio source volumes do not
-    suffer from this problem.
-
-## Known Unity Engine and DSPGraph Issues
-
-The following issues are issues with Unity’s underlying DSPGraph and cannot be
-resolved in Myri. If you encounter one of these issues, submit a bug report to
-Unity!
-
--   Sometimes in the editor, audio may stutter despite a lack of warnings of the
-    DSPGraph being starved. This is because GC spikes stall the audio thread if
-    Burst Compilation is disabled.
--   Sometimes DSPGraph will hang editor shutdown or domain reload. This tends to
-    affect some computers but not others, and only happens when Myri is used
-    with engine-imported audio clips. Beginning with 0.12.0, an option in the
-    Edit menu allows for enabling a managed audio driver, which works around the
-    issue but alters the behavior slightly compared to what happens in a build.
 
 ## Potential Future Roadmap Items
 
+-   Clip pausing
 -   Hierarchical Mixing
--   Conversion from DSP Graph to Unity 6.3+ scriptable audio APIs
--   Programmable Audio on the DSP Thread via Audio ECS
--   Programmable Effects on the DSP Thread via Effect Stacks

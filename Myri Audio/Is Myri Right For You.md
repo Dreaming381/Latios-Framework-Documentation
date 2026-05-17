@@ -26,6 +26,7 @@ Myri is a very simple audio solution with only a few essentials.
 -   Apply uniform or directed audio
 -   Apply a basic constant tape-warp by scaling sampling rate and interpolating
     (linked time scaling and pitch shifting)
+-   An API for custom runtime audio processing
 
 If this is enough for your project, and your project makes heavy use of Unity’s
 ECS, then Myri may be a good fit. Audio sources as pure ECS entities means you
@@ -62,7 +63,7 @@ Ideally, Myri’s development will bring to life more powerful features,
 eventually making it a one-stop shop for ECS audio. But the road ahead is long,
 and it will require the help of community contributors to reach that goal.
 
-The current task at hand is to migrate Myri’s backend from DSP Graph to a
-Scriptable Audio Root Output built on Aux ECS. Once this migration is complete,
-Myri will have a public API for executing code on the DSP thread, making it much
-easier for people to develop their own effects and features.
+Myri’s backend is extensible, built on Aux ECS with a realtime allocator and
+thread-safe messaging system. If you know some things about audio programming,
+you may be able to add what you need. And if you feel like it, you can even
+contribute features to Myri.

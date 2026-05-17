@@ -11,25 +11,6 @@ With that said, Myri is still a production-ready solution for many styles of
 games. And what it may lack in features, it makes up for in simplicity and
 performance.
 
-## Setting up the Managed Driver
-
-Many people encounter an issue with domain reload freezing when using Myri
-out-of-the-box, forcing a restart of the editor to continue progress. If you
-encounter this, you can go to the edit menu and select *Latios -\> Use Myri
-Editor Managed Driver*. This setting is unique per computer per project.
-Enabling this has two side-effects.
-
-First, it requires a Unity Engine Audio Listener attached to the main camera.
-This is the only time a Unity Engine audio component is ever used in Myri.
-
-Second, the managed driver will always attach the Mono runtime and garbage
-collector to the DSP mixing thread. This doesn’t happen with the default Burst
-driver.
-
-With these two alterations, the managed driver may exhibit different behavior in
-the editor when switching scenes or doing any other custom loading compared to
-in a build.
-
 ## Playing Your First Sound
 
 Create a new Unity Project with the Latios Framework installed. Then add the
@@ -213,6 +194,11 @@ slightly, but sampling consumes a large amount of time, it may instead be
 preferred to begin sampling an audio frame or two early. Setting *Lookahead
 Audio Frames* to a value of 1 or greater will accomplish this. While this
 increases audio latency, it does not introduce a performance cost.
+
+*Note: Beginning in Latios Framework 0.15.4, the time at which sampling is sent
+to the audio thread is tied to the main thread after*
+`PresentationSystemGroup`*. So even if sampling is fast, there may still be some
+delays, and this value should always be at least 1.*
 
 ### Optimizing Clips for Performance
 
@@ -433,10 +419,5 @@ would have more overhead than needed.*
 
 ## Custom DSP
 
-Custom DSP processing is currently not supported in Myri. The underlying
-DSPGraph is not exposed in any way. A solution to this problem is coming soon in
-the form of Effect Stacks, which will overhaul Myri and add a much more
-customizable and controllable API surface.
-
-In the meantime, you can procedurally generate audio clips at bake time using
-the Smart Blobber API.
+Custom DSP processing is possible via [Audio ECS](Audio%20ECS.md). You can also
+procedurally generate audio clips at bake time using the Smart Blobber API.

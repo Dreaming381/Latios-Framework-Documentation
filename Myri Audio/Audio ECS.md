@@ -94,7 +94,7 @@ array is typically larger.
 
 64 samples is a typical size for low-latency audio applications. Otherwise,
 common values are between 256 and 4096 samples per channel. 1024 samples at 48
-kHz (a common default on Windows) as an interval of \~20 milliseconds, which is
+kHz (a common default on Windows) has an interval of \~20 milliseconds, which is
 fairly forgiving. Some mobile devices require 256 samples per channel which only
 has an interval of \~5 milliseconds. Remember, this is a hard limit that must be
 satisfied every time, not some average. That means you have to be concerned with
@@ -112,12 +112,12 @@ Editor) is running.
 Fortunately, Burst-compiled code does not count as managed code, so as long as
 all code on the audio thread is Burst-compiled from the start, then GC pauses
 won’t affect the audio thread. This is why some Unity samples use
-`[BurstCompile(CompileSynchronously = true)]`. However, this only affects the
-editor.
+`[BurstCompile(CompileSynchronously = true)]`. However, `CompileSynchronously`
+only affects the editor.
 
 In the editor, designers should generally wait for Burst eager compilation to
 finish before entering play mode. And developers can often get away with Burst
-being disabled as long as the array size is 1024 or larger, they are running a
+being disabled as long as the array size is 1024 or larger while running a
 simpler debug scene, and they have their computer audio turned down a bit.
 
 ### Avoid Logging
@@ -201,9 +201,6 @@ passing those collections around by `ref` and `in`. The Native\* collections are
 harsher on the realtime allocator, so try to avoid them for simple things.
 
 ## Defining an Audio ECS Runner
-
-**Warning:** Currently, Myri’s features haven’t migrated to Audio ECS yet. But
-you can still create your own Audio ECS runtime manually.
 
 To create an Audio ECS instance, you need to define a runner. The runner is an
 unmanaged struct that receives callbacks from Audio ECS on the audio thread. The
@@ -320,13 +317,14 @@ To create an Audio ECS runtime, you will need to define a managed type which
 implements the `IAudioEcsBootstrap` interface. This interface requires two
 methods to be implemented.
 
-`ShouldWaitForMyriSourceOrListenerBeforeStarting()` is currently never called,
-and you can return whatever you want. It will serve a purpose once Myri’s
-built-in sources and listeners have migrated to Audio ECS.
+`ShouldWaitForMyriSourceOrListenerBeforeStarting()` is used to define whether
+Audio ECS should be constructed right away, or deferred until there are source
+or listener entities. This is usually used to avoid setting up Audio ECS in
+prototyping scenes that don’t have audio.
 
-`OnStart()` is the important method. It is passed in a `Configurator`, which you
-must call `Configure()` on within the `OnStart()` method. `OnStart()` is where
-you construct your `IAudioEcsSystemRunner`.
+`OnStart()` is where you construct your `IAudioEcsSystemRunner`. It is passed in
+a `Configurator`, which you must call `Configure()` on within the `OnStart()`
+method.
 
 `Configure()` is where you pass in your `IAudioEcsSystemRunner` instance. Avoid
 storing dynamic memory allocations within the instance at this time, as it will
@@ -346,21 +344,28 @@ Additionally, if there are no worker threads, then the block size should be 1.5x
 larger that the maximum amount of memory that will ever be required for the full
 lifecycle of the Audio ECS runtime.
 
+### Installing the Custom Audio ECS Runtime in the Bootstrap
+
+Myri comes with an out-of-the-box Audio ECS implementation. However, you can
+override this implementation by providing it your own `IAudioEcsBootstrap` when
+calling `MyriBootstrap.InstallMyri()`. Refer to the file *BuiltInRunner.cs* for
+a reference implementation.
+
 ### Creating the Audio ECS Runtime Manually
 
 To manually create an Audio ECS instance which does not interact with Myri’s
 audio sources and listeners, call `MyriBootstrap.CreateCustomAudioEcsRuntime()`.
-This method will return a `RootOutputInstance`, which you will need to dispose
-yourself when you want to shut down the Audio ECS runtime by calling `Destroy()`
-on the same `ControlContext` you passed in.
+This method will return a `RootOutputInstance`, which you will need to destroy
+by calling `MyriBootstrap.ShutdownAudioEcsRuntime()`.
 
 Note that when creating an Audio ECS runtime manually, blob assets from
-subscenes cannot be safely passed through the pipes.
+subscenes cannot be safely passed through the pipes. Additionally,
+`ShouldWaitForMyriSourceOrListenerBeforeStarting()` is ignored.
 
 ## Interacting with the Audio ECS Runtime from the Main Thread
 
 Audio ECS is interactable from the main thread via two collection components and
-a Unity ECS component, all attached to the `worldBlackboardEntity`.
+two Unity ECS components, all attached to the `worldBlackboardEntity`.
 
 ### AudioEcsCommandPipe
 
@@ -408,3 +413,19 @@ contains the new `feedbackId`, and the most recent `commandId` that the audio
 thread read in. `AudioEcsAtomicFeedbackIds` provides an API to atomically read
 this variable and obtain these values, bypassing much of the latency discussed
 above.
+
+### AudioEcsFormat
+
+This component provides the active `UnityEngine.Audio.AudioFormat` being used.
+This contains info about the speaker configuration, sample rate, and samples per
+audio frame.
+
+### Blob Asset Safety
+
+When using `MyriBootstrap.InstallMyri()`, a subscene blob asset preservation
+world is created, which will extend the lifetime of all blob assets long enough
+for audio thread logic to react to subscene unload. That is, once a subscene
+unloads, the blobs will remain valid for a single frame on the main thread to
+send messages to the audio thread, and then the blobs will continue to remain
+valid until the completion of an audio frame that receives that main thread
+update.
