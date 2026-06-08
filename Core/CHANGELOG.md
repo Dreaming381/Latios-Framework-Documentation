@@ -6,6 +6,15 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic
 Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [0.15.6] – 2026-6-7
+
+Officially supports Entities [1.4.6]
+
+### Added
+
+-   Added `math` methods `InverseTransformFast()` for both points and
+    `RigidTransform`s
+
 ## [0.15.4] – 2026-5-16
 
 Officially supports Entities [1.4.6]

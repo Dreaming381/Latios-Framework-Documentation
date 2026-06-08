@@ -226,3 +226,11 @@ not touching `Dependency`, the `JobHandle`s will be automatically managed by the
 Latios Framework’s automatic dependency management system but not Unity ECS’s
 automatic dependency management system. This will prevent Unity’s sync points
 from completing those jobs.
+
+**Warning:** **Dependency tracking does not start until the first** `OnUpdate()`
+**of any system is called within the** `World`**. This means that accesses
+inside** `OnCreate()` **during the bootstrap aren’t tracked and do not require
+special handling unless you schedule jobs in** `OnCreate()`**. However, systems
+created several frames later will require**
+`UpdateCollectionComponentMainThreadAccess()` **calls inside or after**
+`OnCreate()`**.**

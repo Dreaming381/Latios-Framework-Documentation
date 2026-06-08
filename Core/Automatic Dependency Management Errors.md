@@ -71,3 +71,12 @@ A system that accesses collection components or the sync point must finish
 executing before the next system starts running, or else the cleanup process
 won’t have a chance to run. In these situations, you will have to provide the
 `JobHandles` or declare access was exclusive to the main thread manually.
+
+### Accessing Inside OnCreate() of a System Created Later
+
+Dependency tracking starts on the first `OnUpdate()` call of any system in the
+World. Prior to that, you can add collection components on the main thread
+without having to clear tracking or dependencies. But if you create systems
+after this point, you will need to manually clear dependencies using
+`UpdateCollectionComponentMainThreadAccess<T>()`, as the `state.Dependency`
+property isn’t handled correctly inside `OnCreate()`.
