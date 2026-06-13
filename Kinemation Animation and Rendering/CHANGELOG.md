@@ -6,6 +6,24 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic
 Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [0.15.7] – 2026-6-13
+
+Officially supports Entities [1.4.6]
+
+### Fixed
+
+-   Fixed exceptions and incorrect results in `OptimizedSkeletonAspect` methods
+    `ApplyWorldTransforms()` and `ApplyRootTransforms()`
+-   Fixed mipmap streaming levels not adapting to graphics quality level changes
+-   Fixed error message printing wrong info for incorrect unique mesh use
+-   Fixed incorrect `WorldRenderBounds` calculation for non-skeletons when
+    skeletons are present in the scene
+
+### Improved
+
+-   Improved mipmap streaming evaluation to better handle oblong objects rotated
+    in world-space
+
 ## [0.15.3] – 2026-5-2
 
 Officially supports Entities [1.4.6]

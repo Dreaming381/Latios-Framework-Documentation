@@ -6,6 +6,16 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic
 Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [0.15.7] – 2026-6-13
+
+Officially supports Entities [1.4.6]
+
+### Changed
+
+-   Point vs capsule and sphere vs capsule distance algorithms have been
+    reworked to no longer normalize quaternions, more accurately report
+    hitpoints, and evaluate `WithinDistance()` faster
+
 ## [0.15.6] – 2026-6-7
 
 Officially supports Entities [1.4.6]

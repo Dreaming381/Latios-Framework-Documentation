@@ -193,6 +193,17 @@ can be tuned to avoid problems in practice.
 Note that the realtime allocator requires collections be manually disposed of,
 as if they were allocated with `Allocator.Persistent`.
 
+### Avoid Various Psyshock APIs
+
+FindPairs uses internal temporary allocations when working with multiple
+buckets. In general, you should try to evaluate FindPairs operations from jobs,
+and send the results to AudioECS. Also, constructing Psyshock blob assets may
+also use these temporary allocations.
+
+Not only are these temporary allocations a potential realtime failure, they also
+silently race with the main thread for an allocator, due to
+`JobsUtility.ThreadIndex` not being unique for non-worker threads.
+
 ### Prefer Unsafe\* over Native\* Collections
 
 Except for when scheduling the odd background job, the Native\* collections
