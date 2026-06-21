@@ -6,6 +6,26 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic
 Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [0.15.8] – 2026-6-20
+
+Officially supports Entities [1.4.7]
+
+### Added
+
+-   Added `ThreadStackAllocator` static property `maxAllocatorsPerThreadError`
+    which has an initial default of 8192
+
+### Changed
+
+-   Changed `ThreadStackAllocator` error handling to first log errors at the
+    `maxAllocatorsPerThread` threshold, and then throw exceptions at the
+    `maxAllocatorsPerThreadError` threshold, and only log errors on allocator
+    disposal, as exceptions can hide stack traces for error errors
+
+### Fixed
+
+-   Fixed `VPtr` not analyzing assemblies correctly in builds
+
 ## [0.15.6] – 2026-6-7
 
 Officially supports Entities [1.4.6]

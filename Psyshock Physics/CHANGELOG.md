@@ -6,6 +6,20 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic
 Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [0.15.8] – 2026-6-20
+
+Officially supports Entities [1.4.7]
+
+### Changed
+
+-   Capsule vs capsule distance algorithm has been reworked to no longer
+    normalize quaternions, more accurately report hitpoints, and evaluate
+    `WithinDistance()` faster
+
+### Fixed
+
+-   Fixed several terrain index baking and traversal issues
+
 ## [0.15.7] – 2026-6-13
 
 Officially supports Entities [1.4.6]

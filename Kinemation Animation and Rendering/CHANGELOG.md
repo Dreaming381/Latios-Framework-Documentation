@@ -6,6 +6,34 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic
 Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [0.15.8] – 2026-6-20
+
+Officially supports Entities [1.4.7]
+
+### Added
+
+-   Added Windows ARM support for AclUnity
+
+### Changed
+
+-   Changed `ThreadStackAllocator` error handling to first log errors at the
+    `maxAllocatorsPerThread` threshold, and then throw exceptions at the
+    `maxAllocatorsPerThreadError` threshold, and only log errors on allocator
+    disposal, as exceptions can hide stack traces for error errors
+-   When using QVVS Transforms,
+    `FoceInitializeUninitializedOptimizedSkeletonsSystem` now updates in
+    `ExportToHameObjectTransformsEndSimulationSuperSystem`, which is where it
+    was originally intended to update in
+
+### Fixed
+
+-   Fixed AclUnity plugin loading runtime errors on Android
+-   Fixed several socket updating issues for QVVS Transforms
+
+### Improved
+
+-   Updated the clang version used to build AclUnity on Mac OS
+
 ## [0.15.7] – 2026-6-13
 
 Officially supports Entities [1.4.6]

@@ -101,13 +101,13 @@ both in instantiation and value initialization, frequently outperforming
 `EntityCommandBuffer` for such usages. It also generates far fewer archetypes to
 reach the end result.
 
-Example:
+Example using Unity Transforms:
 
 ```csharp
 [BurstCompile]
 public void OnUpdate(ref SystemState state)
 {
-    var icb = latiosWorld.syncPoint.CreateInstantiateCommandBuffer<WorldTransform>().AsParallelWriter();
+    var icb = latiosWorld.syncPoint.CreateInstantiateCommandBuffer<LocalTransform>().AsParallelWriter();
     var dcb = latiosWorld.syncPoint.CreateDestroyCommandBuffer().AsParallelWriter();
 
     new Job { dcb = dcb, icb = icb }.ScheduleParallel();
@@ -117,8 +117,50 @@ public void OnUpdate(ref SystemState state)
 [WithChangeFilter(typeof(ShipHealth))]
 partial struct Job : IJobEntity
 {
-    public InstantiateCommandBuffer<WorldTransform>.ParallelWriter icb;
+    public InstantiateCommandBuffer<LocalTransform>.ParallelWriter icb;
     public DestroyCommandBuffer.ParallelWriter                     dcb;
+
+    public void Execute(Entity entity,
+                        [ChunkIndexInQuery] int chunkIndexInQuery,
+                        in ShipHealth health,
+                        in ShipExplosionPrefab explosionPrefab,
+                        in LocalTransform localTransform)
+    {
+        if (health.health <= 0f)
+        {
+            dcb.Add(entity, chunkIndexInQuery);
+            if (explosionPrefab.explosionPrefab != Entity.Null)
+                icb.Add(explosionPrefab.explosionPrefab, localTransform, chunkIndexInQuery);
+        }
+    }
+}
+```
+
+Beginning in version 0.14.6, there are additional
+`InstantiateCommandBufferCommandX` variants, which allow populating an
+`IInstantiateCommand` instead of an `IComponentData`. `IInstantiateCommand`
+allows for defining a custom post-process operation to be applied after
+playback. The struct itself should contain any needed per-instance parameters.
+The framework comes with some predefined commands. Here’s the same example as
+above, but using QVVS Transforms and adhering to the always-up-to-date policy by
+leveraging the `WorldTransformCommand`:
+
+```csharp
+[BurstCompile]
+public void OnUpdate(ref SystemState state)
+{
+    var icb = latiosWorld.syncPoint.CreateInstantiateCommandBuffer<WorldTransformCommand>().AsParallelWriter();
+    var dcb = latiosWorld.syncPoint.CreateDestroyCommandBuffer().AsParallelWriter();
+
+    new Job { dcb = dcb, icb = icb }.ScheduleParallel();
+}
+
+[BurstCompile]
+[WithChangeFilter(typeof(ShipHealth))]
+partial struct Job : IJobEntity
+{
+    public InstantiateCommandBufferCommand1<WorldTransformCommand>.ParallelWriter icb;
+    public DestroyCommandBuffer.ParallelWriter                                    dcb;
 
     public void Execute(Entity entity,
                         [ChunkIndexInQuery] int chunkIndexInQuery,
@@ -130,26 +172,31 @@ partial struct Job : IJobEntity
         {
             dcb.Add(entity, chunkIndexInQuery);
             if (explosionPrefab.explosionPrefab != Entity.Null)
-                icb.Add(explosionPrefab.explosionPrefab, worldTransform, chunkIndexInQuery);
+                icb.Add(explosionPrefab.explosionPrefab, new WorldTransformCommand(worldTransform.worldTransform), chunkIndexInQuery);
         }
     }
 }
 ```
 
-Beginning in version 0.14.6, there are additional
-`InstantiateCommandBufferCommandX` variants, which allow populating an
-`IInstantiateCommand` instead of an `IComponentData`. `IInstantiateCommand`
-allows for defining a custom post-process operation to be applied after
-playback. The struct itself should contain any needed per-instance parameters.
-The struct must also define a `GetFunctionPointer()` method, which is called
-once on application startup.
+You can also define your own custom commands by implementing the
+`IInstantiateCommand` interface on an unmanaged `struct`. In addition to
+containing the per-instance data required, the `struct` must also define a
+`GetFunctionPointer()` method, which is called once on application startup upon
+a `default` instance.
 
 The function pointer will be invoked once during playback of any
 `InstantiateCommandBufferCommandX` using the specific `IInstantiateCommand`
-type. The passed in Context object provides the `EntityManager`, the array of
+type. The passed in `Context` object provides the `EntityManager`, the array of
 instantiated entities, and a `ReadCommand<T>()` method for reading the
 `IInstantiateCommand` associated with a specific instantiated entity. It is safe
 to perform structural change operations within this method.
+`RequestDestroyEntity()` allows you to queue entities that should be destroyed
+at the end of playback, possibly after other `IInstantiateCommands` have been
+processed.
+
+Common use cases for custom `IInstantiateCommand` types include adding
+newly-instantiated entities to an existing entity’s `DynamicBuffer`, and setting
+material properties on the children of the newly-instantiated entity.
 
 ### AddComponentsCommandBuffer
 
