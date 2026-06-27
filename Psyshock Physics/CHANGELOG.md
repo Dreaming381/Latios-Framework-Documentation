@@ -6,6 +6,27 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic
 Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [0.15.9] – 2026-6-27
+
+Officially supports Entities [1.4.7]
+
+### Changed
+
+-   Sphere vs box distance algorithm has been reworked to no longer normalize
+    quaternions, and evaluate all queries faster
+-   All compound collider `WithinDistance()` and `AreOverlapping()` queries
+    (except with terrain) have been optimized to use the appropriate methods for
+    the subcolliders and early-out upon finding the first subcollider meeting
+    the criteria
+
+### Fixed
+
+-   Fixed compound collider mid-phase not respecting the `maxDistance` of
+    queries
+-   Fixed terrain collider queries doubly scaling the triangles during
+    `ColliderCast()` operations
+-   Fixed raycasts against triangles sometimes returning the wrong face normal
+
 ## [0.15.8] – 2026-6-20
 
 Officially supports Entities [1.4.7]

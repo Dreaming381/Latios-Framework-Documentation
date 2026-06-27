@@ -6,6 +6,15 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic
 Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [0.15.9] – 2026-6-27
+
+Officially supports Entities [1.4.7]
+
+### Fixed
+
+-   Fixed exception in `OptimizedSkeletonAspect` when writing to bones and not
+    all sockets in the skeleton are touched
+
 ## [0.15.8] – 2026-6-20
 
 Officially supports Entities [1.4.7]
@@ -16,10 +25,6 @@ Officially supports Entities [1.4.7]
 
 ### Changed
 
--   Changed `ThreadStackAllocator` error handling to first log errors at the
-    `maxAllocatorsPerThread` threshold, and then throw exceptions at the
-    `maxAllocatorsPerThreadError` threshold, and only log errors on allocator
-    disposal, as exceptions can hide stack traces for error errors
 -   When using QVVS Transforms,
     `FoceInitializeUninitializedOptimizedSkeletonsSystem` now updates in
     `ExportToHameObjectTransformsEndSimulationSuperSystem`, which is where it
