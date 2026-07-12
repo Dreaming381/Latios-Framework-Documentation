@@ -6,6 +6,20 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic
 Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [0.15.10] – 2026-7-11
+
+Officially supports Entities [1.4.7]
+
+### Changed
+
+-   Capsule vs box distance algorithm has been reworked to no longer normalize
+    quaternions, more accurately report hitpoints, and evaluate all queries
+    faster
+-   All `ColliderCast()` queries which internally relied upon
+    `DistanceBetween()` calls to check for initial state overlap now use
+    `AreOverlapping()` instead, providing current and future performance
+    improvements
+
 ## [0.15.9] – 2026-6-27
 
 Officially supports Entities [1.4.7]

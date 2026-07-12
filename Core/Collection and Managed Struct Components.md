@@ -198,9 +198,12 @@ Before the `OnUpdate()` of the system executes, the system dispatcher registers
 it with the `LatiosWorld` as the active running system. From there, the
 `LatiosWorld` forwards all `Dependency` updates to that system and also records
 a list of all `Entity`-`ICollectionComponent` pairs which have been retrieved
-and need their internal `JobHandle`s updated. After the `OnUpdate` finishes, the
-system dispatcher passes the final `Dependency` to the `LatiosWorld` which then
-commits the `Dependency` to the internal storage.
+and need their internal `JobHandle`s updated. During `OnUpdate()`, whenever a
+call to `GetCollectionComponent()` is made, the system’s `Dependency` property
+is automatically updated to include any jobs the collection component depends
+on. After the `OnUpdate` finishes, the system dispatcher passes the final
+`Dependency` to the `LatiosWorld` which then commits the `Dependency` to the
+internal storage.
 
 ### Fine-Grained Dependency Control
 

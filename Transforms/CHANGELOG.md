@@ -6,6 +6,15 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic
 Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [0.15.10] – 2026-7-11
+
+Officially supports Entities [1.4.7]
+
+### Fixed
+
+-   Fixed local transforms being corrupted when an entity is destroyed in the
+    middle of the hierarchy, and a new entity is then added to the hierarchy
+
 ## [0.15.8] – 2026-6-20
 
 Officially supports Entities [1.4.7]

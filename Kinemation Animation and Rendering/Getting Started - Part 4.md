@@ -86,6 +86,20 @@ Yes. It really is that simple! It is also worth noting that unlike exposed
 skeletons, optimized skeletons can safely write to bone index 0. Often, this
 bone contains the root motion delta, and is not reflected in rendering.
 
+## Spawning Optimized Skeletons
+
+Optimized skeletons need to be setup correctly before they can be rendered. This
+automatically happens when constructing an `OptimizedSkeletonAspect`. However,
+if you spawn a skeleton entity near the end of the frame and don’t touch it, you
+may encounter problems.
+
+The rule is that you must spawn entities prior to
+`ForceInitializeUninitializedOptimizedSkeletonsSystem`. In QVVS Transforms, this
+system updates after `LateSimulationSystemGroup`. In Unity Transforms, this
+system updates at the beginning of `TransformSystemGroup`. You can also spawn
+inside `LatiosWorldSyncGroup` or via a command buffer created from
+`LatiosWorld.syncPoint`.
+
 ## What’s Next
 
 Kinemation is new cutting-edge technology, and its potential is still being

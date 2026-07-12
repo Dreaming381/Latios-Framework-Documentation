@@ -63,32 +63,37 @@ inside `LatiosWorldSyncGroup` (actual system is
 `KinemationFrameSyncPointSuperSystem` for ordering purposes) and the other in
 `StructuralChangePresentationSystemGroup`.
 
-`RotateAnimatedBufferSystem` is also important if you use optimized skeletons,
-blend shapes, or dynamic meshes. This system updates in the
-`MotionHistoryUpdateSuperSystem` which occurs at the very end of
+`InitializeAnimatedBuffersSystem` is also important if you use optimized
+skeletons, blend shapes, or dynamic meshes. This system updates in the
+`PostSyncPointGroup` which occurs at the very end of
 `InitializationSystemGroup`. Optimized skeletons, blend shapes, and dynamic
 meshes are baked with compressed dynamic buffers to save on memory and
 instantiation costs. Because of this, the first time one of these archetypes is
-encountered by `RotateAnimatedBuffersSystem`, the system will expand the dynamic
-buffers to the appropriate runtime sizes. The potential issues and resolutions
-for this is slightly different for optimized skeletons than the other two.
+encountered by `InitializeAnimatedBuffersSystem`, the system will expand the
+dynamic buffers to the appropriate runtime sizes. The potential issues and
+resolutions for this is slightly different for optimized skeletons than the
+other two.
 
-Prior to `RotateAnimatedBufferSystem`, `BlendShapeAspect` and
+Prior to `InitializeAnimatedBuffersSystem`, `BlendShapeAspect` and
 `DynamicMeshAspect` will not function correctly, but rendering will still
 function. To make the aspects work, the `BlendShapeWeight` and
 `DynamicMeshVertex` buffers should be three times the size of the number of
 shapes and vertices respectively. You will also need to copy the sets of shapes
 and vertices twice for Previous and TwoAgo properties to function correctly.
-Using `MeshDeformDataBlob`, you can size the blend shapes buffer using
-`blendShapesData.shapes.Length`, and you can size the dynamic mesh buffer using
-`undeformedVertices.Length`.
+Using `MeshDeformDataBlob`, you can resize the blend shapes buffer using
+`blendShapesData.shapes.Length`, and you can resize the dynamic mesh buffer
+using `undeformedVertices.Length`.
 
 Optimized skeletons will not render correctly if their buffers are not
-initialized. But unlike the previous types, the issue can be resolved directly
-in the `OptimizedSkeletonAspect` API. Simply call `ForceInitialize()` and the
-aspect will be corrected and ready for use. Beginning in 0.11.2, this is invoked
-automatically if the transform systems see the optimized skeleton prior to
-`KinemationBindingReactiveSystem`.
+initialized. But unlike the previous types, the issue is automatically resolved
+when you construct an `OptimizedSkeletonAspect` instance. Additionally, the
+`ForceInitializeUninitializedOptimizedSkeletonsSystem` will also initialize
+skeletons for you. This system runs after `LateSimulationSystemGroup` when using
+QVVS Transforms, and at the beginning of `TransformSystemGroup` when using Unity
+Transforms. If you encounter issues with **Index 22 is out of range of ‘8’
+Length** or similar errors inside of `SkinningDispatchSystem`, then check that
+you are not spawning skeleton entities with
+`EndSimulationEntityCommandBufferSystem`.
 
 *If you encounter issues with initialization or struggle to apply the suggested
 fixes, feel free to discuss in the Latios Framework Discord. It is very likely
