@@ -6,7 +6,7 @@ No. I don’t want your money. And no, I don’t drink coffee.
 
 If you are an artist or someone who is dead-set on using disposable income to
 make the Latios Framework better, jump to
-[here](#_Disposable_Income_Contributions).
+[here](#non-code-contributions).
 
 Otherwise, I’m assuming you are here because you are a programmer and want to
 contribute to an open source project the way programmers do. Keep reading to get
