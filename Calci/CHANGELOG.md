@@ -6,6 +6,15 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic
 Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [0.15.11] – 2026-7-18
+
+Officially supports Entities [1.4.8]
+
+### Added
+
+-   Added `simd.select()` overload which can select between two `simdFloat3`
+    instances at the per `x`, `y`, and `z` level
+
 ## [0.15.0] – 2026-4-12
 
 Officially supports Entities [1.4.4]

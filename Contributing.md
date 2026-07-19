@@ -5,8 +5,7 @@ Oh hi! Awesome of you to stop by!
 No. I don’t want your money. And no, I don’t drink coffee.
 
 If you are an artist or someone who is dead-set on using disposable income to
-make the Latios Framework better, jump to
-[here](#non-code-contributions).
+make the Latios Framework better, jump to [here](#non-code-contributions).
 
 Otherwise, I’m assuming you are here because you are a programmer and want to
 contribute to an open source project the way programmers do. Keep reading to get
@@ -34,6 +33,11 @@ across a wide variety of areas and at various levels of difficulty.
 Also, the Latios Framework can always use more learning resources such as blogs
 and tutorials, or good sample projects showing off various ways to use the
 features and APIs.
+
+## Regarding LLM AI Use
+
+AI use in pull requests has never been an issue for any of the Latios Framework
+and associated repositories. Feel free to use it as you see fit.
 
 ## Developing Using a Public GitHub Account
 
@@ -131,19 +135,28 @@ release repo which pushes directly to the official repo on GitHub.
 If you would like a copy of any experimental version of the framework,
 especially if you wish to develop new features against it and make some of the
 existing experimental features release-viable, let me know. But don’t expect
-that unreleased experimental stuff to not obliterate your nose with awfulness.
+that unreleased experimental stuff to not obliterate your senses with awfulness.
 
 ## “I’d love to help, but the stuff you do is way over my head!”
 
-You don’t need to develop new features to help out.
+You are underestimating yourself, my patience, and the reachability of
+low-hanging fruits.
 
-Us the framework to write stuff, make stuff, and share stuff. Anything helps,
-whether it be blog of misadventures, a cute little prototype, a tutorial video,
-some test assets you’d like to see in a future sample, anything really.
+I don’t mind explaining things, or breaking down tricky problems into logical
+steps. But also, while I tend to tackle hard problems, there’s also a lot of
+trivial things not done either because I haven’t needed it in a personal project
+yet, or simply haven’t gotten around to it. If you don’t already have a
+particular feature in mind, pick an area that is of interest to you, and ask if
+there is any work to be done in that area.
+
+But you also don’t need to develop new features to help out. Use the framework
+to write stuff, make stuff, and share stuff. Anything helps, whether it be blog
+of misadventures, a cute little prototype, a tutorial video, some test assets
+you’d like to see in a future sample, anything really.
 
 You can also collaborate by building the test project for a new feature, and
-letting me build the feature inside the project. This speeds up development more
-than you think, and it is a good way to prioritize the feature you want sooner.
+letting me build the feature inside that project. This speeds up development
+more than you think, and it is a good way to get the feature you want sooner.
 
 ## Non-Code Contributions
 

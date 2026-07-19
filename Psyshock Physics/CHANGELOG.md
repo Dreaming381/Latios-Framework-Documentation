@@ -6,6 +6,22 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic
 Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [0.15.11] – 2026-7-18
+
+Officially supports Entities [1.4.8]
+
+### Changed
+
+-   Box vs box distance algorithm has been reworked to no longer normalize
+    quaternions, more accurately report hitpoints, and evaluate
+    `AreOverlapping()` faster
+
+### Fixed
+
+-   Fixed queries against the edge of a terrain sometimes causing an
+    `IndexOutOfRange` exception
+-   Fixed `ColliderDistanceResultInternal` being exposed as a `public` type
+
 ## [0.15.10] – 2026-7-11
 
 Officially supports Entities [1.4.7]
