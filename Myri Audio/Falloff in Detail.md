@@ -74,6 +74,8 @@ particle velocity.
 
 ## Falloff in Practice
 
+![Sound pressure versus distance: clamped inside the Inner Range, 1 over distance beyond it, tapering to zero at the Outer Range](media/falloff-curve.svg)
+
 Sound pressure decreases by half every time you double distance. But that also
 means sound pressure doubles whenever the distance is halved. If the listener
 gets very close to a sound source, sound pressure could rocket up to infinity.
