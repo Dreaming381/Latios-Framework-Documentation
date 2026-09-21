@@ -158,3 +158,13 @@ Some additional rules exist regardless of the settings:
 -   Disabled and Prefab entities with the `BlackboardEntityData` component will
     be ignored, allowing you to enable or instantiate these entities at runtime
     to alter the blackboard entities
+
+## One More Trick
+
+You can do the following:
+
+```csharp
+var systemEntity = new BlackboardEntity(state.SystemHandle, api.latiosWorld);
+```
+
+Doing this expands the ways you can use a system’s entity.

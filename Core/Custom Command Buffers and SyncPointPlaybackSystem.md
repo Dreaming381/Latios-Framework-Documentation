@@ -136,14 +136,13 @@ partial struct Job : IJobEntity
 }
 ```
 
-Beginning in version 0.14.6, there are additional
-`InstantiateCommandBufferCommandX` variants, which allow populating an
-`IInstantiateCommand` instead of an `IComponentData`. `IInstantiateCommand`
-allows for defining a custom post-process operation to be applied after
-playback. The struct itself should contain any needed per-instance parameters.
-The framework comes with some predefined commands. Here’s the same example as
-above, but using QVVS Transforms and adhering to the always-up-to-date policy by
-leveraging the `WorldTransformCommand`:
+There are also `InstantiateCommandBufferCommandX` variants, which allow
+populating an `IInstantiateCommand` instead of an `IComponentData`.
+`IInstantiateCommand` allows for defining a custom post-process operation to be
+applied after playback. The struct itself should contain any needed per-instance
+parameters. The framework comes with some predefined commands. Here’s the same
+example as above, but using QVVS Transforms and adhering to the
+always-up-to-date policy by leveraging the `WorldTransformCommand`:
 
 ```csharp
 [BurstCompile]
@@ -198,6 +197,9 @@ Common use cases for custom `IInstantiateCommand` types include adding
 newly-instantiated entities to an existing entity’s `DynamicBuffer`, and setting
 material properties on the children of the newly-instantiated entity.
 
+If commands require dynamic memory arrays, you can use `CreateCommandSpan<T>()`
+to allocate one. The allocated memory is owned by the command buffer.
+
 ### AddComponentsCommandBuffer
 
 `AddComponentsCommandBuffer` is similar to `InstantiateCommandBuffer`, except
@@ -224,9 +226,16 @@ safety-checks compliant `[NativeContainer] `which powers
 `InstantiateCommandBuffer`.
 
 You can add entities to it in a single or parallel job, but in a single-threaded
-job, you can also have those entities read back to you in sorted order. You can
-sort exclusively by `sortKey` or have identical entities grouped together. There
-is also API for fetching `LinkedEntityGroup` entities.
+job, you can also have those entities read back to you in sorted order. There is
+also API for fetching `LinkedEntityGroup` entities.
+
+### CustomCommandBuffer
+
+If you like the power of `IInstantiateCommand`, but need to do something other
+than instantiate entities, then `CustomCommandBuffer` and `ICustomCommand` are
+your solution. Commands are recorded, and at playback, each command type gets a
+callback to operate on all instances in a deterministic order. It is great if
+you need to perform complex structural change operations.
 
 ### For Those with Concerns
 
@@ -253,6 +262,7 @@ the following command buffers:
 -   DestroyCommandBuffer
 -   InstantiateCommandBuffer & CommandX variants
 -   AddComponentsCommandBuffer
+-   CustomCommandBuffer
 
 It will play back these buffers in the order they are requested from systems.
 The system is an unmanaged system invoked from a managed
@@ -289,6 +299,13 @@ aware of your system order if there is concern for a command buffer to play back
 too early. Note that `SyncPointPlaybackSystem` is a Burst-compiled `ISystem`
 that is dispatched from a managed `SyncPointPlaybackSystemDispatch`. The latter
 is what you want to add to other `ComponentSystemGroups`.
+
+## Ticked Sync Points
+
+In addition to `syncPoint`, there’s also a `tickedSyncPoint`, which is backed by
+a `TickedSyncPointPlaybackSystem`. This one is invoked inside the ticking loop,
+which may update multiple times per frame. Ticking must be installed via the
+bootstrap, otherwise attempting to use it will trigger a safety check error.
 
 ## PreSyncPointGroup
 

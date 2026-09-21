@@ -21,23 +21,23 @@ only disposed when `Build()` is called.
 
 The primary methods for application code are provided as follows:
 
--   WithEnabled\<T\>(bool readOnly) – Adds a component to the “All” list of the
-    EntityQuery
--   WithDisabled\<T\>(bool readOnly) – Adds a component to the “Disabled” list
-    of the EntityQuery
--   With\<T\>(bool readOnly, bool isChunkComponent) – Adds a component to the
+-   `WithEnabled<T>(bool readOnly)` – Adds a component to the “All” list of the
+    `EntityQuery`
+-   `WithDisabled<T>(bool readOnly)` – Adds a component to the “Disabled” list
+    of the `EntityQuery`
+-   `With<T>(bool readOnly, bool isChunkComponent)` – Adds a component to the
     “Present” list of the `EntityQuery`
     -   If any component is repeated via `WithEnabled<>()` or
         `WithDisabled<>()`, this command is effectively ignored for the
         component and the component in the other list may be altered to write
         access if required
--   Without\<T\>(bool isChunkComponent) – Adds a component to the “Absent” list
-    of the EntityQuery
--   WithoutEnabled\<T\>() – Adds a component to the “None” list of the
-    EntityQuery
+-   `Without<T>(bool isChunkComponent)` – Adds a component to the “Absent” list
+    of the `EntityQuery`
+-   `WithoutEnabled<T>()` – Adds a component to the “None” list of the
+    `EntityQuery`
     -   If any component is repeated via `Without<>()` or `WithDisabled<>()`,
         this command is effectively ignored for the component
--   WithAnyEnabled\<T\>(bool readOnly, bool isChunkComponent) – Adds a component
+-   `WithAnyEnabled<T>(bool readOnly, bool isChunkComponent)` – Adds a component
     to the “Any” list of the `EntityQuery`
     -   If any non-enableable component is repeated via `With<>()` or any
         enableable component is repeated via `WithEnabled<>()`, all
@@ -50,27 +50,25 @@ The primary methods for application code are provided as follows:
         command is effectively ignored for the component
     -   If the component is both an enableable component and a chunk component,
         its enableable state will be ignored
--   WithCollectionAspect\<T\>() – Adds the required components for the
+-   `WithCollectionAspect<T>()` – Adds the required components for the
     collection aspect
--   WithAspect\<T\>() – Adds the required components for the `IAspect`
-    -   Any enableable component is added via `WithEnabled<>()` while all other
-        components are added via `With<>()`
--   IncludeDisabledEntities() – Sets the `EntityQuery` to include entities with
-    the `Disabled` component
--   IncludePrefabs() – Sets the `EntityQuery` to include entities with the
+-   `IncludeDisabledEntities()` – Sets the `EntityQuery` to include entities
+    with the `Disabled` component
+-   `IncludePrefabs()` – Sets the `EntityQuery` to include entities with the
     `Prefab` component
--   IncludeSystemEntities() – Sets the `EntityQuery` to include entities
+-   `IncludeSystemEntities()` – Sets the `EntityQuery` to include entities
     associated with systems and embedded into the `SystemHandle`
--   IncludeMetaEntities() – Sets the `EntityQuery` to include meta chunks with
+-   `IncludeMetaEntities()` – Sets the `EntityQuery` to include meta chunks with
     the `ChunkHeader` component
--   UseWriteGroups() – Sets the `EntityQuery` to use write group filtering
--   IgnoreEnableableBits() – Sets the `EntityQuery` to ignore the implications
-    of Enableable component enabled states when iterating, as if the value of
+-   `UseWriteGroups()` – Sets the `EntityQuery` to use write group filtering
+-   `IgnoreEnableableBits()` – Sets the `EntityQuery` to ignore the implications
+    of `IEnableableComponent` enabled states when iterating, as if the value of
     the states were always set to whatever would make the entity match the
     query’s desires
--   WithDelegate() – Allows specifying a delegate to manipulate the Fluent Query
-    while preserving the fluent-style code flow
--   Build() – Finishes specifying components and creates a real `EntityQuery`
+-   `WithDelegate()` – Allows specifying a delegate to manipulate the Fluent
+    Query while preserving the fluent-style code flow
+-   `FromJob<T>()` – Applies all requirements an `IJobEach` specifies
+-   `Build()` – Finishes specifying components and creates a real `EntityQuery`
 
 ## Extending FluentQuery
 
@@ -91,7 +89,7 @@ Example:
 ```csharp
 public static FluentQuery WithExposedBone(this FluentQuery fluent, bool readOnly)
 {
-    return fluent.WithAspect<TransformAspect>().With<BoneIndex>(readOnly).With<BoneOwningSkeletonReference>(readOnly);
+    return fluent.With<WorldTransform, BoneIndex, BoneOwningSkeletonReference>(readOnly);
 }
 ```
 
@@ -137,7 +135,7 @@ are a bit different, and some APIs don’t have equivalents yet.
 | WithPresentChunkComponent                | With(true, true)            |
 | WithPresentChunkComponentRW              | With(false, true)           |
 | WithPresent(listOfTypes)                 | X                           |
-| WithAspect                               | WithAspect                  |
+| X                                        | WithAspect (deprecated)     |
 | X                                        | WithCollectionAspect        |
 | X                                        | WithDelegate                |
 | WithOptions(IncludePrefab)               | IncludePrefab               |
@@ -146,4 +144,4 @@ are a bit different, and some APIs don’t have equivalents yet.
 | WithOptions(IgnoreComponentEnabledState) | IgnoreEnableableBits        |
 | WithOptions(IncludeSystems)              | IncludeSystemEntities       |
 | WithOptions(IncludeMetaChunks)           | IncludeMetaEntities         |
-| AddAdditionalQuery                       | X                           |
+| FromJob()                                | X                           |

@@ -26,6 +26,9 @@ a unique integer (`chunkIndex`, `entityInQueryIndex`, ect). The returned
 sequence object can be used just like `Random` for the remainder of the job. You
 don’t even need to assign the state back to anything.
 
+Or you can just throw `RngEach` inside an `IJobEach`’s `Execute()` method and
+not worry about any of the setup.
+
 `Rng` is based on the Noise-Based RNG presented in [this GDC
 Talk](https://www.youtube.com/watch?v=LWFzPP8ZbdU) but updated to a more
 recently shared version:

@@ -100,10 +100,10 @@ cleaned up when the `LatiosWorld` is disposed.
 ## Getting and Setting Components
 
 As collection components and managed struct components are not real components,
-they must be fetched indirectly by their Entity. To query for these components,
-query for the nested `ExistComponent` of the specific component type you are
-looking for. This is a zero-sized component, and it is safe to query it as
-read-only, even if you intend to write to the collection component or managed
+they must be fetched indirectly by their `Entity`. To query for these
+components, query for the nested `ExistComponent` of the specific component type
+you are looking for. This is a zero-sized component, and it is safe to query it
+as read-only, even if you intend to write to the collection component or managed
 struct component.
 
 Collection components and managed struct components can be fetched or set
@@ -115,30 +115,30 @@ less performant.
 The following are API methods exposed for manipulating these components:
 
 -   Managed Components
-    -   AddManagedStructComponent\<T\> - Adds the managed struct component to
+    -   `AddManagedStructComponent<T>` - Adds the managed struct component to
         the entity
-    -   RemoveManagedStructComponent\<T\> - Removes the managed struct component
+    -   `RemoveManagedStructComponent<T>` - Removes the managed struct component
         from the entity
-    -   GetManagedStructComponent\<T\> - Gets a copy of the managed struct
+    -   `GetManagedStructComponent<T>` - Gets a copy of the managed struct
         component from the entity, copying references to managed types rather
         than their underlying objects
-    -   SetManagedStructComponent\<T\> - Replaces the stored managed struct
+    -   `SetManagedStructComponent<T>` - Replaces the stored managed struct
         component with a copy of the passed in struct, copying references to
         managed types
-    -   HasManagedStructComponent\<T\> - Checks if a stored managed struct
+    -   `HasManagedStructComponent<T>` - Checks if a stored managed struct
         component exists on the entity and is not pending removal
 -   Collection Components
-    -   AddOrSetCollectionComponentAndDisposeOld\<T\> - Adds the collection
+    -   `AddOrSetCollectionComponentAndDisposeOld<T>` - Adds the collection
         component to the entity, or replaces an existing one if one is already
         added and disposes the previous instance
-    -   RemoveCollectionComponentAndDispose\<T\> - Removes the collection
+    -   `RemoveCollectionComponentAndDispose<T>` - Removes the collection
         component and disposes it
-    -   GetCollectionComponent\<T\> - Gets the collection component from the
+    -   `GetCollectionComponent<T>` - Gets the collection component from the
         entity and marks it as read-only if `readOnly` is manually set to `true`
-    -   SetCollectionComponentAndDisposeOld\<T\> - Replaces the stored
+    -   `SetCollectionComponentAndDisposeOld<T>` - Replaces the stored
         collection component from the entity with the passed in collection
         component and disposes the replaced instance
-    -   HasCollectionComponent\<T\> - Checks if a stored collection component
+    -   `HasCollectionComponent<T>` - Checks if a stored collection component
         exists on the entity and is not pending removal
 
 ## Using ExistComponent in Systems
@@ -165,8 +165,8 @@ You can retrieve a collection aspect from an entity via
 ## Collection Component Dependency Management
 
 Collection components have an intrinsic understanding of the `Dependency`
-property of systems, similar to `IJobEntity` jobs. This means that **by
-default**, dependency management is **automatic**!
+property of systems, similar to `IJobEntity` and `IJobEach` jobs. This means
+that **by default**, dependency management is **automatic**!
 
 ### ReadOnly and ReadWrite per Instance
 
@@ -237,3 +237,10 @@ special handling unless you schedule jobs in** `OnCreate()`**. However, systems
 created several frames later will require**
 `UpdateCollectionComponentMainThreadAccess()` **calls inside or after**
 `OnCreate()`**.**
+
+## Managed Struct Lifecycle
+
+`IManagedStructComponent` implements `IDisposable` and has a default
+implementation. The `Dispose()` method is only called when the entity or the
+`LatiosWorld` is being destroyed, or when the component is being removed. It can
+be called on default instance. It is not called when replacing the value.

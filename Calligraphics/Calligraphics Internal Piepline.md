@@ -128,7 +128,7 @@ Our `Shape()` method picks out the HarfBuzz font object, configures it with our
 settings, and then calls into HarfBuzz’s shaping function. After that, we fetch
 the arrays of `GlyphInfo` and `GlyphPosition` from HarfBuzz. We iterate those
 arrays to generate a `GlyphOTF` structure, composed of a `GlyphTable.Key`, the
-cluster, and the glyph offset info. We write that struct to a `NativeStream`.
+cluster, and the glyph offset info.
 
 We also check if the `GlyphTable.Key` is present in the `GlyphTable`. If not, we
 then try to add it to a per-thread hashset. If we succeed, then we write the
@@ -137,10 +137,13 @@ repeat a lot, so the per-thread hashset deduplicates new glyphs a bit, which
 helps reduce the work of the next single-threaded job.
 
 It is worth noting at this point that HarfBuzz has laid out all the text on a
-single, potentially very long line. This would normally be the point where we
-would handle line breaking, RTL, BiDi, glyph \<-\> char mapping for animation
-logic, and all those things. But due to how Calligraphics evolved over time, we
-do line breaking later on. This is certainly an area that can be improved!
+single, potentially very long line. After it has done so, we patch all the
+GlyphOTF structures using a word-wrapping algorithm which also applies
+horizontal and vertical alignment rules. Consequently, glyph advances are stored
+in the entity’s local space rather than a font space. Note that in this
+architecture, we don’t handle character breaks that require reshaping, nor
+handle RTL, BiDI, or glyph \<-\> character mappings. Those are all next steps
+for improvement!
 
 `AllocateNewGlyphsJob()` is a short single-threaded job where we aggregate all
 the new glyphs from all the worker threads, deduplicate them, allocate
@@ -161,9 +164,7 @@ be mutex-protected.
 
 With the `GlyphTable` populated, we can now run the `GenerateGlyphsJob` and
 construct the `RenderGlyph`s using everything we’ve generated so far. In this
-job, we calculate the vertices, vertex colors, and other pieces of metadata. It
-is also here that we perform line-breaking and line layouting, which is not
-ideal.
+job, we calculate the vertices, vertex colors, and other pieces of metadata.
 
 After that, we have all our glyphs generated. The next step is to dispatch them
 to the GPU.
@@ -294,9 +295,9 @@ drastically reduces the number of distance evaluations. On top of that, the
 distance evaluations make use of Burst’s LLVM autovectorizer, so this is a very
 competitive SDF rasterizer!
 
-For the other Write job, the DispatchGlyphsSystem writes out the `RenderGlyphs`
-to a GPU upload buffer. During this process, it patches the texture coordinates
-with the atlas coordinates.
+For the other Write job, the `DispatchGlyphsSystem` writes out the
+`RenderGlyphs` to a GPU upload buffer. During this process, it patches the
+texture coordinates with the atlas coordinates.
 
 Finally, in the Dispatch stage, the `RenderGlyphs` are copied to a persistent
 `ByteAddressBuffer` via compute shader, converting a `uint` atlas slice index

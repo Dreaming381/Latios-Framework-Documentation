@@ -5,7 +5,8 @@ implementing interfaces in a Burst-compatible way. This is useful for
 power-users who want to store interface-implementing structs in raw memory (such
 as a `NativeStream`) and invoke the interface methods later, or for passing to
 utilities without the need of making the full code path rely on
-interface-constrained generics.
+interface-constrained generics. `VPtr` instances can also be stored in blob
+assets.
 
 ## Defining an Interface
 
@@ -45,8 +46,20 @@ two of which are public. `GetVPtrFunctionFrom<T>()` allows getting the
 
 Each struct that implements an interface derived from `IVInterface` also
 requires source-generated code. This means, the struct must be defined as
-partial, and must additionally declare that it implements `IVInterface`
+`partial`, and must additionally declare that it implements `IVInterface`
 alongside the deriving interface.
+
+## VPtr in Blob Assets
+
+A `VPtr` can be stored in a blob asset and serialized. To do so, make a
+`BlobVPtr<TVPtr, TInterface>` field, where `TInterface` is your `IVInterface`,
+and `TVPtr` is the generated `TInterface.VPtr` type. You may want to split your
+`IVInterface` into a separate assembly from your blob asset definition so that
+the `TInterface.VPtr` is generated first.
+
+Use one of the `BlobBuilder` extension methods `AllocateVPtr()`,
+`ConstructVPtr()`, or `SetVPtr()` to initialize the `BlobVPtr` with the concrete
+type.
 
 ## Other Notes
 

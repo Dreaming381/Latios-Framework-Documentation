@@ -6,6 +6,93 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic
 Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [0.16.0] – 2026-9-20
+
+Officially supports Entities [1.4.8]
+
+### Added
+
+-   *New Feature:* Added Ticking, a framework for fixed-rate updates with tick
+    reversion and interpolation
+-   *New Feature:* Added `BlockStreamAllocator` as a low-level allocation
+    primitive for temporary stream allocations
+-   *New Feature:* Added `ThreadCache<T>` for stashing in-job-created native
+    containers in a job struct without the safety system seeing them
+-   *New Feature:* Added `CustomCommandBuffer`, which is a command buffer
+    exclusively designed for custom sync-point commands
+-   *New Feature:* Added `ILatiosApi` for streamlined source-generated caching
+    of handles, lookups, queries, and the `LatiosWorldUnmanaged` within an
+    `ISystem`
+-   *New Feature:* Added `IInjectable` for automatically injecting handles and
+    lookups into a struct from an `ILatiosApi`
+-   *New Feature:* Added `IJobEach` as an extensible framework-friendly
+    alternative to `IJobEntity` built on `ILatiosApi`
+-   *New Feature:* Added `BlobVPtr<TVPtr, TInterface>` for storing a `VPtr` in a
+    blob asset, and `BlobBuilder` extension methods `AllocateVPtr`,
+    `ConstructVPtr`, and `SetVPtr` for creating it
+-   *New Feature:* Added `ChunkEntityBatchEnumerator` which provides ranges of
+    indices at a time, giving better performance
+-   Added `CreateCommandSpan<>()` methods to
+    `InstantiateCommandBufferCommand1/2` types, which allows allocating spans to
+    be stored inside commands that need variable-length data
+-   Added `BlackboardEntity` methods `HasBuffer<T>()` and
+    `HasSharedComponent<T>()`
+-   Added `FluentQuery` method overloads `With()` and `Without()` which accept a
+    `TypeIndex` instead of a generic parameter
+-   Added `unityWorldUnmanaged` property to `LatiosWorldUnmanaged` for
+    convenient access
+-   Added `EnableableRefRW<T>` and `EnableableRefRO<T>` which combine
+    `EnabledRefRW/O<T>` and `RefRW/O<T>` as a single `IJobEach` parameter
+-   Added `Has<T>` as an `IJobEach` parameter for testing if the entity’s
+    archetype has the specified type
+-   Added `ColorTools` `static class` with methods `SrgbToLinear` and
+    `SrgbToLinearFast` for converting float values across color spaces
+-   Added `Exposed` `EntityManager` extension `GetComponentDataRO<T>`
+-   Added `Exposed` `WorldUnmanaged` extension
+    `GetUnsafeSystemRefFromSystemState<T>`
+
+### Changed
+
+-   **Breaking:**
+    `BootstrapTools.AddWorldToCurrentPlayerLoopWithDelayedSimulation()` now
+    requires a `LatiosWorld` parameter instead of a `World` parameter
+-   Changed the `ISystem` template script to now use `ILatiosApi`
+
+### Fixed
+
+-   Fixed `LiveBakedTag` not being added to live entities
+-   Fixed several command buffers using the wrong `StaticSafetyID`
+-   Fixed a lifecycle issue with `ICollectionComponent` and
+    `IManagedStructComponent` where an entity with the `Exists` component from
+    baking could erase a runtime value that was initialized with a `Set*()` API
+-   Fixed removal of `IManagedStructComponent` components from an entity
+    removing the wrong indices
+
+### Improved
+
+-   Added UNITY_DOTS_DEBUG support to safety checks
+-   ENTITY_STORE_V1 is no longer required
+-   Fixed `ComponentBroker` fast path for `Has<T>()` never being taken
+-   Fixed `ComponentBroker` XML docs and error messages
+-   Fixed `AddComponentsCommandBuffer` playback sorting writes for cache
+    alignment using a transposed key, resulting in excessive random-access
+    writes
+-   Improved reflection type searching for constructing the `VPtr` table by
+    searching for the matching `Assembly` rather than a string name filter
+-   Added C\# Roslyn Analyzers for detecting common source generator mistakes
+    and offering fixes
+-   Fixed `AutoDestroyExpirablesSystem` fast path for fully-alive chunks never
+    being taken
+-   Fixed `ICollectionComponent` and `IManagedStructComponent` instances never
+    being cleaned up on a destroyed entity until the world shut down
+
+### Removed
+
+-   Deprecated `EntityOperationCommandBuffer.GetEntitiesSortedByEntity()` and
+    removed it entirely when ENTITY_STORE_V1 is not defined
+-   Removed default value for `sortKey` parameter on the `ParallelWriter`s of
+    `InstantiateCommandBufferCommand1/2` which were there by accident
+
 ## [0.15.11] – 2026-7-18
 
 Officially supports Entities [1.4.8]
@@ -105,7 +192,7 @@ Officially supports Entities [1.4.4]
 
 -   *New Feature:* Added `LiveBakedTag` for detecting entities which may be
     altered by live baking
--   *New Feature:* Added `LatiosWorldUnmanaged.liveBakedThisFram`e,
+-   *New Feature:* Added `LatiosWorldUnmanaged.liveBakedThisFrame`,
     `BeforeLiveBakingSuperSystem`, and `AfterLiveBakingSuperSystem` for
     performing custom logic whenever live baking occurs
 -   *New Feature:* Added `[DontSyncPreviousUpdatesThisFrame]` attribute, which

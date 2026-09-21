@@ -45,12 +45,6 @@ easier to set up.
 In addition, LifeFX provides VFX Subgraphs as samples for working with tracked
 transforms as QVVS Transforms.
 
-## Known Issues
-
--   Some of the VFX Subgraphs included do not work due to bugs in Unity’s VFX
-    Graph parser. Please help report bugs to Unity when you encounter them. And
-    if you find workarounds, please share them with the community.
-
 ## Potential Future Roadmap Items
 
 -   High Fidelity Mesh Cloth

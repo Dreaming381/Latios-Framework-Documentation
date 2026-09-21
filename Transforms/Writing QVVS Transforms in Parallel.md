@@ -9,7 +9,62 @@ This is actually quite a big challenge, and most engines and ECS solutions opt
 to avoid it altogether. QVVS Transforms aims to solve it head on with clever API
 design that prevents race conditions from happening.
 
-## Iterating Roots
+## The Easy Way with IJobEach
+
+Latios Framework 0.16.0 introduced `IJobEach` as an alternative to `IJobEntity`.
+And as a bonus, `IJobEach` contains the necessary infrastructure to support QVVS
+Transforms needs natively.
+
+`TransformAspect`, `TransformDeferableAspect`, and `TransformReadAspect` are all
+`IJobEach.IParameter` types. This means you can simply put them as `Execute()`
+parameters inside `IJobEach` and not have to think about scheduling correctness.
+
+### Iterating Roots and Solo Entities
+
+If you know you only want to query entities that are hierarchy roots, or don’t
+belong to a hierarchy, and you want to write to their transforms, add the
+`[RootOnly]` attribute to the `TransformAspect` or `TransformDeferableAspect`
+parameter. This attribute does two things. It alters the `IJobEach` query to
+exclude child entities. And it skips a preprocessing step used to ensure safety
+between multiple entities in the same hierarchy.
+
+### Use TransformDeferableAspect Where It Makes Sense
+
+When you modify a property of `TransformAspect`, it applies the change to itself
+and all children entities immediately. If the parent moves, that means all the
+children move with it. Consequently, order matters. If you set a parent’s world
+transform first, and then set a child’s, the child will be positioned where you
+set it. But if you set the child first, and then its parent, the child will end
+up offset from where it was set, due to the parent’s update moving it more. This
+is a problem when you don’t know which order transforms are being set, because
+the parent and child might just be two entities that both match an
+`EntityQuery`.
+
+This is where `TransformDeferableAspect` comes into play. If an entity belongs
+to the hierarchy, instead of applying it immediately, it records the command.
+After several chunks of the `IJobEach` have been executed, it plays all the
+commands at once reordered from root to leaf of each hierarchy. This ordering
+ensures any explicit transform property assignment is preserved. It is also
+faster to write transforms to multiple entities in the hierarchy this way,
+because all propagations to descendants are performed in a single walk through
+the hierarchy, rather than a walk per write operation.
+
+### Accessing the Full Hierarchy
+
+The three aspect types allow you to access the `entityInHierarchyHandle`. You
+should check the property is not `isNull` before using it. Once you have it, you
+can navigate the whole hierarchy and identify any interesting entities by
+obtaining their handles. You can then pass that handle to the aspect either via
+the indexer or the `TryGetAspect()` method to get the other entity’s transform.
+This means that when you obtain one of these aspects, you can modify parent and
+children transforms too, safely in parallel.
+
+But why stop at transforms? Why not modify any component in the hierarchy? To do
+that, add a `TransformsComponentLookup<T>` or `TransformsBufferLookup<T>` to
+your job. It requires a `TransformsKey`, which you can get from any
+`TransformAspect` or `TransformDeferableAspect` belonging to the hierarchy.
+
+## Iterating Roots Manually
 
 In order to write transforms in parallel, we have to guarantee that two threads
 don’t have access to two entities from the same hierarchy at the same time.
@@ -85,7 +140,7 @@ partial struct EntityRootTransformsJob : IJobEntity, IJobEntityChunkBeginEnd
 This API is optimized for speed, and has nearly no overhead compared to directly
 iterating `WorldTransform` on solo entities.
 
-## Iterating Arbitrary Entities
+## Iterating Arbitrary Entities Manually
 
 A second way to guarantee that two threads don’t access two entities from the
 same hierarchy is to group chunks together which share entities from the same
@@ -432,7 +487,10 @@ partial struct BatchTransformSystem : ISystem
 
 This code is an example of one way to perform grouping. It is not the only way,
 nor even the most optimal way. Most likely, you will want to account for other
-data involved in your calculations, which may affect the optimal strategy.
+data involved in your calculations, which may affect the optimal strategy. Note
+that beginning in 0.16.0, `ApplyTransforms()` will automatically group by
+hierarchy and do the sorting for you. Feel free to lean on that if you don’t
+have a more efficient strategy.
 
 ## Working with the Full Hierarchies
 
@@ -455,12 +513,8 @@ This is possible with `TransformsComponentLookup` and `TransformsBufferLookup`.
 These are types that can be implicitly casted from `ComponentLookup` and
 `BufferLookup` respectively. They enable parallel access, but require you index
 them with an `EntityInHierarchyHandle` (or `Entity`, but only if the entity is a
-solo entity) and a `TransformsKey`. When using `TransformAspectRootHandle`, you
-can get a `TransformsKey` that is valid for all hierarchies in the chunk simply
-by accessing the `transformsKey` property after calling `SetupChunk()`. As for
-`TransformAspectParallelChunkHandle`, you need to call `GetTransformsKey()` and
-pass in the index of the entity within the currently active chunk. This key is
-only valid for the hierarchy that entity belongs to.
+solo entity) and a `TransformsKey`. You can obtain the `transformsKey` from
+`TransformAspect`.
 
 With this, you now have the ability to iterate entire hierarchies in parallel,
 and write to any component of any entity in a hierarchy safely. Reasoning about

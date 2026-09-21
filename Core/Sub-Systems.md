@@ -20,8 +20,6 @@ member property `Fluent`. You will likely want to use this inside of
 
 The two [blackboard entities](Blackboard%20Entities.md) can be accessed through
 the member properties `sceneBlackboardEntity` and `worldBlackboardEntity`.
-However, you must assign them to local `Entity` variables before using them in a
-Bursted lambda job.
 
 ## Collection Component Dependency Management
 
@@ -30,8 +28,8 @@ component](Collection%20and%20Managed%20Struct%20Components.md), rather than
 complete the `JobHandle`s associated with that component, the `JobHandle`s will
 be combined with `Dependency`. Additionally, by default `Dependency` will
 automatically be used to update the `JobHandle`s of the collection component
-after the `SubSystem` finishes `OnUpdate()`. When combined with lambda jobs, you
-may never have to explicitly touch `Dependency` nor any other `JobHandle`.
+after the `SubSystem` finishes `OnUpdate()`. When combined with `IJobEntity`,
+you may never have to explicitly touch `Dependency` nor any other `JobHandle`.
 
 ## LatiosWorld Sync Point Dependency Management
 
@@ -56,8 +54,7 @@ merged.
 
 `ShouldUpdateSystem()` can be overridden if a [custom
 criteria](Super%20Systems.md) should dictate whether the `SubSystem` should
-execute `OnUpdate()`. This does not disable Unity’s `EntityQuery` checks. To
-disable those, add `[AlwaysUpdateSystem]` to the `SubSystem`.
+execute `OnUpdate()`. This does not disable Unity’s `EntityQuery` checks.
 
 *Caution: Dependency and version numbers have not been updated yet when this
 method is invoked. Only EntityManager, EntityQuery, and BlackboardEntity

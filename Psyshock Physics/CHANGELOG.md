@@ -6,6 +6,31 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic
 Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [0.16.0] – 2026-9-20
+
+Officially supports Entities [1.4.8]
+
+### Added
+
+-   Added `BuildTickedCollisionLayerTypeHandles`,
+    `BuildTickedCollisionWorldTypeHandles`, and associated `Physics` method
+    overloads for `BuildCollisionLayer()` and `BuildCollisionWorld()` which use
+    `TickedWorldTransform` instead of `WorldTransform`
+-   Added Fluent extension methods `PatchQueryForBuildingTickedCollisionLayer()`
+    and `PatchQueryForBuildingTickedCollisionWorld()` which query
+    `TickedWorldTransform`
+
+### Improved
+
+-   Added UNITY_DOTS_DEBUG support to safety checks
+-   Improved initialization Burst registration performance by using a cheaper
+    assembly check
+-   `BuildCollisionLayerTypeHandles` and `BuildCollisionWorldTypeHandles` now
+    implement `ILatiosApiGettable`, so that they can be retrieved easily and
+    don’t require manual caching
+-   `PhysicsComponentLookup<T>` and `PhysicsBufferLookup<T>` now implement
+    `ILatiosApiGettable`
+
 ## [0.15.12] – 2026-7-25
 
 Officially supports Entities [1.4.8]

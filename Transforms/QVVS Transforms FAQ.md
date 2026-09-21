@@ -72,7 +72,8 @@ unaffected by Burst’s float mode.
 
 QVVS Transforms makes it easy for parallel jobs to operate on hierarchies, as it
 has special schedulers for ensuring each thread has exclusive access to all
-entities in a given hierarchy.
+entities in a given hierarchy. That scheduling is integrated into Core’s
+`IJobEach`.
 
 Unified Transforms works with GameObjects, while QVVS Transforms requires
 explicitly synchronizing with GameObjects. However, the Latios Framework allows
@@ -121,5 +122,11 @@ determine whether to use Latios.Transforms or Unity Transforms.
 You should prefer to use the `TransformAspect` type, as writing to
 `WorldTransform` directly for an entity with a parent will cause your hierarchy
 to get corrupted. `TransformAspect` retains its name from when it used to be a
-Unity `IAspect`, but it is no longer such a thing. It is the main workhorse for
-ensuring hierarchy propagation is handled correctly.
+Unity `IAspect`, but is now an `IJobEach.IParameter` that can also be used in
+other contexts. It is the main workhorse for ensuring hierarchy propagation is
+handled correctly.
+
+For parallel writing contexts when you want all writes to be committed
+hierarchically top-to-bottom, you can use `TransformDeferableAspect`. It is also
+more performant if you write to multiple entities belonging to the same
+hierarchy in a job.

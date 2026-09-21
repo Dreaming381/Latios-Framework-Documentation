@@ -209,7 +209,7 @@ do have the local-space inertial pose, you can use
 
 That was a lot of information, but we can summarize the entire API for a
 simulation step with forces and motion updates in a single `IComponentData` and
-`IJobEntity`. Here it is:
+`IJobEach`. Here it is:
 
 ```csharp
 struct RigidBodyData : IComponentData
@@ -232,7 +232,7 @@ struct RigidBodyData : IComponentData
     }
 }
 
-partial struct SimJob : IJobEntity
+partial struct SimJob : IJobEach
 {
     public float deltaTime;
 

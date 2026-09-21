@@ -205,8 +205,6 @@ dumb things sometimes. Adreno GPUs have been susceptible to this.
     Bone and a SkinnedMesh Renderer named identically, Kinemation may fail to
     bake the skeleton correctly due to a Unity bug/limitation in
     `AnimatorUtility`. Newer Unity versions will warn you about this.
--   Older versions of Unity may delay updates of large Unique Mesh meshes to the
-    GPU. This issue has disappeared in Unity 6000.2.8f1 and newer it seems.
 -   Decal rendering does not enforce any draw order between entities that can be
     combined into a single draw call when structural changes occur, meaning you
     might encounter z-order flipping behavior if you spawn decals projected onto
@@ -214,6 +212,7 @@ dumb things sometimes. Adreno GPUs have been susceptible to this.
 
 ## Potential Future Roadmap Items
 
+-   CPU Occlusion Culling Hook
 -   Sync-less `LatiosEntitiesGraphicsSystem`
 -   Automatic Batch Combining
 -   Procedural and Indirect Draw Support

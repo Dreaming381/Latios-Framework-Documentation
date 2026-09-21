@@ -6,6 +6,26 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic
 Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [0.16.0] – 2026-9-20
+
+Officially supports Entities [1.4.8]
+
+### Added
+
+-   Added metadata extraction for Font Face and Variable Axes in `FontUtility`
+-   Added XML tag `<nobr>` support
+
+### Fixed
+
+-   Fixed memory corruption and crashes in the residency state machine
+-   Fixed several alignment and layouting modes which were not working
+
+### Improved
+
+-   Improved HarfBuzz native interop support in several edge cases
+-   Replaced the word wrapper with a new more robust algorithm
+-   The text language is respected for layouting in more locations
+
 ## [0.15.5] – 2026-5-23
 
 Officially supports Entities [1.4.6]

@@ -76,12 +76,14 @@ The `handles` argument must be provided by an actively running system. The
 builder uses this to obtain necessary `ComponentTypeHandle`s. It obtains the
 following read-only handles:
 
--   Collider
--   Entity
--   WorldTransform / LocalToWorld
+-   `Collider`
+-   `Entity`
+-   `WorldTransform` / `LocalToWorld`
 
-You should cache these handles inside of `OnCreate()` and remember to `Update()`
-them each `OnUpdate()`.
+If your system implements `ILatiosApi`, use
+`api.Get<BuildCollisionLayerTypeHandles>()`. Otherwise, you should cache these
+handles inside of `OnCreate()` and remember to `Update()` them each
+`OnUpdate()`.
 
 #### (NativeArray/List\<ColliderBody\> bodies)
 
@@ -199,7 +201,7 @@ In case you want to reorder your data such that it aligns with the
 `CollisionLayer`, here’s an example of how to do it:
 
 ```csharp
-Physics.BuildCollisionLayer(query, this).Run(out var layer, state.WorldUpdateAllocator);
+Physics.BuildCollisionLayer(query, handles).Run(out var layer, state.WorldUpdateAllocator);
 var transforms = query.ToComponentDataArray<WorldTransform>(state.WorldUpdateAllocator);
 var reorderedTransforms = new NativeArray<WorldTransform>(transforms.Length, state.WorldUpdateAllocator, NativeArrayOptions.UninitializedMemory);
 for (int i = 0; i < reorderedTransforms.Length; i++)
@@ -247,31 +249,33 @@ result)`.
 `FindPairsResult` is the data the `FindPairs` algorithm provides you whenever it
 finds a pair of overlapping `Aabb`s. It contains the following properties:
 
--   entityA – A key into `PhysicsComponentLookup` which corresponds to
+-   `entityA` – A key into `PhysicsComponentLookup` which corresponds to
     `bodyA.entity`
--   entityB - A key into `PhysicsComponentLookup` which corresponds to
+-   `entityB` - A key into `PhysicsComponentLookup` which corresponds to
     `bodyB.entity`
--   colliderA – The first collider element in the pair
--   colliderB – The second collider element in the pair
--   transformA – The first transform element in the pair
--   transformB – The second transform element in the pair
--   bodyA – The `ColliderBody` representing the first element in the pair
--   bodyB – The `ColliderBody` representing the second element in the pair
--   aabbA – The `Aabb` of the first element in the pair
--   aabbB – The `Aabb` of the second element in the pair
--   layerA – The full `CollisionLayer` the first element in the pair comes from
--   layerB – The full `CollisionLayer` the second element in the pair comes from
--   bodyIndexA – The index of the first element in the pair as stored in its
+-   `colliderA` – The first collider element in the pair
+-   `colliderB` – The second collider element in the pair
+-   `transformA` – The first transform element in the pair
+-   `transformB` – The second transform element in the pair
+-   `bodyA` – The `ColliderBody` representing the first element in the pair
+-   `bodyB` – The `ColliderBody` representing the second element in the pair
+-   `aabbA` – The `Aabb` of the first element in the pair
+-   `aabbB` – The `Aabb` of the second element in the pair
+-   `layerA` – The full `CollisionLayer` the first element in the pair comes
+    from
+-   `layerB` – The full `CollisionLayer` the second element in the pair comes
+    from
+-   `bodyIndexA` – The index of the first element in the pair as stored in its
     `CollisionLayer`
--   bodyIndexB – The index of the second element in the pair as stored in its
+-   `bodyIndexB` – The index of the second element in the pair as stored in its
     `CollisionLayer`
--   sourceIndexA – The index of the first element in the pair relative to the
+-   `sourceIndexA` – The index of the first element in the pair relative to the
     `CollisionLayer`’s created source.
--   sourceIndexB – The index of the second element in the pair relative to the
+-   `sourceIndexB` – The index of the second element in the pair relative to the
     `CollisionLayer`’s created source.
--   jobIndex – An index for deterministically writing to
+-   `jobIndex` – An index for deterministically writing to
     `EntityCommandBuffer.ParallelWriter` and similar API
--   pairStreamKey – A special key which can be used for writing to a
+-   `pairStreamKey` – A special key which can be used for writing to a
     `PairStream.ParallelWriter`
 
 #### PhysicsComponentLookup and SafeEntity

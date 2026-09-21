@@ -1,4 +1,4 @@
-# Upgrade Guide [0.14.15] [0.15.0]
+# Upgrade Guide [0.15.12] [0.16.0]
 
 If you are not using version control, please back up your project in a separate
 directory before upgrading! You may need to reference the pre-upgraded project
@@ -7,102 +7,98 @@ during the upgrade process.
 This document only highlights the common things to be aware of when upgrading.
 See the changelogs of each module for a complete list of changes.
 
-## Core
+## LifeFX
 
-### IAspect Removal
+### Operator Subgraph Updates
 
-Unity has deprecated `IAspect` for a while now, and it is removed in Unity 6.5.
-Latios Framework 0.15.x is the first version to formally remove `IAspect`
-support. Now, Core defines its own `IAspect` type which will be expanded over
-time to bring back some of the functionality of Unity’s old `IAspect` type. Some
-types that used to implement Unity’s `IAspect` still exist, but can no longer be
-used in source generated entity iteration.
-
-### Live Baking Changes
-
-`SystemState.GetLiveBakeSafeLastSystemVersion()` has been removed, as it has
-been replaced with a much more powerful set of live bake tracking APIs.
-
-## Psyshock
-
-### Physics to TrueSim
-
-Some static methods and constants which used to be in the Physics class are now
-in the `TrueSim` class. They otherwise act the same as before.
+You may want to reimport the samples package to update the subgraphs if you find
+they don’t work out-of-the-box. Some small changes were made that fixes the
+broken subgraphs. All the subgraphs work correctly now.
 
 ## Transforms
 
-### worldIndex Renamed to context32
+### TransformsKey Change
 
-This field on `TransformQvvs` has been renamed to better reflect how the
-variable is used in practice.
+`TransformsKey` used to have two validation modes: one at the chunk level, and
+the other at the entity level. The chunk level was removed. Instead,
+`TransformAspect` provides `TransformsKey` as a property, making it much easier
+to access.
 
-### QVVS V2
+## Unika
 
-The QVVS Transform system runtime (ECS components and systems) have been
-completely overhauled. There’s a dedicated upgrade guide
-[here](Transforms/QVVS%20V2%20Upgrade%20Guide.md).
+### Cached Resolver Change
 
-## Kinemation
+Cached resolvers had a small breaking API change. See the changelog for details.
 
-### OptimizedSkeletonAspect Redesign
+## Core
 
-`OptimizedSkeletonAspect` has been redesigned. With the removal of Unity
-`IAspect`, this type can now be constructed explicitly, which allows it to do
-initialization automatically. Thus, `ForceInitialize()` is gone. Also, when
-using QVVS Transforms, the type now requires a mutable `TransformAspect` and a
-`SocketLookup`, because sockets are evaluated immediately. This also means that
-it is possible to modify the skeleton’s transform in the same job the skeleton
-is modified, so `OptimizedRootDeltaROAspect` has been removed.
+### EntityOperationCommandBuffer
 
-`DependentSkinnedMesh` and `SkeletonDependent` are now public API, replacing
-`SkinnedMeshBindingAspect` and `SkeletonSkinBindingsAspect` for custom graphics
-purposes.
-
-### New Culling Pipeline Changes
-
-The system order has been reworked to better optimize for projects using LifeFX,
-and to prepare for improved batching management in the future. The custom
-graphics pass is now always enabled, meaning `EnableCustomGraphicsTag` has been
-removed. However, deformations and other dispatch systems are disabled by
-default. They can be enabled via `EnableUpdatingInCustomGraphics` on the
-`worldBalckboardEntity`.
-
-Additionally, UniqueMesh now uploads before culling, in accordance to Unity’s
-updated `BatchRendererGroup` documentation. Some flags and bootstrap APIs have
-been removed as a result.
-
-## Calligraphics
-
-### Calligraphics V2
-
-Calligraphics has been heavily overhauled with the latest TextMeshDOTS changes.
-There’s a dedicated upgrade guide
-[here](Calligraphics/Calligraphics%20V2%20Upgrade%20Guide.md).
+Some operations in `EntityOperationCommandBuffer` have been deprecated. They
+relied upon ENTITY_STORE_V1 which is going away. The Latios Framework no longer
+requires that scripting define.
 
 ## New Things to Try!
 
 ### Core
 
-You can add the `[DontSyncPreviousUpdatesThisFrame]` attribute on your systems
-to avoid partial sync points for systems that update multiple times per frame.
+Core got some massive source generator improvements, with a completely new way
+to write systems. `IInjectable` let’s you inject type handles and lookups in a
+job without having to assign all of them at schedule time. And `IJobEach` is an
+alternative to `IJobEntity` with a lot of really nice extra features and
+ergonomics. This is all backed by `ILatiosApi`, which your systems can
+implement. You no longer need to cache the `LatiosWorldUnmanaged` yourself.
 
-There’s also a new feature VPtr which is an advanced API for polymorphic struct
-pointers that supports implementations across multiple assemblies. It works
-similarly to Unika interfaces.
+Core also has the new ticking framework, for fixed rate simulation and
+controlled interpolation logic. This serves as the first layer of a future
+networking solution.
 
-### New Module – Aux ECS
+There’s a new custom command buffer, and it is called `CustomCommandBuffer`.
+That’s right. You can create your own sync point commands. In addition, it and
+`InstantiateCommandBufferCommandX` now have a dedicated allocator for allocating
+arrays to store inside commands.
 
-Aux ECS is a complimentary single-threaded ECS for when you need to track
-additional data on entities without invoking structural changes in Unity’s ECS.
+Lastly, `BlobVPtr` is a thing. That means you can have polymorphic blobs.
+
+### QVVS Transforms
+
+This module got a major update. With `IJobEach`, iterating `TransformAspect` is
+easy again! Just plop it into the `Execute()` method parameters, and the
+framework does the rest!
+
+There’s also new aspect types. `TransformDeferableAspect` lets you batch up
+multiple writes to a hierarchy and have them process in a single sweep.
+`TransformReadAspect` gives you an easy way to read transforms and navigate the
+hierarchy. Also, the `TransformsKey` can now be found on `TransformAspect` and
+`TransformDeferableAspect`, which makes it easy to reason about entire
+hierarchies inside a simple `IJobEach`.
 
 ### Calci
 
-The Latios Framework finally has an official `NativePriorityQueue` type, which
-lives in Calci. It is a quaternary comparison-based heap queue.
+You can now use `RngEach` inside an `IJobEach` as an `Execute()` parameter, and
+not have to worry about setup at all.
 
 ### Kinemation
 
-Kinemation now supports mipmap texture streaming for all baked entities. This
-works silently out-of-the-box. Just enable mipmap streaming on your textures,
-and let Kinemation do the rest!
+AclUnity now has iOS plugins included! The only platform left is web, which may
+come when the framework targets a newer LTS version.
+
+`OptimizedSkeletonInputAspect` can be used inside `IJobEach` as an `Execute()`
+parameter to make setting up an `OptimizedSkeletonAspect` easier.
+
+Unique Mesh has a new mode for specifying vertices in a raw `MeshData`-like
+format. You can define the attributes directly, including their data types and
+strides.
+
+### Unika
+
+Unika finally gets to love up to its vision. It now has an automatic authoring
+generator. It will really feel like a `MonoBehaviour`. Perfect for prototyping,
+one-off logic, and tech artist friendliness.
+
+Unika also has a proper means to inspect scripts in a debugger. And you can also
+see script contents in a new tab within the Entity runtime inspector.
+
+And if remembering to add types to a `ComponentBroker` was confusing, there’s
+now a `[Needs]` attribute system that lets scripts declare what they need in
+specific contexts, which can automatically populate the `ComponentBroker`.

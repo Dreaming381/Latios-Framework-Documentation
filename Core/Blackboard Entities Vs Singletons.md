@@ -20,7 +20,8 @@ program could potentially crash. That puts a lot of restrictions on system order
 and also incurs a constant runtime cost, because there’s no way to query the
 exclusive absence of a singleton. The other option is to have each reader of the
 singleton check if the singleton is valid, but that will result in a lot more
-error checking at runtime which is never good for performance.
+error checking at runtime which is never good for performance nor
+maintainability.
 
 Do we even need singletons? Does there really only have to be one instance? Or
 does it only matter that all the systems use the same instance at a given time,

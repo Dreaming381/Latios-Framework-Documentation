@@ -117,8 +117,8 @@ are using (`WorldTransform` for QVVS or `LocalToWorld` for Unity Transforms). If
 you use `FluentQuery`, you can use the extension method
 `PatchQueryForBuildingCollisionLayer()` when building your `EntityQuery`.
 Additionally, when inside an `ISystem`, you will need to provide a
-`BuildCollisionLayerTypeHandles`. These must be cached in `OnCreate()` and
-updated before each use.
+`BuildCollisionLayerTypeHandles`. If your system implements `ILatiosApi`, you
+can obtain these with `api.Get<BuildCollisionLayerTypeHandles>()`.
 
 If you build from arrays, you need to provide a `NativeArray<ColliderBody>`.
 `ColliderBody` contains an `Entity`, a `Collider`, and a `TransformQvvs`. You
@@ -137,11 +137,12 @@ A safety check exists to detect this when safety checks are enabled.*
 Lastly, after customizing things the way you want, you can call one of the many
 schedulers:
 
--   .RunImmediate – Run without scheduling a job. You can call this from inside
-    a job. You cannot use an `EntityQuery` as the source for this scheduler.
--   .Run – Run on the main thread with Burst.
--   .ScheduleSingle – Run on a worker thread with Burst.
--   .ScheduleParallel – Run on multiple worker threads with Burst.
+-   `.RunImmediate()` – Run without scheduling a job. You can call this from
+    inside a job. You cannot use an `EntityQuery` as the source for this
+    scheduler.
+-   `.Run()` – Run on the main thread with Burst.
+-   `.ScheduleSingle()` – Run on a worker thread with Burst.
+-   `.ScheduleParallel()` – Run on multiple worker threads with Burst.
 
 ### Sharing a Collision Layer Between Systems
 
@@ -166,17 +167,14 @@ public partial struct EnvironmentCollisionLayer : ICollectionComponent
     public JobHandle TryDispose(JobHandle inputDeps) => layer.IsCreated ? layer.Dispose(inputDeps) : inputDeps;
 }
 [BurstCompile]
-public partial struct BuildEnvironmentCollisionLayerSystem : ISystem, ISystemNewScene
+public partial struct BuildEnvironmentCollisionLayerSystem : ISystem, ILatiosApi, ISystemNewScene
 {
-    LatiosWorldUnmanaged           latiosWorld;
-    BuildCollisionLayerTypeHandles m_handles;
     EntityQuery                    m_environmentQuery;
 
     [BurstCompile]
     public void OnCreate(ref SystemState state)
     {
-        latiosWorld = state.GetLatiosWorldUnmanaged();
-        m_handles   = new BuildCollisionLayerTypeHandles(ref state);
+        this.OnCreateForLatios(ref state);
 
         m_environmentQuery = state.Fluent().With<EnvironmentTag>(true).PatchQueryForBuildingCollisionLayer().Build();
     }
@@ -189,14 +187,15 @@ public partial struct BuildEnvironmentCollisionLayerSystem : ISystem, ISystemNew
     [BurstCompile]
     public void OnUpdate(ref SystemState state)
     {
-        m_handles.Update(ref state);
+        var api = this.GetApi(ref state);
 
         var settings = new CollisionLayerSettings { worldAabb = new Aabb(-300f, 300f), worldSubdivisionsPerAxis = new int3(3, 4, 4) };
+        var handles = api.Get<BuildCollisionLayerTypeHandles>();
             
-        state.Dependency = Physics.BuildCollisionLayer(m_environmentQuery, in m_handles).WithSettings(settings)
+        state.Dependency = Physics.BuildCollisionLayer(m_environmentQuery, in handles).WithSettings(settings)
                             .ScheduleParallel(out var environmentLayer, Allocator.Persistent, state.Dependency);
             
-        latiosWorld.sceneBlackboardEntity.SetCollectionComponentAndDisposeOld(new EnvironmentCollisionLayer { layer = environmentLayer });
+        api.sceneBlackboardEntity.SetCollectionComponentAndDisposeOld(new EnvironmentCollisionLayer { layer = environmentLayer });
     }
 }
 ```
@@ -207,44 +206,44 @@ entity’s previous position and current position:
 
 ```csharp
 [BurstCompile]
-public partial struct BuildBulletsCollisionLayerSystem : ISystem, ISystemNewScene
+public partial struct BuildBulletsCollisionLayerSystem : ISystem, ILatiosApi, ISystemNewScene
 {
-    LatiosWorldUnmanaged latiosWorld;
-
     [BurstCompile]
     public void OnCreate(ref SystemState state)
     {
-        latiosWorld = state.GetLatiosWorldUnmanaged();
+        this.OnCreateForLatios(ref state);
     }
 
-    public void OnNewScene(ref SystemState state) => latiosWorld.sceneBlackboardEntity.AddOrSetCollectionComponentAndDisposeOld(new BulletCollisionLayer());
+    public void OnNewScene(ref SystemState state) => this.GetApi(ref state).sceneBlackboardEntity.AddOrSetCollectionComponentAndDisposeOld(new BulletCollisionLayer());
 
     [BurstCompile]
     public void OnUpdate(ref SystemState state)
     {
-        CollisionLayerSettings settings = latiosWorld.sceneBlackboardEntity.GetComponentData<ArenaCollisionSettings>().settings;
+        var api                         = this.GetApi(ref state);
+        CollisionLayerSettings settings = api.sceneBlackboardEntity.GetComponentData<ArenaCollisionSettings>().settings;
 
-        var query = QueryBuilder().WithAll<WorldTransform, Collider, PreviousTransform, BulletTag>().Build();
+        var query = api.GetDefaultQuery<Job>();
 
         var bodies =
             CollectionHelper.CreateNativeArray<ColliderBody>(query.CalculateEntityCount(),
                                                                 state.WorldUnmanaged.UpdateAllocator.ToAllocator,
                                                                 NativeArrayOptions.UninitializedMemory);
 
-        new Job { bodies = bodies }.ScheduleParallel(query);
+        new Job { bodies = bodies }.ScheduleParallel(api, query);
 
         state.Dependency = Physics.BuildCollisionLayer(bodies).WithSettings(settings).ScheduleParallel(out CollisionLayer layer, Allocator.Persistent, state.Dependency);
         var bcl          = new BulletCollisionLayer { layer = layer };
-        latiosWorld.sceneBlackboardEntity.SetCollectionComponentAndDisposeOld(bcl);
+        api.sceneBlackboardEntity.SetCollectionComponentAndDisposeOld(bcl);
     }
 
+    [RequireEntityIndexInQuery]
     [BurstCompile]
-    partial struct Job : IJobEntity
+    partial struct Job : IJobEach
     {
         public NativeArray<ColliderBody> bodies;
 
         public void Execute(Entity entity,
-                            [EntityIndexInQuery] int entityInQueryIndex,
+                            in IJobEach.JobContext context,
                             in WorldTransform worldTransform,
                             in Collider collider,
                             in PreviousTransform previousPosition)
@@ -254,7 +253,7 @@ public partial struct BuildBulletsCollisionLayerSystem : ISystem, ISystemNewScen
             capsule.pointA              = capsule.pointB;
             capsule.pointA.z           -= math.max(tailLength, math.EPSILON);
 
-            bodies[entityInQueryIndex] = new ColliderBody
+            bodies[context.entityInQueryIndex] = new ColliderBody
             {
                 collider  = capsule,
                 entity    = entity,
@@ -297,7 +296,7 @@ of a typical collide-and-slide algorithm used in character controllers:
 
 ```csharp
 [BurstCompile]
-partial struct CollideAndSlideCharacterJob : IJobEntity
+partial struct CollideAndSlideCharacterJob : IJobEach
 {
     [ReadOnly] public CollisionLayer environmentLayer;
 
@@ -334,10 +333,10 @@ colliders within a search region.
 
 ```csharp
 [BurstCompile]
-partial struct FindNearbyFoodJob : IJobEntity
+partial struct FindNearbyFoodJob : IJobEach
 {
     [ReadOnly] public CollisionLayer foodLayer;
-    [ReadOnly] public ComponentLookup<FoodAmount> foodLookup;
+    [ReadOnly, Inject] ComponentLookup<FoodAmount> foodLookup;
 
     public void Execute(ref CharacterController characterController, in WorldTransform transform, in Collider collider)
     {
@@ -360,14 +359,14 @@ partial struct FindNearbyFoodJob : IJobEntity
 You can also iterate through all the colliders and all their data via the
 `colliderBodies` property. Note that these bodies will be spatially reordered
 relative to how they were created. Use the `srcIndices` property to get the
-original creation index (`entityInQueryIndex` or `ColliderBody` array index).
+original creation index (`entityIndexInQuery` or `ColliderBody` array index).
 
 ### ColliderBody Warning
 
-The Collider and `TransformQvvs` associated with an Entity in a `CollisionLayer`
-is a **copy** captured at the `CollisionLayer` creation time, and will **not**
-automatically update if you modify the `WorldTransform` or `Collider` components
-on the entity.
+The `Collider` and `TransformQvvs` associated with an `Entity` in a
+`CollisionLayer` is a **copy** captured at the `CollisionLayer` creation time,
+and will **not** automatically update if you modify the `WorldTransform` or
+`Collider` components on the entity.
 
 ## What is a Collision World?
 
@@ -400,30 +399,26 @@ API follows that of `CollisionLayer`, except you use
 `BuildCollisionWorldTypeHandles`. Here’s an example:
 
 ```csharp
-public partial struct BuildBroadphaseCollisionWorldSystem : ISystem, ISystemNewScene
+public partial struct BuildBroadphaseCollisionWorldSystem : ISystem, ILatiosApi, ISystemNewScene
 {
-    LatiosWorldUnmanaged latiosWorld;
-
-    BuildCollisionWorldTypeHandles m_handles;
     EntityQuery                    m_query;
 
     [BurstCompile]
     public void OnCreate(ref SystemState state)
     {
-        latiosWorld = state.GetLatiosWorldUnmanaged();
-        m_handles   = new BuildCollisionWorldTypeHandles(ref state);
-        m_query     = state.Fluent().WithAnyEnabled<EnvironmentCollisionTag, KinematicCollisionTag, RigidBody>(true).PatchQueryForBuildingCollisionWorld().Build();
+        this.OnCreateForLatios(ref state);
+        m_query = state.Fluent().WithAnyEnabled<EnvironmentCollisionTag, KinematicCollisionTag, RigidBody>(true).PatchQueryForBuildingCollisionWorld().Build();
     }
 
     public void OnNewScene(ref SystemState state)
     {
-        latiosWorld.sceneBlackboardEntity.AddOrSetCollectionComponentAndDisposeOld<BroadphaseCollisionWorld>(default);
+        this.GetApi(ref state).sceneBlackboardEntity.AddOrSetCollectionComponentAndDisposeOld<BroadphaseCollisionWorld>(default);
     }
 
     [BurstCompile]
     public void OnUpdate(ref SystemState state)
     {
-        m_handles.Update(ref state);
+        var api             = this.GetApi(ref state);
         var physicsSettings = latiosWorld.GetPhysicsSettings();
 
         state.Dependency = Physics.BuildCollisionWorld(m_query, in m_handles).WithSettings(physicsSettings.collisionLayerSettings).WithWorldIndex(2)
@@ -474,7 +469,7 @@ property to determine whether you need to initialize it for that job instance.
 
 ```csharp
 [BurstCompile]
-partial struct ScanJob : IJobEntity
+partial struct ScanJob : IJobEach
 {
     [ReadOnly] public CollisionWorld  collisionWorld;
     [ReadOnly] public EntityQueryMask scannableQueryMask;
@@ -498,10 +493,10 @@ Or alternatively:
 
 ```csharp
 [BurstCompile]
-partial struct ScanJob : IJobEntity
+partial struct ScanJob : IJobEach
 {
     [ReadOnly] public CollisionWorld          collisionWorld;
-    [ReadOnly] public EntityStorageInfoLookup esil;
+    [ReadOnly, Inject] EntityStorageInfoLookup esil;
 
     CollisionWorld.Mask scannableCollisionMask;
 

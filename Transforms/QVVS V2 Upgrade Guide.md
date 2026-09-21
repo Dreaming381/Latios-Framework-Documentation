@@ -4,6 +4,11 @@ QVVS Transforms V2 marks a big transition to how transforms operate within an
 ECS project. Upgrading an existing project may be challenging. Hopefully, this
 guide will help ease that burden.
 
+**Warning: This guide was written for the migration from 0.14.x to 0.15.x. While
+many of the concepts carry over if you need to migrate from 0.14.x to 0.16.x,
+keep in mind that 0.16.0 introduced far simpler APIs for accessing transforms at
+runtime.**
+
 ## Paradigm Shift
 
 QVVS V2 is an always-up-to-date transform system. That means that the transform

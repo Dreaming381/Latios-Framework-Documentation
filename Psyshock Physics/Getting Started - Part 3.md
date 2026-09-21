@@ -85,10 +85,10 @@ FindPairs reports pairs where the AABBs are overlapping, so the
 health of both entities.
 
 ```csharp
-struct DamageCollidingShipsProcessor : IFindPairsProcessor
+partial struct DamageCollidingShipsProcessor : IFindPairsProcessor, IInjectable
 {
-    public PhysicsComponentLookup<ShipHealth> shipHealthLookup;
-    [ReadOnly] public ComponentLookup<Damage> shipDamageLookup;
+    [Inject] PhysicsComponentLookup<ShipHealth> shipHealthLookup;
+    [ReadOnly, Inject] ComponentLookup<Damage> shipDamageLookup;
 
     public void Execute(in FindPairsResult result)
     {
@@ -115,20 +115,12 @@ enabled, an exception will be thrown when a `SafeEntity` is used in a
 `PhysicsComponentLookup` inside a `RunImmediate()` or `ScheduleParallelUnsafe()`
 context.
 
-You can assign a regular `ComponentLookup` to a `PhysicsComponentLookup`, making
-setup of the processor easy.
-
-```csharp
-var processor = new DamageCollidingShipsProcessor
-{
-    shipHealthLookup = SystemAPI.GetComponentLookup<ShipHealth>(),
-    shipDamageLookup = SystemAPI.GetComponentLookup<Damage>()
-};
-```
-
 If you only need to read components, it is recommended to use the non-physics
 lookups as shown in the examples above. You don’t need to restrict yourself to
 `SafeEntity` values for read-only lookups.
+
+If you use `IInjectable` as in the above example, don’t forget to call
+`Inject(api)` on your processor before passing it to FindPairs.
 
 ## FindPairs with Two Collision Layers
 

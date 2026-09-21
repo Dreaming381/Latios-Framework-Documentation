@@ -6,6 +6,14 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic
 Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [0.16.0] – 2026-9-20
+
+Officially supports Entities [1.4.8]
+
+### Improved
+
+-   Added UNITY_DOTS_DEBUG support to safety checks
+
 ## [0.15.7] – 2026-6-13
 
 Officially supports Entities [1.4.6]

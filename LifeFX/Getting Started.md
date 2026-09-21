@@ -254,12 +254,12 @@ Events to another system. Consult Unity’s Galaxy Samples for an example of thi
 
 ### Game Objects
 
-Once you have your graph set up, you will need a Visual Effect Game Object in
-your scene (**not a subscene**). Add a VFX Graph Event Buffer Provider component
-to the Game Object. Drag in your tunnel, and set the names of your graph
-properties for the buffer name, start, and count.
+Once you have your graph set up, you will need a *Visual Effect* Game Object in
+your scene (**not a subscene**). Add a *VFX Graph Event Buffer Provider*
+component to the Game Object. Drag in your tunnel, and set the names of your
+graph properties for the buffer name, start, and count.
 
-The Game Object needs to be a Game Object Entity. It is safe to disable
+The Game Object needs to be a *Game Object Entity*. It is safe to disable
 transform syncing.
 
 It should look something like this:
@@ -351,6 +351,16 @@ destruction, and the transform buffer will hold the last remembered transform
 for that entity. On subsequent frames, the *TransformIndex* may refer to a
 different entity, so make sure you ignore any sampled transforms on subsequent
 frames if your particle outlives the entity.
+
+## Game Object
+
+Back on the *Visual Effect* Game Object, configure a *VFX Graph Event Buffer
+Provider* for your spawn event just like before. Then add a *VFX Graph Global
+Buffer Provider*. Set the *Buffer Shader Property* to
+\_`latiosTrackedWorldTransforms`. And set the *Buffer* to the name of your
+property in the graph.
+
+![](media/13decc467d6c69985d8df9d00a6c5f63.png)
 
 ## Custom Tracking
 

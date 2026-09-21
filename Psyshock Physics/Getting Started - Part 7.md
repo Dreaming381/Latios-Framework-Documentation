@@ -398,40 +398,33 @@ using Unity.Entities;
 using Unity.Jobs;
 using Unity.Mathematics;
 
-using static Unity.Entities.SystemAPI;
-
 namespace Dragons.Systems
 {
     [BurstCompile]
-    public partial struct RigidBodyPhysicsSystem : ISystem
+    public partial struct RigidBodyPhysicsSystem : ISystem, ILatiosApi
     {
-        LatiosWorldUnmanaged latiosWorld;
-
         EntityQuery m_rigidBodyQuery;
         EntityQuery m_staticCollidersQuery;
-
-        BuildCollisionLayerTypeHandles m_typeHandles;
 
         [BurstCompile]
         public void OnCreate(ref SystemState state)
         {
-            latiosWorld = state.GetLatiosWorldUnmanaged();
+            this.OnCreateForLatios(ref state);
 
             m_rigidBodyQuery       = state.Fluent().With<RigidBody>(false).PatchQueryForBuildingCollisionLayer().Build();
             m_staticCollidersQuery = state.Fluent().Without<RigidBody>().PatchQueryForBuildingCollisionLayer().Build();
-
-            m_typeHandles = new BuildCollisionLayerTypeHandles(ref state);
         }
 
         [BurstCompile]
         public void OnUpdate(ref SystemState state)
         {
+            var api       = this.GetApi(ref state);
             var initialJh = state.Dependency;
 
             // Build static layer
-            m_typeHandles.Update(ref state);
+            typeHandles            = api.Get<BuildCollisionLayerTypeHandles>();
             var buildStaticLayerJh =
-                Physics.BuildCollisionLayer(m_staticCollidersQuery, m_typeHandles).ScheduleParallel(out var staticLayer, state.WorldUpdateAllocator, initialJh);
+                Physics.BuildCollisionLayer(m_staticCollidersQuery, typeHandles).ScheduleParallel(out var staticLayer, state.WorldUpdateAllocator, initialJh);
 
             // Gravity, and build rigid body layer
             var rigidBodyCount         = m_rigidBodyQuery.CalculateEntityCountWithoutFiltering();
@@ -443,7 +436,7 @@ namespace Dragons.Systems
                 deltaTime     = Time.DeltaTime,
                 colliderArray = rigidBodyColliderArray,
                 aabbArray     = rigidBodyAabbArray
-            }.ScheduleParallel(m_rigidBodyQuery, initialJh);
+            }.ScheduleParallel(api, m_rigidBodyQuery, initialJh);
             buildRigidBodyJh = Physics.BuildCollisionLayer(rigidBodyColliderArray, rigidBodyAabbArray)
                                .ScheduleParallel(out var rigidBodyLayer, state.WorldUpdateAllocator, buildRigidBodyJh);
 
@@ -451,20 +444,18 @@ namespace Dragons.Systems
             var pairStream            = new PairStream(rigidBodyLayer, state.WorldUpdateAllocator);
             var findBodyBodyProcessor = new FindBodyVsBodyProcessor
             {
-                bodyLookup       = GetComponentLookup<RigidBody>(true),
                 pairStream       = pairStream.AsParallelWriter(),
                 deltaTime        = Time.DeltaTime,
                 inverseDeltaTime = math.rcp(Time.DeltaTime)
-            };
+            }.Inject(api);
             var bodyVsBodyJh = Physics.FindPairs(in rigidBodyLayer, in findBodyBodyProcessor).ScheduleParallelUnsafe(buildRigidBodyJh);
 
             var findBodyEnvironmentProcessor = new FindBodyVsEnvironmentProcessor
             {
-                bodyLookup       = GetComponentLookup<RigidBody>(true),
                 pairStream       = pairStream.AsParallelWriter(),
                 deltaTime        = Time.DeltaTime,
                 inverseDeltaTime = math.rcp(Time.DeltaTime)
-            };
+            }.Inject(api);
             state.Dependency = Physics.FindPairs(in rigidBodyLayer, in staticLayer, in findBodyEnvironmentProcessor)
                 .ScheduleParallelUnsafe(JobHandle.CombineDependencies(bodyVsBodyJh, buildStaticLayerJh));
 
@@ -472,16 +463,15 @@ namespace Dragons.Systems
             int numIterations  = 8;
             var solveProcessor = new SolveBodiesProcessor
             {
-                rigidBodyLookup        = GetComponentLookup<RigidBody>(false),
                 invNumSolverIterations = math.rcp(numIterations)
-            };
+            }.Inject(api);
             for (int i = 0; i < numIterations; i++)
             {
                 state.Dependency = Physics.ForEachPair(in pairStream, in solveProcessor).ScheduleParallel(state.Dependency);
             }
 
             // Integrate and update entities
-            new IntegrateRigidBodiesJob { deltaTime = Time.DeltaTime }.ScheduleParallel();
+            new IntegrateRigidBodiesJob { deltaTime = Time.DeltaTime }.ScheduleParallel(api);
         }
 
         struct ContactStreamData
@@ -491,16 +481,19 @@ namespace Dragons.Systems
             public StreamSpan<float>                                     contactImpulses;
         }
 
+        [RequireEntityIndexInQuery]
         [BurstCompile]
-        partial struct BuildRigidBodiesJob : IJobEntity
+        partial struct BuildRigidBodiesJob : IJobEach
         {
             public float deltaTime;
 
             [NativeDisableParallelForRestriction] public NativeArray<ColliderBody> colliderArray;
             [NativeDisableParallelForRestriction] public NativeArray<Aabb>         aabbArray;
 
-            public void Execute(Entity entity, [EntityIndexInQuery] int index, ref RigidBody rigidBody, in Collider collider, in WorldTransform transform)
+            public void Execute(Entity entity, in IJobEach.JobContext context, ref RigidBody rigidBody, in Collider collider, in WorldTransform transform)
             {
+                int index = context.entityIndexInQuery;
+
                 rigidBody.velocity.linear.y += -9.81f * deltaTime;
 
                 var aabb                  = Physics.AabbFrom(in collider, in transform.worldTransform);
@@ -528,12 +521,12 @@ namespace Dragons.Systems
             }
         }
 
-        struct FindBodyVsEnvironmentProcessor : IFindPairsProcessor
+        partial struct FindBodyVsEnvironmentProcessor : IFindPairsProcessor, IInjectable
         {
-            [ReadOnly] public ComponentLookup<RigidBody> bodyLookup;
-            public PairStream.ParallelWriter             pairStream;
-            public float                                 deltaTime;
-            public float                                 inverseDeltaTime;
+            [ReadOnly, Inject] ComponentLookup<RigidBody> bodyLookup;
+            public             PairStream.ParallelWriter  pairStream;
+            public             float                      deltaTime;
+            public             float                      inverseDeltaTime;
 
             DistanceBetweenAllCache distanceBetweenAllCache;
 
@@ -572,12 +565,12 @@ namespace Dragons.Systems
             }
         }
 
-        struct FindBodyVsBodyProcessor : IFindPairsProcessor
+        partial struct FindBodyVsBodyProcessor : IFindPairsProcessor, IInjectable
         {
-            [ReadOnly] public ComponentLookup<RigidBody> bodyLookup;
-            public PairStream.ParallelWriter             pairStream;
-            public float                                 deltaTime;
-            public float                                 inverseDeltaTime;
+            [ReadOnly, Inject] ComponentLookup<RigidBody> bodyLookup;
+            public             PairStream.ParallelWriter  pairStream;
+            public             float                      deltaTime;
+            public             float                      inverseDeltaTime;
 
             DistanceBetweenAllCache distanceBetweenAllCache;
 
@@ -620,10 +613,10 @@ namespace Dragons.Systems
             }
         }
 
-        struct SolveBodiesProcessor : IForEachPairProcessor
+        partial struct SolveBodiesProcessor : IForEachPairProcessor, IInjectable
         {
-            public PhysicsComponentLookup<RigidBody> rigidBodyLookup;
-            public float                             invNumSolverIterations;
+            [Inject] PhysicsComponentLookup<RigidBody> rigidBodyLookup;
+            public   float                             invNumSolverIterations;
 
             public void Execute(ref PairStream.Pair pair)
             {

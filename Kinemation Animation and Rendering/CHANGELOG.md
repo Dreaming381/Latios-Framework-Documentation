@@ -6,6 +6,70 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic
 Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [0.16.0] – 2026-9-20
+
+Officially supports Entities [1.4.8]
+
+### Added
+
+-   *New Feature:* Added iOS support for AclUnity
+-   *New Feature:* Added `UniqueMeshVertexRawData` and
+    `UniqueMeshVertexRawLayout` which provide a `MeshData`-like alternative API
+    for expressing vertex attributes
+-   *New Feature:* Added `UniqueMeshWorldPositionRelativeTag` which allows a
+    Unique Mesh to ignore any rotation, scale, and stretch when rendered
+-   *New Feature:* Added Ticking versions of components, buffers, and APIs for
+    Optimized Skeletons as well as `InterpolateOptimizedSkeletonTag` for an
+    out-of-the-box per-bone local-space interpolation solution
+-   Added `KinemationBakingBootstrap` method
+    `RemoveParticleSystemCompanionBaker()` so that an add-on can bake particle
+    systems itself
+-   Added partial support for -nographics via the `NoGraphicsTag` added to the
+    `worldBlackboardEntity` which bootstraps should read to exclude
+    graphics-touching systems
+-   Added `SortingOffset` component which can be used to fudge the sorting
+    position of transparent entities
+-   Added `OptimizedSkeletonInputAspect` for easier use of optimized skeletons
+    inside `IJobEach`
+
+### Changed
+
+-   Shadow map culling now uses an aspect ratio of `1f` instead of the main
+    camera ratio when computing mipmap streaming contributions
+-   DOTS instancing buffer is now resized at the beginning of rendering, rather
+    than during `LatiosEntitiesGraphicsSystem`
+-   Removed the dependency on ENTITY_STORE_V1 at the expense of a slightly
+    increased deformed mesh and skeleton runtime setup cost
+
+### Fixed
+
+-   Fixed `AclUnity` `GetUnityVersion()` reporting the ACL version
+-   Fixed `MeshDeformDataBlob` baking using the wrong vertices when computing
+    bone radial bounds
+-   Fixed baking exception when setting `MaterialMeshInfo`’s enabled state to
+    false in a baker
+-   Fixed issues when baking a `MeshRenderer` with a null `Mesh` or a non-null
+    empty `Material` array
+-   Fixed `EnableUpdatingInCustomGraphics` properties `materialProperties` and
+    `text` aliasing to the same bit
+-   Fixed various `GraphicsBuffer` size management edge cases
+-   Fixed inertial blending rotation angle wrapping logic
+-   Fixed Mesh LOD crossfades staying active permanently
+-   Fixed several edge-case exceptions with UniqueMesh
+-   Fixed `BatchFilterSettings.sceneCullingMask` being zero-initialized, making
+    it unusable
+-   Fixed `RootMotionDeltaAccumulator.Accumulate()` not working correctly when a
+    clip is being played in reverse
+
+### Improved
+
+-   Added UNITY_DOTS_DEBUG support to safety checks
+-   Improved system filtering for default `EnableUpdatingInCustomGraphics`
+    config
+-   Improved error handling and diagnostics of `ICullingComputeDispatchSystem`
+-   Made change to avoid graphics driver crash when `SkinningDispatchSystem`
+    throws an exception in a job, and added diagnostic logging when this occurs
+
 ## [0.15.12] – 2026-7-25
 
 Officially supports Entities [1.4.8]

@@ -71,7 +71,6 @@ using static Unity.Entities.SystemAPI;
 
 namespace Dragons
 {
-    [UpdateBefore(typeof(TransformSuperSystem))]
     public partial struct SingleClipPlayerSystem : ISystem
     {
         [BurstCompile]
@@ -90,11 +89,10 @@ namespace Dragons
 
 So far, so good.
 
-*Q: I’m getting an error about TransformSuperSystem not being defined. Why?*
+*Q: Where should this system update?*
 
-*A: You are probably using Unity Transforms. You will need to substitute this
-and other undefined symbols such as TransformAspect with Unity Transform
-equivalents.*
+*A: If using Unity Transforms, it should be before the* `TransformSystemGroup`*.
+If using QVVS Transforms, it can be anywhere in* `SimulationSystemGroup`*.*
 
 Next, we want to get access to our animation clip. The `SkeletonClipSetBlob`
 stores all the animation clips in a `BlobArray` appropriately named `clips`.
@@ -127,6 +125,13 @@ for (int i = 1; i < bones.Length; i++)
 }
 ```
 
+*Q: I’m getting an error about TransformAspect not being defined. Why?*
+
+*A: You are probably using Unity Transforms. You will need to substitute this
+with* `LocalTransform` *and copy over the* `position`*,* `rotation`*, and*
+`scale` *manually. You’ll have to decide how you want to handle* `stretch`
+*yourself.*
+
 *Q: Why are we starting with 1?*
 
 *A: Index 0 is the root bone, which is also our skeleton entity. If we applied
@@ -134,7 +139,7 @@ animation data to that, we would lose our world-space position and rotation. Our
 animation does not have root motion, so the character would be snapped to the
 origin. However, if our animation did have root motion, we would want to compare
 it to the previous frame’s sample and* **add** *the difference to our
-Translation, accounting for looping of course. You can use a*
+translation, accounting for looping of course. You can use a*
 `RootMotionDeltaAccumulator` *to compute this for you, and you can apply it
 using* `RootMotionTools.ConcatenateDeltas()`*.*
 
@@ -149,30 +154,34 @@ And now when we press play…
 ## Playing the Clip Using BoneOwningSkeletonReference
 
 Our first approach was fine, but we had to run it single-threaded on the main
-thread because of the `GetAspect<TransformAspect>()` calls. Using
-`TransformAspect.Lookup` and `[NativeDisableParallelForRestriction]` might work,
-but perhaps it would be a little cleaner if we iterated using bone entities
-instead. To do that, we’ll use the `BoneOwningSkeletonReference` to find our
-skeleton and get the animation clip, and we’ll use the `BoneIndex` to sample the
-right bone.
+thread because of the `GetAspect<TransformAspect>()` calls. Iterating
+`TransformAspect` on the skeleton and finding the bones in the hierarchy via
+`ComponentLookup<RootReference>` might work, but perhaps it would be a little
+cleaner if we iterated using bone entities instead. To do that, we’ll use the
+`BoneOwningSkeletonReference` to find our skeleton and get the animation clip,
+and we’ll use the `BoneIndex` to sample the right bone.
 
 ```csharp
 [UpdateBefore(typeof(TransformSuperSystem))]
 public partial struct SingleClipPlayerSystem : ISystem
 {
     [BurstCompile]
+    public void OnCreate(ref SystemState state) => this.OnCreateForLatios(ref state);
+
+    [BurstCompile]
     public void OnUpdate(ref SystemState state)
     {
-        new ExposedJob { clipLookup = GetComponentLookup<SingleClip>(true), et = (float)Time.ElapsedTime }.ScheduleParallel();
+        var api = this.GetApi(ref state);
+        new ExposedJob { et = (float)api.elapsedTime }.ScheduleParallel(api);
     }
 
     [BurstCompile]
-    partial struct ExposedJob : IJobEntity
+    partial struct ExposedJob : IJobEach
     {
-        [ReadOnly] public ComponentLookup<SingleClip> clipLookup;
+        [ReadOnly, Inject] ComponentLookup<SingleClip> clipLookup;
         public float et;
 
-        public void Execute(TransformAspect transform, in BoneIndex boneIndex, in BoneOwningSkeletonReference skeletonRef)
+        public void Execute(TransformDeferableAspect transform, in BoneIndex boneIndex, in BoneOwningSkeletonReference skeletonRef)
         {
             if (boneIndex.index <= 0 || !clipLookup.HasComponent(skeletonRef.skeletonRoot))
                 return;
@@ -187,6 +196,15 @@ public partial struct SingleClipPlayerSystem : ISystem
 ```
 
 Hey look! We used `ScheduleParallel()` now.
+
+*Q: Why* `TransformDeferableAspect` *instead of* `TransformAspect`*?*
+
+*A: Since all we are doing is writing transforms without concern over their
+intermediate states, it is better to have only a single hierarchy update pass to
+update the world-space transform values.* `TransformDeferableAspect` *provides
+that. If we used* `TransformAspect`*, every time a bone would get updated, all
+of its descendants would be updated too, causing leaf bones to be updated many
+times.*
 
 ## On To Part 4
 

@@ -13,11 +13,22 @@ some ideas.
 
 ## Before You Jump In
 
+First, don’t feel obligated to contribute. I started using LLMs to go to war
+against the massive backlog, and it has been very effective. I still heavily
+review code that goes in the framework, in the same way I heavily review any
+pull request that gets made. If you would rather make your game, that’s totally
+fine.
+
+The best ways to help are by creating learning resources, reporting bugs,
+requesting features, and providing feedback on designs in the discord server.
+Also, the framework is in dire need of better learning resources, which LLMs are
+sloppy at.
+
 The Latios Framework is maintained to a very high standard. This doesn’t mean
 that fewer bugs sneak through, but rather that when bugs are discovered, fixes
 can come quickly and with minimal disruption to the existing API until the next
 feature release. Because of this, I simply cannot accept any and all
-pull-requests. So please be ready for criticism and discussion before trying to
+pull-requests. Please be ready for criticism and discussion before trying to
 contribute a big new feature.
 
 However, for the [add-ons
@@ -30,14 +41,13 @@ don’t need to provide any justification. Just go for it!
 If you need ideas, feel free to reach out. There are plenty of possible items
 across a wide variety of areas and at various levels of difficulty.
 
-Also, the Latios Framework can always use more learning resources such as blogs
-and tutorials, or good sample projects showing off various ways to use the
-features and APIs.
-
 ## Regarding LLM AI Use
 
 AI use in pull requests has never been an issue for any of the Latios Framework
-and associated repositories. Feel free to use it as you see fit.
+and associated repositories. Feel free to use it as you see fit. Pure
+vibe-coding is not recommended for Latios Framework pull requests, but is
+allowed for add-ons as long as the templates and inert-by-default rules are
+followed.
 
 ## Developing Using a Public GitHub Account
 
@@ -111,7 +121,7 @@ let me know that as well.
 
 ## My Own Workflow
 
-Every once in while, I get asked: “Why don’t you use a development branch and
+Every once in a while, I get asked: “Why don’t you use a development branch and
 release branch like other GitHub projects?”
 
 The answer is because I develop and test the framework inside other Unity
@@ -149,10 +159,10 @@ yet, or simply haven’t gotten around to it. If you don’t already have a
 particular feature in mind, pick an area that is of interest to you, and ask if
 there is any work to be done in that area.
 
-But you also don’t need to develop new features to help out. Use the framework
-to write stuff, make stuff, and share stuff. Anything helps, whether it be blog
-of misadventures, a cute little prototype, a tutorial video, some test assets
-you’d like to see in a future sample, anything really.
+You also don’t need to develop new features to help out. Use the framework to
+write stuff, make stuff, and share stuff. Anything helps, whether it be blog of
+misadventures, a cute little prototype, a tutorial video, some test assets you’d
+like to see in a future sample, anything really.
 
 You can also collaborate by building the test project for a new feature, and
 letting me build the feature inside that project. This speeds up development

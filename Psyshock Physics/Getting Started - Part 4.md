@@ -33,15 +33,14 @@ struct ZonePoints : IComponentData
     public float pointsPerFrame;
 }
 
-partial struct ZonePointsSystem : ISystem
+partial struct ZonePointsSystem : ISystem, ILatiosApi
 {
-    BuildCollisionLayerTypeHandles handles;
     EntityQuery                    playerQuery;
     EntityQuery                    zoneQuery;
 
     public void OnCreate(ref SystemState state)
     {
-        handles     = new BuildCollisionLayerTypeHandles(ref state);
+        this.OnCreateForLatios(ref state);
         playerQuery = state.Fluent().With<PlayerPoints>().PatchQueryForBuildingCollisionLayer().Build();
         zoneQuery   = state.Fluent().With<ZonePoints>().PatchQueryForBuildingCollisionLayer().Build();
     }
@@ -49,22 +48,20 @@ partial struct ZonePointsSystem : ISystem
     [BurstCompile]
     public void OnUpdate(ref SystemState state)
     {
+        var api            = this.GetApi(ref state);
+        var handles        = api.Get<BuildCollisionLayerTypeHandles>();
         var buildPlayersJh = Physics.BuildCollisionLayer(playerQuery, handles).ScheduleParallel(out var playerLayer, state.WorldUpdateAllocator, state.Dependency);
         var buildZonesJh   = Physics.BuildCollisionLayer(zoneQuery, handles).ScheduleParallel(out var zoneLayer, state.WorldUpdateAllocator, state.Dependency);
 
-        var findPairsProcessor = new PlayerVsZoneFindPairsProcessor
-        {
-            playerPointsLookup = SystemAPI.GetComponentLookup<PlayerPoints>(false),
-            zonePointsLookup   = SystemAPI.GetComponentLookup<ZonePoints>(true)
-        };
+        var findPairsProcessor = new PlayerVsZoneFindPairsProcessor().Inject(api);
 
         state.Dependency = Physics.FindPairs(playerLayer, zoneLayer, findPairsProcessor).ScheduleParallel(JobHandle.CombineDependencies(buildPlayersJh, buildZonesJh));
     }
 
-    struct PlayerVsZoneFindPairsProcessor : IFindPairsProcessor
+    partial struct PlayerVsZoneFindPairsProcessor : IFindPairsProcessor, IInjectable
     {
-        public PhysicsComponentLookup<PlayerPoints>   playerPointsLookup;
-        [ReadOnly] public ComponentLookup<ZonePoints> zonePointsLookup;
+        [Inject]           PhysicsComponentLookup<PlayerPoints> playerPointsLookup;
+        [ReadOnly, Inject] ComponentLookup<ZonePoints>          zonePointsLookup;
 
         public void Execute(in FindPairsResult result)
         {
@@ -129,10 +126,10 @@ struct ZonePlayerCount : IComponentData
     public int playerCount;
 }
 
-struct PlayerVsZoneFindPairsProcessor : IFindPairsProcessor
+partial struct PlayerVsZoneFindPairsProcessor : IFindPairsProcessor, IInjectable
 {
-    public PairStream.ParallelWriter               pairStream;
-    public PhysicsComponentLookup<ZonePlayerCount> zonePlayerCountLookup;
+    public   PairStream.ParallelWriter               pairStream;
+    [Inject] PhysicsComponentLookup<ZonePlayerCount> zonePlayerCountLookup;
 
     public void Execute(in FindPairsResult result)
     {
@@ -150,11 +147,11 @@ Next, we need to process our cached pairs. For this, we use an
 hopefully apparent.
 
 ```csharp
-struct SecondPassForEachPairProcessor : IForEachPairProcessor
+partial struct SecondPassForEachPairProcessor : IForEachPairProcessor, IInjectable
 {
-    public PhysicsComponentLookup<PlayerPoints>        playerPointsLookup;
-    [ReadOnly] public ComponentLookup<ZonePlayerCount> zonePlayerCountLookup;
-    [ReadOnly] public ComponentLookup<ZonePoints>      zonePointsLookup;
+    [Inject]   PhysicsComponentLookup<PlayerPoints>        playerPointsLookup;
+    [ReadOnly] ComponentLookup<ZonePlayerCount>     zonePlayerCountLookup;
+    [ReadOnly] ComponentLookup<ZonePoints>          zonePointsLookup;
 
     public void Execute(ref PairStream.Pair pair)
     {
@@ -168,12 +165,7 @@ struct SecondPassForEachPairProcessor : IForEachPairProcessor
 Scheduling is also straightforward:
 
 ```csharp
-var forEachPairProcessor = new SecondPassForEachPairProcessor
-{
-    playerPointsLookup = SystemAPI.GetComponentLookup<PlayerPoints>(false),
-    zonePlayerCountLookup = SystemAPI.GetComponentLookup<ZonePlayerCount>(true),
-    zonePointsLookup = SystemAPI.GetComponentLookup<ZonePoints>(true),
-};
+var forEachPairProcessor = new SecondPassForEachPairProcessor().Inject(api);
 
 state.Dependency = Physics.ForEachPair(pairStream, forEachPairProcessor).ScheduleParallel(state.Dependency);
 ```
@@ -211,10 +203,10 @@ the computed weights. To do this, when adding our pairs, we will instead use
 within the stream and return it to us by `ref` so we can initialize it.
 
 ```csharp
-struct PlayerVsZoneFindPairsProcessor : IFindPairsProcessor
+partial struct PlayerVsZoneFindPairsProcessor : IFindPairsProcessor, IInjectable
 {
-    public PairStream.ParallelWriter                     pairStream;
-    public PhysicsComponentLookup<ZonePlayerTotalWeight> zonePlayerTotalWeightLookup;
+    public   PairStream.ParallelWriter                     pairStream;
+    [Inject] PhysicsComponentLookup<ZonePlayerTotalWeight> zonePlayerTotalWeightLookup;
 
     public void Execute(in FindPairsResult result)
     {
@@ -235,10 +227,10 @@ a safety check will throw an exception when safety checks are enabled.
 (`PairStream` stores the `BurstRuntime` 32-bit type hash to validate this.)
 
 ```csharp
-struct SecondPassForEachPairProcessor : IForEachPairProcessor
+partial struct SecondPassForEachPairProcessor : IForEachPairProcessor, IInjectable
 {
-    public PhysicsComponentLookup<PlayerPoints>              playerPointsLookup;
-    [ReadOnly] public ComponentLookup<ZonePlayerTotalWeight> zonePlayerTotalWeightLookup;
+    [Inject]           PhysicsComponentLookup<PlayerPoints>   playerPointsLookup;
+    [ReadOnly, Inject] ComponentLookup<ZonePlayerTotalWeight> zonePlayerTotalWeightLookup;
 
     public void Execute(ref PairStream.Pair pair)
     {
@@ -308,11 +300,11 @@ struct ZoneFocal : IBufferElementData
     public float totalWeight;
 }
 
-struct PlayerVsZoneFindPairsProcessor : IFindPairsProcessor
+Partial struct PlayerVsZoneFindPairsProcessor : IFindPairsProcessor, IInjectable
 {
-    public PairStream.ParallelWriter                     pairStream;
-    public PhysicsComponentLookup<ZonePlayerTotalWeight> zonePlayerTotalWeightLookup;
-    public PhysicsBufferLookup<ZoneFocal>                zoneFocalLookup;
+    public   PairStream.ParallelWriter                     pairStream;
+    [Inject] PhysicsComponentLookup<ZonePlayerTotalWeight> zonePlayerTotalWeightLookup;
+    [Inject] PhysicsBufferLookup<ZoneFocal>                zoneFocalLookup;
 
     public void Execute(in FindPairsResult result)
     {
@@ -349,12 +341,12 @@ struct PlayerVsZoneFindPairsProcessor : IFindPairsProcessor
     }
 }
 
-struct SecondPassForEachPairProcessor : IForEachPairProcessor
+partial struct SecondPassForEachPairProcessor : IForEachPairProcessor, IInjectable
 {
-    public PhysicsComponentLookup<PlayerPoints>              playerPointsLookup;
-    [ReadOnly] public ComponentLookup<ZonePlayerTotalWeight> zonePlayerTotalWeightLookup;
-    [ReadOnly] public ComponentLookup<ZonePoints>            zonePointsLookup;
-    [ReadOnly] public BufferLookup<ZoneFocal>                zoneFocalLookup;
+    [Inject]           PhysicsComponentLookup<PlayerPoints>  playerPointsLookup;
+    [ReadOnly, Inject] ComponentLookup<ZonePlayerTotalWeight> zonePlayerTotalWeightLookup;
+    [ReadOnly, Inject] ComponentLookup<ZonePoints>            zonePointsLookup;
+    [ReadOnly, Inject] BufferLookup<ZoneFocal>                zoneFocalLookup;
 
     public void Execute(ref PairStream.Pair pair)
     {

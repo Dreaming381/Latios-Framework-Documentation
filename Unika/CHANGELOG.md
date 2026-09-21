@@ -6,6 +6,46 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic
 Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [0.16.0] – 2026-9-20
+
+Officially supports Entities [1.4.8]
+
+### Added
+
+-   *New Feature:* Added `UnikaScriptAutoAuthoring<T>` which an authoring type
+    can inherit to have authoring be auto-generated for a script
+-   *New Feature:* Added a new *Scripts* tab to the Entity runtime inspector
+    which shows the state of all scripts attached to the selected entity
+-   *New Feature:* Added attributes `[Needs]` `[CopyNeeds]` and
+    `[ComponentBlacklist]` which resolve to the `ComponentBrokerBuilder`
+    extension method `WithContext<T>()` allowing scripts to prescribe the
+    component accesses they need to a `ComponentBroker` within a project
+-   Added `InterfaceAuthoring<T>` which serializes any authoring component for a
+    script implementing the specified interface
+-   Added `managedView` property to `AllScriptsCollection`, which provides a
+    boxed view of the scripts useful for debuggers and inspectors
+-   Added `HierarchyScriptResolver` for QVVS Transforms mode which can resolve
+    scripts using a `TransformsKey`
+-   Added `ScriptTypeExtraction` static method `GetScriptType()` which returns
+    the system type of a type-erased `Script`
+
+### Changed
+
+-   **Breaking:** `ICachedScriptResolver<T>` property `baseResolver` was
+    replaced with an extension method `GetBaseResolver()` which can return the
+    base resolver by ref
+-   `CompareTo()` methods for `Script`, `ScriptRef`, and related types are no
+    longer deterministic, and may change run-to-run
+
+### Improved
+
+-   Added UNITY_DOTS_DEBUG support to safety checks
+-   Improved runtime initialization performance by using a more optimal assembly
+    qualifier
+-   Added C\# Roslyn Analyzers for detecting common source generator mistakes
+    and offering fixes
+-   Added inspector properties for `ScriptRef` and related types
+
 ## [0.15.10] – 2026-7-11
 
 Officially supports Entities [1.4.7]

@@ -18,9 +18,9 @@ The following outlines the order of events in a frame using n – 1 rendering:
 
 1.  Schedule ECS-free jobs (audio, statistics, ect)
 2.  Command Buffer Playback
-3.  Scene and Subscene Managements
+3.  Scene and Subscene Management
 4.  Reactive and other Structural Change Systems
-5.  Sync Transforms (Unity Transforms)
+5.  Sync Transforms (Unity Transforms, optional)
 6.  Process `MonoBehaviours`
 7.  Rendering
 8.  Process Inputs

@@ -126,7 +126,9 @@ previous frame, and disabled otherwise. Renderer entities can also be given
 `PostProcessMatrix` and `PreviousPostProcessMatrix` for applying shear and other
 visual matrix transform effects to the entities for rendering (QVVS Transforms
 only). If a renderer entity uses procedural vertex shader animation, its culling
-bounds can be increased via the `ShaderEffectRadialBounds` component.
+bounds can be increased via the `ShaderEffectRadialBounds` component. If you
+need to fudge transparency sorting, you can use `SortingOffset` to add a
+world-space position offset to the entity which is only used for sorting.
 
 ### LODs
 
@@ -177,6 +179,10 @@ buffers. You can optionally add any of the following buffers:
 -   `UniqueMeshColor`
 -   `UniqueMeshUv0xy`
 -   `UniqueMeshUv3xyz` (typically used for motion vectors)
+-   `UniqueMeshVertexRawData` (replaces all the above with a `MeshData`-like
+    surface)
+    -   Must be accompanied by `UniqueMeshVertexRawLayout` which is an
+        `IComponentData`
 -   `UniqueMeshIndex` (vertex indices in triangles)
 -   `UniqueMeshSubmesh`
 
@@ -186,13 +192,19 @@ override API to configure the submesh IDs and materials, and you must add the
 `RendererBakingTools.uniqueMeshPlaceholder` as the mesh and disable submesh
 clamping when extracting `MeshMaterialSubmeshSettings`.
 
-**Warning:** There is a bug in some versions of Unity that will result in unique
-meshes being uploaded a frame late, which can cause rendering artifacts. To work
-around this, uncomment
-`KinemationBootstrap.InstallUniqueMeshesEarlyUploader(world);` within your
-bootstrap. This has a performance penalty of uploading all dirty unique meshes
-every frame regardless of their visibility status, but will fix the frame delay
-issue. It is believed the bug is fixed in Unity 6000.2.8f1 and newer.
+If you want to build your mesh in world-space, you can add the
+`UniqueMeshWorldPositionRelativeTag`. This eliminates all affects of rotation,
+scale, stretch, and skew from the entity when rendering. In this mode, the
+transform position is still preserved, and you must define the mesh relative to
+it. This is done to preserve rendering fidelity. If you truly want world-space
+positions, position the entity at the origin.
+
+When using Unique Mesh, you are responsible for updating the `RenderBounds`
+component to reflect the mesh’s local bounds.
+
+**Warning:** Due to a change in `BatchRendererGroup` requirements, Unique Mesh
+uploads changes when dirty, regardless of whether it is visible or not for the
+frame.
 
 ## Deforming Renderers
 
@@ -468,6 +480,9 @@ be used if no blending were applied. You can start an inertial blend with
 `InertialBlend()`. It is safe to interrupt an inertial blend with a new inertial
 blend.
 
+`OptimizedSkeletonAspect` must be constructed in user code. To assist with this,
+use `OptimizedSkeletonInputsAspect` inside an `IJobEach`.
+
 #### Sockets
 
 A *socket* (formerly known as “exported bone”) is an entity that copies the
@@ -491,6 +506,22 @@ know about nor care about sockets, which means you can add and remove sockets on
 the fly. Currently, QVVS Transforms only allows one socket per bone, while Unity
 Transforms supports multiple sockets targeting the same bone. Be careful though,
 because sockets can be relatively costly to update.
+
+### Ticking
+
+Optimized skeletons having ticking counterparts for several types:
+
+-   `TickedOptimizedSkeletonState`
+-   `TickedOptimizedSkeletonBoneTransform`
+-   `TickedOptimizedBoneInertialBlendState`
+-   `TickedOptimizedSkeletonAspect`
+-   `TickedOptimizedSkeletonInputsAspect`
+-   `TickedOptimizedBone`
+
+You can add `InterpolateOptimizedSkeletonTag` if you want automatic
+interpolation from a skeleton that is animated solely within ticking. Be careful
+though, because such interpolation is not IK-aware, which can produce awkward
+foot clipping issues.
 
 ## On to Part 2
 

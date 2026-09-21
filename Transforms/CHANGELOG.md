@@ -6,6 +6,76 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic
 Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [0.16.0] – 2026-9-20
+
+Officially supports Entities [1.4.8]
+
+### Added
+
+-   *New Feature:* Added Ticking support proper
+-   *New Feature:* Added `TransformReadAspect` which provides a convenient
+    hierarchy reading and traversal API
+-   *New Feature:* `TransformAspect` is now an `IParameter` for `IJobEach`,
+    drastically reducing the boilerplate required to using it, and can be
+    augmented with the `[RootOnly]` attribute when only roots and solo entities
+    need to be iterated
+-   *New Feature:* Added `TransformDeferableAspect`, which defers all write
+    automatically when the entity belongs to a hierarchy, so that writes get
+    played back in top-down hierarchical order within a chunk-iteration job
+-   Added methods across `TransformAspect` and `TransformTools` to set position
+    and rotation of an entity in a single command
+-   Added `TryGetAspect()` methods across various APIs that can provide a
+    `TransformAspect`
+-   Added `AddDeferredCommand()` and `ApplyDeferredTransforms()` to
+    `TransformAspectRootHandle` and `TransformAspectParallelChunkHandle` which
+    allow for manually queueing of hierarchical changes
+-   Added `entityStorageInfoLookup` property to
+    `TransformAspectParallelChunkHandle` as convenience
+-   `TransformBatchWriteCommand` now supports construction for all command
+    operations
+-   Added `ParentCustomCommand`, `ParentAndLocalTransformCustomCommand`, and
+    `ClearParentCustomCommand` for queueing hierarchy changes from a job
+
+### Changed
+
+-   **Breaking:** `TransformsKey` is now fetched through a `TransformAspect`
+    rather than via handle types, and no longer supports chunk-wide validation
+-   Changed the uniform scale tolerance in baking to be magnitude-dependent
+
+### Fixed
+
+-   Fixed `Abstract.WorldTransformReadOnlyAspect.TypeHandle` reporting
+    `isNativeQvvs` as true when in Unity Transforms mode
+-   Fixed various hierarchy baking issues that resulted in incorrect runtime
+    representations
+-   Fixed `TransformAspect` methods `TransformDirectionWorldToLocal*()` using
+    incorrect implementations
+-   Fixed incorrect chunk union algorithm producing potential race conditions
+    with `TransformAspectParallelChunkHandle`
+-   Fixed `qvvs` static method `inversemulclean()` not normalizing the resulting
+    rotation
+
+### Improved
+
+-   Added UNITY_DOTS_DEBUG support to safety checks
+-   `Abstract.WorldTransformReadOnlyAspect` types `Lookup` and `TypeHandle` now
+    implement `ILatiosApiGettable`, so that they can be retrieved easily and
+    don’t require manual caching
+-   All handle and lookup types for `TransformAspect` now implement
+    `ILatiosApiGettable` or `ILatiosApiGettableBool`, so that they can be
+    retrieved in a single line instead of a `SystemAPI` block snippet
+-   `TransformsComponentLookup<T>` and `TransformsBufferLookup<T>` now implement
+    ILatiosApiGettable
+-   The `ApplyTransforms()` extension method for `TransformBatchWriteCommand`
+    has overloads for more array formats and now works with any set of commands
+    in any order, although the fast path rules are still valid for the fast path
+
+### Removed
+
+-   **Breaking:** Removed `ArchetypeChunk` extension method
+    `GetChunkTransformsKey()` as now `TransformsKey` only cares about a matching
+    entity root
+
 ## [0.15.10] – 2026-7-11
 
 Officially supports Entities [1.4.7]

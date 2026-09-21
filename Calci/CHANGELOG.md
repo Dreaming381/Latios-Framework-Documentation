@@ -6,6 +6,28 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic
 Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [0.16.0] – 2026-9-20
+
+Officially supports Entities [1.4.8]
+
+### Added
+
+-   Added `BezierMath.Evaluate()` overloads which allow performing multiple time
+    sample evaluations against a `KeyedCurve` sequence, offering improved
+    performance in common scenarios
+-   Added `BezierMath.Integrate()` methods for computing the integrals of
+    `KeyedCurve` instances
+-   Added `InitTickedSystemRng()`, `GetTickedMainThreadRng()`, and
+    `GetTickedJobRng()` extension methods for `SystemState`, offering
+    ticking-specialized counterparts to the normal `SystemRng` utility methods
+    along with a backing component `TickedSystemRngSeedAndLastVersion`
+-   Added `RngEach` and `TickedRngEach` which can be used as parameters inside
+    an `IJobEach`
+
+### Improved
+
+-   Added UNITY_DOTS_DEBUG support to safety checks
+
 ## [0.15.11] – 2026-7-18
 
 Officially supports Entities [1.4.8]

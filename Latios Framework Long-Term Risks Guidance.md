@@ -52,6 +52,10 @@ shaders, and that’s a major risk to Kinemation. If Unity continues in this
 direction, the framework would need to fork the core Scriptable Render Pipeline
 packages to customize things to meet Kinemation’s needs.
 
+There’s also the possibility that the framework ecosystem may receive a new
+custom SRP focused on non-GameObject rendering and configuration simplicity,
+targeting mid-range and higher-end devices.
+
 ## Unified Transforms
 
 **Risk:** Medium
@@ -97,11 +101,11 @@ alternative. Hence the risk is lower.
 
 ## NetCode Compatibility
 
-**Risk:** High
+**Risk:** It is happening right now
 
 **Consequences:** Lack of future NetCode support, even in Unity Transforms mode
 
-Unity staff have expressed the intent to subclass the World type for NetCode.
+Unity staff have expressed the intent to subclass the `World` type for NetCode.
 Currently, the Latios Framework already subclasses the World type via
 `LatiosWorld`. But this type is also needed for editor worlds and local
 simulation worlds, so it may not be trivial to make `LatiosWorld` subclass the
@@ -118,7 +122,7 @@ future.
 
 ## Source Generators and IAspect Removal
 
-**Risk:** It is happening right now
+**Risk:** It is happening right now (but is quarantined)
 
 **Consequences:** The Latios Framework is no-longer beginner-friendly (beginning
 0.15)
@@ -130,11 +134,10 @@ support abstractions. They used to support one specific form of abstraction,
 which was `IAspect`, but Unity decided to kill that. That means there’s no way
 to make easy-to-use framework APIs compatible with the easy-to-use ECS APIs.
 
-A potential solution would be for the framework to provide its own source
-generator alternatives for such things. But that’s a lot of work that doesn’t
-help the framework reach its desired feature set any faster. So it may be quite
-a while before something like that happens, unless the community pitched in to
-make it happen (unlikely).
+This is why the Latios Framework now has an alternative to `IJobEntity` called
+`IJobEach`. It is not a bad solution at all. But it does highlight the ecosystem
+divergence. Anyone who wants to make a package that works with and without the
+framework can’t use these framework-exclusive features.
 
 ## API Evolution Sluggishness
 

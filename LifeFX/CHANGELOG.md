@@ -6,6 +6,20 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic
 Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [0.16.0] – 2026-9-20
+
+Officially supports Entities [1.4.8]
+
+### Fixed
+
+-   Fixed VFX Graph operator subgraph nodes
+
+### Improved
+
+-   Added UNITY_DOTS_DEBUG support to safety checks
+-   Added diagnostic warnings for misconfigured buffer provider managed
+    components
+
 ## [0.15.2] – 2026-4-25
 
 Officially supports Entities [1.4.6]

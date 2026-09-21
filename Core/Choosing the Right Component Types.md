@@ -16,18 +16,10 @@ fine in limited quantities.
 
 ## Class IComponentData
 
-Use this extremely sparingly for managed types which need to be serialized on
-entities and for some reason can’t be assets. For all other scenarios where you
-need to serialize managed types, consider making a ScriptableObject and use
-UnityObjectRef\<\> to serialize it in a struct IComponentData.
-
-These instances aren’t pooled in any way, so you will have GC problems. Plus
-they may not operate in the way you would expect references to work, as
-serialization can sometime clone a new instance and sometimes share an instance
-depending on the context. I think there’s a good chance these will disappear in
-a future Entities version.
-
-These are one of the two types of “Component Objects”.
+These are going away. If you need to serialize managed types, consider making a
+`ScriptableObject` and use `UnityObjectRef<>` to serialize it in a struct
+`IComponentData`. For runtime-only data, `IManagedStructComponent` is a good
+option.
 
 ## Struct IBufferElementData
 
@@ -44,6 +36,10 @@ greatest power is that multiple instances can be touched within a single job.
 Always set the `[InternalBufferCapacity]` for them to either a very small value
 or zero. You should definitely have these in your project, but understand they
 are no silver bullet.
+
+Another way to look at it: If you need an array per entity, and have lots of
+entities, then `DynamicBuffer` is a good option. If you only need a single array
+across all entities, there may be better options.
 
 ## Struct ISharedComponentData
 
@@ -80,8 +76,8 @@ With that said, when applied to the right applications, Blob Assets are very
 powerful. The Latios Framework utilizes them for several applications and hides
 all the baking intricacies so you don’t have to worry about them. You’ll likely
 make use of them when using the Latios Framework. It is more likely you will
-find a need for them compared to `ISharedComponentData`, but it may be you won’t
-ever have to write your own.
+find a need for them compared to `ISharedComponentData`, but you might never
+need to write your own.
 
 If you do need help generating your own blob assets, definitely check out the
 [Smart Blobber](Smart%20Blobbers.md) documentation!
@@ -92,11 +88,11 @@ Use these when you need to detect an entity is destroyed or want to prevent the
 component’s value from being copied when instantiating new entities.
 
 `ICleanup*` types are weird. They are powerful, but also seem to be in conflict
-with the direction Unity is steering (although I doubt they will be deprecated).
-Their purpose is for runtime use, where a system can identify that an entity is
+with Unity’s best practices, despite there not being a solid alternative. Their
+purpose is for runtime use, where a system can identify that an entity is
 destroyed and still access whatever is stored in the `ICleanup*` (if any) for
 cleanup purposes. Myri uses this to detect destroyed listeners and detach them
-from the DSPGraph.
+from Audio ECS.
 
 Another interesting characteristic is that the component type is not added to
 instantiated entities even if it exists on the source entity. In Kinemation, a
@@ -144,5 +140,5 @@ than lists on entities if you run most of your game logic on the main thread
 using idiomatic foreach.
 
 If you subscribe to blackboard entities, definitely use these with them. As for
-other entities, that can be a little more niche. You’ll probably find their best
-use cases go hand-in-hand with shared components.
+other entities, the use cases can be a little more niche. You’ll probably find
+their best use cases go hand-in-hand with shared components.

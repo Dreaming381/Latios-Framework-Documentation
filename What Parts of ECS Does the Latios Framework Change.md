@@ -44,11 +44,8 @@ members have proven it to be a viable approach.
 
 **Workflow-wise? Nothing!**
 
-Okay, you’ll find that you need to add a couple of scripting defines to get it
-to compile, with one being ENTITY_STORE_V1, which might be a little disruptive.
-This is a stopgap to ensure full per-hardware determinism, something that the
-framework guarantees. There is a plan in place to phase out this requirement,
-but the transition is not complete yet.
+Okay, you’ll find that you need to add a single Burst-related scripting defines
+to get it to compile. That will go away in a future editor version.
 
 You will probably want to add the scripting define LATIOS_TRANSFORMS_UNITY if
 you decide to only go this far.
@@ -139,6 +136,7 @@ Features made available with this bootstrap include:
 -   Auto-Destroy Expirables
 -   `ISystemShouldUpdate` callbacks and hierarchical system culling (skip
     updates based on something other than emptiness of `EntityQueries`)
+-   `ILatiosApi`, `IInjectable`, and `IJobEach`
 -   Live Baking Tracking APIs
 
 Features installed by default in this bootstrap:
@@ -461,4 +459,7 @@ everything else without it. It is purely a preference.
 Nearly all of it. What doesn’t work tends to be very specialized features. But
 you will also miss out on some of the optimizations and ergonomics QVVS
 Transforms offers. Even still, many people find the Latios Framework with Unity
-Transforms worthwhile.
+Transforms worthwhile. The Add-Ons package is where people usually get
+surprised, as a lot of add-ons only support QVVS Transforms. This is because
+QVVS Transforms are more popular in the community, rather than any hard
+requirement.

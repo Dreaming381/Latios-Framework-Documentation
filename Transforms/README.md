@@ -45,6 +45,13 @@ Motion History allows for tracking world transforms of previous frames. This can
 be used for various things, such as position-based dynamics, kinematic
 platforms, or motion vectors.
 
+### Ticking Ready
+
+QVVS Transforms support Core’s Ticking framework. The hierarchy is shared
+between both representations, but the transforms can be stepped independently.
+Just add the `InterpolateLocalTransformTag` for easy interpolation of any entity
+that moves.
+
 ### Inheritance Flags
 
 Inheritance Flags allow for specifying the various properties of a child
@@ -110,7 +117,7 @@ those who need better compatibility with other offerings.
 -   Some representations of Unity Transforms don’t map to QVVS cleanly in
     abstract APIs, and information may be discarded in both directions.
 -   The always up-to-date transform system requires a bit more boilerplate to
-    use than might be expected. This is primarily due to limitations in Unity’s
+    use outside of `IJobEach`. This is primarily due to limitations in Unity’s
     ECS APIs.
 -   Instantiating live entities requires some extra care, as otherwise an
     instantiated entity might retain its reference to a hierarchy slot it
@@ -122,7 +129,5 @@ those who need better compatibility with other offerings.
 
 ## Potential Future Roadmap Items
 
--   Fixed-Rate Transforms
 -   Improved live baking support
--   More transform writing APIs
 -   Improved support for instantiating child entities

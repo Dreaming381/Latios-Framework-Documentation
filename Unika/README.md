@@ -23,16 +23,19 @@ making Unika one of the fastest scripting solutions available.
 
 ### Tech Artist and Programmer Friendly
 
-Scripts share a lot of similarities with `MonoBehaviours`. This familiarity can
-help reduce the onboarding costs of tech artists. However, scripts are more
-limited in data access compared to `MonoBehaviours`, which allows the
-programmers to expose only what they want to be tinkered with.
+Scripts share a lot of similarities with `MonoBehaviours`. This includes an
+OOP-like API surface as well as automatic authoring in the inspector. This
+familiarity can help reduce the onboarding costs of tech artists. However,
+scripts are more limited in data access compared to `MonoBehaviours`, which
+allows the programmers to expose only what they want to be tinkered with.
 
-However, even programmers may find good uses for Unika for expressing gameplay.
-For problems that do not require maximum performance, Unika can allow a
-programmer to fall back on known OOP-style approaches and save precious
-development time. Unika may even outperform an ECS-based solution on some types
-of problems.
+Programmers may also find good uses for Unika for expressing gameplay. For
+problems that do not require maximum performance, Unika can allow a programmer
+to fall back on known OOP-style approaches and save precious development time.
+Unika may even outperform an ECS-based solution on some types of problems.
+
+Scripts come with IDE debugging properties for inspection, as well as a tab for
+the Entity runtime inspector.
 
 ### Subscene Ready
 
@@ -70,15 +73,10 @@ other cache-efficiently.
     deserialized after remapping. The triggering of these serializations and
     deserializations must be handled explicitly via provided systems or custom
     logic.
--   It is not possible to see specific script values in the inspector or
-    debugger.
 -   Polymorphic interfaces do not support `ref struct` types as parameters or
     return values. This is because `ref structs` cannot be generic arguments,
     and unsafe code compilation is not guaranteed for source generators.
 
 ## Potential Future Roadmap Items
 
--   Script Authoring Interface Serialization
--   Blob Scripts
 -   ECS Native Remap
--   Debugger Support

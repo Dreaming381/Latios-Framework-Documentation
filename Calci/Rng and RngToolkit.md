@@ -61,6 +61,26 @@ state.Dependency = new Job { rng = m_rng.Shuffle() }.ScheduleParallel(1000000, 3
 We would call `Shuffle()` again for each new job we schedule in the same system,
 so that each job gets a new set of random number sequences.
 
+## Using RngEach
+
+`RngEach` is an `IJobEach.IParameter` that you can use in an `Execute()` method.
+It provides all the same methods as an `RngSequence`. There’s also a
+`TickedRngEach` variant for use in ticking. Both parameters are fundamentally
+backed by `SystemRng` below. However, you don’t have to do anything to make it
+work other than specify it as an `Execute()` parameter.
+
+```csharp
+[With(typeof(AiTag))]
+[BurstCompile]
+partial struct Job : IJobEach
+{
+    public void Execute(RngEach rng, ref AiSearchAndDestroyPersonality personality, in AiSearchAndDestroyPersonalityInitializerValues initalizer)
+    {
+        personality.targetLeadDistance = rng.NextFloat(initalizer.targetLeadDistanceMinMax.x, initalizer.targetLeadDistanceMinMax.y);
+    }
+}
+```
+
 ## Using SystemRng
 
 When aiming for maximum performance using Burst-compiled `ISystem` and
@@ -118,6 +138,10 @@ new Job
 
 There is also `state.GetMainThreadRng()` for when you want to use `SystemRng` on
 the main thread, such as for an idiomatic foreach.
+
+There are Ticked variants of all `SystemState` extension methods. Some of these
+methods require the active tick. To help manage ticking state, they add a
+`TickedSystemRngSeedAndLastVersion` component to the system `Entity`.
 
 ## Rng Randomness
 

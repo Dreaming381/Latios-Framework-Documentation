@@ -12,13 +12,13 @@ extension methods that round out Unika’s API and reduce boilerplate in your
 code. With that said, it is easy to get lost when searching for interfaces and
 types. There are only 7 interfaces your types ever need to implement:
 
--   IUnikaScript
--   IUnikaInterface
--   IScriptFilter
--   IScriptResolver
--   ICachedScriptResolver
--   ScriptTypeExtraction.IReceiver
--   ScriptTypeExtraction.ITypeReceiver
+-   `IUnikaScript`
+-   `IUnikaInterface`
+-   `IScriptFilter`
+-   `IScriptResolver`
+-   `ICachedScriptResolver`
+-   `ScriptTypeExtraction.IReceiver`
+-   `ScriptTypeExtraction.ITypeReceiver`
 
 Of these, all but the first 2 are for niche use cases. You can mostly ignore
 them. Any other interface you encounter will either be defined by Unika types or
@@ -398,6 +398,16 @@ From a practical standpoint, many projects may wish to create context structs
 which contain a [Component Broker](../Core/Component%20Broker.md), game time
 values, various key entity references, perhaps a command buffer, and maybe even
 the archetypes array for [Temp Query](../Core/Temp%20Queries.md).
+
+Unika has a special way to populate `ComponentBroker`s based on what a script
+needs. Simply add a `[Needs]` component and call out the component types and a
+`Context` struct (which is just an identifier) the script needs, along with
+their read-write dependencies. You can add multiple instances of the attribute
+targeting the same `Context`. If you want to replicate all [Needs] attributes on
+a script to a second Context, use the `[CopyNeeds]` attribute. The Context can
+be decorated with `[ComponentBlacklist]` to prevent certain component types from
+being available during the context. This mechanism is intended for internal
+development, and should not be used for mods.
 
 ### Sparse Logic Updates
 

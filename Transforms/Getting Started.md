@@ -340,9 +340,9 @@ directly.
 
 There are three APIs you need to know to write transforms:
 
--   EntityManager.SetParent()
--   EntityManager.ClearParent()
--   TransformAspect
+-   `EntityManager.SetParent()`
+-   `EntityManager.ClearParent()`
+-   `TransformAspect`
 
 The first two APIs do exactly as they sound. They allow you to modify the
 hierarchy structure. These APIs tend to induce structural changes, hence they
@@ -352,16 +352,30 @@ are only available to `EntityManager`.
 entity’s transform data correctly. You can fetch it via
 `EntityManager.GetTransformAspect()`. In jobs, you can use
 `TransformAspectLookup`, `TransformAspectRootHandle`, and
-`TransformAspectParallelChunkHandle` to retrieve a `TransformAspect`.
+`TransformAspectParallelChunkHandle` to retrieve a `TransformAspect`. But the
+easiest way to access it is to use it as an `Execute()` parameter inside
+`IJobEach`:
+
+```csharp
+partial struct Job : IJobEach
+{
+    public float dt;
+
+    public void Execute(TransformAspect transform, in Speed speed)
+    {
+        transform.worldPosition += dt * speed.speed * transform.forwardDirection;
+    }
+}
+```
 
 **Never use** `[NativeDisableParallelForRestriction]` **on**
 `TransformAspectLookup`**!** Thread-safety rules for modifying transforms are
 much stricter than normal components, largely because of the propagation
 dependencies.
 
-`TransformAspectRootHandle` and `TransformAspectParallelChunkHandle` are what
-allows for writing transforms in parallel. More details about these APIs can be
-found [here](Writing%20QVVS%20Transforms%20in%20Parallel.md).
+`IJobEach`, `TransformAspectRootHandle` and `TransformAspectParallelChunkHandle`
+are what allows for writing transforms in parallel. More details about these
+APIs can be found [here](Writing%20QVVS%20Transforms%20in%20Parallel.md).
 
 ### Instantiating Entities
 
