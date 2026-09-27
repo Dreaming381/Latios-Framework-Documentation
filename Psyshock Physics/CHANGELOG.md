@@ -6,6 +6,30 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic
 Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [0.16.1] – 2026-9-26
+
+Officially supports Entities [1.4.8]
+
+### Added
+
+-   Added `UnitySim` `SolveJacobian` overload for
+    `LinearVelocity1DMotorJacobianParameters` that uses scalar impulses and
+    fixes several bugs compared to Unity’s implementation
+
+### Changed
+
+-   Fixed spelling in various `UnitySim` motors for
+    `targetInInertialPoseBSpace`, with the old name now being a deprecated
+    property
+
+### Fixed
+
+-   Fixed several implementations of `UnitySim` Jacobians that were incorrectly
+    ported or became stale compared to Unity’s implementations
+-   Fixed `UnitySim` methods `SpringFrequencyFrom()` and `SpringConstantFrom()`
+    using incorrect formulas
+-   Fixed `AsSpan()` exception on a zero-length `StreamSpan<T>`
+
 ## [0.16.0] – 2026-9-20
 
 Officially supports Entities [1.4.8]

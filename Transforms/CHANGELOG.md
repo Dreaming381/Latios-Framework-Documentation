@@ -6,6 +6,32 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic
 Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [0.16.1] – 2026-9-26
+
+Officially supports Entities [1.4.8]
+
+### Added
+
+-   Added `qvvs` static methods `TransformNormalUnnormalized()` and
+    `InverseTransformNormalUnnormalized()` for surface normal space conversions
+-   Added various new utility methods to `WorldTransformReadOnlyAspect` and made
+    the type an `IParameter`
+
+### Changed
+
+-   Fixed spelling of `EntityManager` extension methods `GetTransformAspect()`,
+    `GetTransformReadAspect()`, `GetTickedTransformAspect()`, and
+    `GetTickedTransformReadAspect()`, with the old names now being deprecated
+    redirections
+
+### Fixed
+
+-   Fixed several implementations of `UnitySim` Jacobians that were incorrectly
+    ported or became stale compared to Unity’s implementations
+-   Fixed `UnitySim` methods `SpringFrequencyFrom()` and `SpringConstantFrom()`
+    using incorrect formulas
+-   Fixed `AsSpan()` exception on a zero-length `StreamSpan<T>`
+
 ## [0.16.0] – 2026-9-20
 
 Officially supports Entities [1.4.8]

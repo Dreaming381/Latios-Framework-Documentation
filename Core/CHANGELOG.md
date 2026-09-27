@@ -6,6 +6,53 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic
 Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [0.16.1] – 2026-9-26
+
+Officially supports Entities [1.4.8]
+
+### Changed
+
+-   Renamed `LatiosWorld` method
+    `ForceCreateNewSceneBlackboardEntityAndCallNewScene()` to simply
+    `ForceCreateNewSceneBlackboardEntity()` and deprecated the old name, to
+    better reflect how the `OnNewScene()` callbacks are applied during the next
+    blackboard merge update rather than immediately (no behavior change)
+-   `DynamicHashMap<>` no longer implements `IEnumerable<>` as it always just
+    threw exceptions for that interface anyways
+
+### Fixed
+
+-   Fixed `TlsfAllocator` disposing added pools on shutdown using its own
+    allocator rather than the allocator the pool was added with
+-   Fixed `TlsfAllocator` emergency allocation of a very large request failing
+    to reserve enough memory for allocator overhead, resulting in infinite
+    recursion
+-   Fixed `TlsfAllocator` pool allocation logic inconsistencies for pools over
+    1GB in size
+-   Fixed `AsSpan()` throwing on a zero-element `CommandSpan<T>`
+-   Fixed `FluentQuery` query simplification logic sometimes throwing exceptions
+-   Fixed various issues in which collection component removal was not handled
+    correctly
+-   Fixed `Bits.SetBits()` on 32- and 64-bit types with a bit count of 0
+-   Fixed leftover state from previous frames when a `ComponentBroker` is used
+    to iterate chunks on the main thread
+-   Fixed `DynamicHashMap<>` methods `Clear()` and `EnsureCapacity()` leaving
+    the hashmap in a bad state
+-   Fixed `DynamicMultiList.AddRange()` not working correctly
+-   Fixed `TempQuery` missing archetypes when using Any or Without constraints
+-   Fixed `AddComponentsCommandBuffer` `DropData` mode corrupting the results
+    when entities were actually dropped
+-   Fixed `InstantiateCommandBuffer` instantiating an entity whose
+    `LinkedEntityGroup` entities share the exact same archetype as the root
+    being instantiated
+-   Fixed a struct implement multiple `IVInterface` interfaces throwing on
+    domain initialization
+
+### Improved
+
+-   Added a safety check to `GapAllocator` when an allocation exceed `uint`
+    arithmetic
+
 ## [0.16.0] – 2026-9-20
 
 Officially supports Entities [1.4.8]

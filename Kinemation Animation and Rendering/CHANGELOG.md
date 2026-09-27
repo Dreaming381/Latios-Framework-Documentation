@@ -6,6 +6,29 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic
 Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [0.16.1] – 2026-9-26
+
+Officially supports Entities [1.4.8]
+
+### Added
+
+-   Added `OcclusionCullingContextAspect` and `KinemationBootstrap` `static`
+    method `InstallOcclusionCullingSystem()` which allow for a 3rd party CPU
+    occlusion culling to plug into Kinemation’s culling pipeline
+
+### Fixed
+
+-   Fixed blend shape baking read and error handling
+-   Fixed mipmap streaming sometimes picking the wrong entity to represent a
+    chunk when using `PromiseAllEntitiesInChunkUseSameMaterialMeshInfoTag`
+-   Fixed exception in `SkinningDispatchSystem.GenerateSkinningCommandsJob` when
+    an invalid skeleton is encountered
+
+### Improved
+
+-   Improved performance of mipmap streaming when processing chunks that have an
+    empty `RenderMeshArray`
+
 ## [0.16.0] – 2026-9-20
 
 Officially supports Entities [1.4.8]
