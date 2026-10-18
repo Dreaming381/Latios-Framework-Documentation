@@ -186,8 +186,9 @@ dumb things sometimes. Adreno GPUs have been susceptible to this.
     Kinemation support your target platform officially, please reach out!
     Alternatively, you can add the LATIOS_DISABLE_ACL scripting define at the
     cost of losing animation clip functionality.
--   Occlusion Culling is not supported (not that Entities Graphics supports it
-    either).
+-   GPU Occlusion Culling is not supported (not that Entities Graphics supports
+    it either). However, the Peekaboo add-on provides CPU occlusion culling
+    which you can try.
 -   Entities Graphics stats don’t work. Kinemation may provide its own solution
     for this in a future release which will be more extensible and customizable.
     In the meantime, you are strongly encouraged to use RenderDoc to analyze
@@ -212,7 +213,6 @@ dumb things sometimes. Adreno GPUs have been susceptible to this.
 
 ## Potential Future Roadmap Items
 
--   CPU Occlusion Culling Hook
 -   Sync-less `LatiosEntitiesGraphicsSystem`
 -   Automatic Batch Combining
 -   Procedural and Indirect Draw Support

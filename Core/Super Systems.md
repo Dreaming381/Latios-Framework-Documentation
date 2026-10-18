@@ -85,7 +85,7 @@ public class BeastSuperSystem : SuperSystem
 
     public override bool ShouldUpdateSystem()
     {
-        var scene = worldGlobalEntity.GetComponentData<CurrentScene>();
+        var scene = worldBlackboardEntity.GetComponentData<CurrentScene>();
         return scene.current != "Beast Dungeon" || !m_query.IsEmptyIgnoreFilter;
     }
 }

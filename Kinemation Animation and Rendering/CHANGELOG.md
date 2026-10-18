@@ -6,6 +6,27 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic
 Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [0.16.2] – 2026-10-17
+
+Officially supports Entities [1.4.8]
+
+### Added
+
+-   Added `LodGroupReferencePoint` designed to support HLOD setups and remove
+    the limitation of LOD Group baking requiring identity transforms
+
+### Fixed
+
+-   Fixed `ParameterClipSmartBlobberSystem` not working at all
+-   Fixed bones without animation in a particular clip retaining a previous
+    clip’s final pose instead of the base pose
+-   Fixed memory leak when baking mipmap streaming UV metrics
+-   Fixed optimized skeletons reading a previous pose when it meant to read the
+    two-ago pose, such as during inertial blending
+-   Fixed `BlendShapesDispatchSystem` and `UploadDynamicMeshesSystem` exceptions
+    from entities instantiated during `SimulationSystemGroup`
+-   Fixed live baking runtime initialization of blend shapes and dynamic meshes
+
 ## [0.16.1] – 2026-9-26
 
 Officially supports Entities [1.4.8]

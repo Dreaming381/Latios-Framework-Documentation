@@ -6,6 +6,73 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic
 Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [0.16.2] – 2026-10-17
+
+Officially supports Entities [1.4.8]
+
+### Fixed
+
+-   Fixed `IBaker` extension `RequestCreateTerrainBlobAsset()` requiring more
+    bitfields than the terrain size actually needs, resulting in errors
+-   Fixed failed baking when a stale reference is left inside a
+    `ColliderAuthoring` list or the list itself is null
+-   Fixed `PhysicsDebug.DrawCollider()` on a capsule not handling all internal
+    edge orientations correctly
+-   Fixed `PhysicsDebug.DrawCollider()` on a terrain drawing some edges multiple
+    times
+-   Fixed `PhysicsDebug.LogDistanceBetween()` not working correctly for terrain
+    colliders
+-   Fixed `SubstepWithIndex` deconstructor using `float` for the `substepIndex`
+-   Fixed substeps taking larger time steps than the max permitted when not
+    enough substeps are allowed to cover the time range, rather than simulating
+    less time as the documentation describes
+-   Fixed `Physics.BuildCollisionWorld()` single-threaded schedulers not
+    initializing correctly
+-   Fixed `Physics.BuildCollisionWorld()` not recording the `worldIndex`
+    correctly
+-   Fixed `Physics.DistanceBetween()` for terrain and tri-mesh colliders not
+    producing correct results for rigid body simulation
+-   Fixed missing pairs in `FindPairs` on a single `CollisionWorld` with a
+    single Mask
+-   Fixed scheduling a `ForEachPair` on a `PairStream` multiple times
+    consecutively producing duplicate pairs
+-   Fixed FindObjects repeating results on a `CollisionLayer` or
+    `CollisionWorld` with no subdivisions
+-   Fixed `QuickTests.ClosestPointOnEllipse()` on a degenerate ellipse producing
+    unclamped values along the negative side of an axis
+-   Fixed `QuickTests.LikelyIntersectsFrustum()` ignoring two of the planes
+-   Fixed `Physics.ScaleStretchCollider()` on a sphere using `IgnoreStretch`
+    mode not applying uniform scale to the sphere center
+-   Fixed incorrect calculations for `Physics.AabbFrom()` on terrain and
+    compound colliders
+-   Fixed `Physics.WithinDistance()` using a point not correctly querying the
+    `maxDistance` in the broadphase resulting in missed results
+-   Fixed `Physics.FindObjects()` exceptions when using multiple layers
+-   Fixed safety check in `FindPairsBucketContext` having an off-by-one error,
+    missing flagging an equivalent user error
+-   Fixed baking of terrain blobs when the number of rows is not a multiple of 8
+-   Fixed terrain mid-phase reporting invalid triangles due to a bad cast
+    sign-extending a 32-bit bitfield
+-   Fixed negative axis scale handling in the tri-mesh mid-phase
+-   Fixed `CollisionWorld.isCreated` still reporting true after it has been
+    disposed
+-   Fixed exception in `DynamicStreamSpan.GetSpan<T>()` on an empty span
+-   Fixed incorrect bucket assignment on `PairStream.AddPairFromOtherStream*()`
+    methods
+-   Fixed PairStream not registering changes when only `ConcatenateFrom()` is
+    ever called on it before it is used in a ForEachPair operation
+-   Fixed setting a `PairStream.Pair.enabled` to `false` not actually doing that
+-   Fixed `PhysicsBufferLookup.HasBuffer()` not working correctly
+
+### Improved
+
+-   Improved parallelization of `ForEachPair` by fixing an island distribution
+    issue
+-   Calling `Physics.BuildCollisionLayer().Run()` using an `EntityQuery` or
+    `Physics.BuildCollisionWorld().Run()` no longer requires
+    `SystemState.CompleteDependency()` to be called in advance, as it forces job
+    completion on the `EntityQuery` instead
+
 ## [0.16.1] – 2026-9-26
 
 Officially supports Entities [1.4.8]

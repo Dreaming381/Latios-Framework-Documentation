@@ -6,6 +6,41 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic
 Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [0.16.2] – 2026-10-17
+
+Officially supports Entities [1.4.8]
+
+### Added
+
+-   Added `UnikaBootstrap` method `InstallUnikaLiveBakingDeserialization()`
+    which should be called when using Unika but not using its built-in
+    serialization system that is installed with
+    `InstallUnikaEntitySerialization()`
+
+### Changed
+
+-   The Scripts tab in the runtime inspector has been replaced with an inline
+    inspector within the components tab, which while slightly less elegant is
+    much more robust and reliable
+
+### Fixed
+
+-   Fixed live baking of scripts not correctly deserializing `Entity` and
+    `BlobAssetReference` elements within scripts upon world patching
+-   Fixed live baking not correctly updating a scripts buffer when all scripts
+    are removed
+-   Fixed various issues with the `InterfaceAuthoring` `PropertyDrawer`
+-   Fixed several script indexing issues in `UnikaMultiScriptAuthoring`
+-   Fixed issue with adding the first script to an entity after previously
+    removing all scripts from the entity
+-   Fixed issue with removing a script not updating the bloom masks correctly
+-   Fixed `object` `Equals()` across all types
+-   Fixed entity that used to have scripts before they were all removed
+    reporting `isEmpty` as false
+-   Fixed `Cached<T>` not actually caching anything
+-   Fixed handling of `default`-initialized scripts in comparison and casting
+    operations
+
 ## [0.16.0] – 2026-9-20
 
 Officially supports Entities [1.4.8]

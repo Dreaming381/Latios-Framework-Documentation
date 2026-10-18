@@ -87,4 +87,6 @@ subscene, allowing them to persist even after the subscene unloaded.
 ## DisableSynchronousSubsceneLoadingTag
 
 You can add this component to a subscene entity at runtime to disable forcing
-the subscene to load synchronously.
+the subscene to load synchronously. You can also control this by adding the
+*SubScene Load Options (Latios Core)* component to the GameObject containing the
+*Sub Scene* component.

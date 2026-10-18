@@ -135,13 +135,15 @@ world-space position offset to the entity which is only used for sorting.
 Renderer entities can belong to a LOD Group. Unlike in Entities Graphics,
 Kinemation does not bake the LOD Group Game Object as an entity, and does not
 add any components for it. Instead, Kinemation bakes each Renderer as a LOD
-independently, and assumes all renderers in the LOD Group have the same
-position. If you have a use case that breaks this assumption, please report it.
-Kinemation supports LOD Crossfade (which also needs to be enabled in Shader
-Graph shaders), but does not support animated crossfades.
+independently by storing the reference point in local space, and assumes all
+renderers in the LOD Group maintain constant positions relative to each other.
+If you have a use case that breaks this assumption, please report it. Kinemation
+supports LOD Crossfade (which also needs to be enabled in Shader Graph shaders),
+but does not support animated crossfades.
 
 At runtime, `LodHeightPercentages` or `LodHeightPercentagesWithCrossfadeMargins`
-hold the LOD range parameters. `LodCrossfade` holds the crossfade value. And
+hold the LOD range parameters. `LodGroupReferencePoint` holds the local-space
+reference point. `LodCrossfade` holds the crossfade value. And
 `SpeedTreeCrossfadeTag` enables speedtree-style crossfades which blends the
 higher-res mesh vertices towards the lower-res mesh.
 

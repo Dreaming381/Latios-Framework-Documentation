@@ -368,7 +368,7 @@ will be disabled again by the deserialization system which updates in
 `PostSyncPointGroup`.
 
 If you only ever instantiate entities with scripts from prefabs, you may not
-need to touch serialization.
+need to touch serialization (aside from the bootstrap).
 
 If the built-in entity serialization systems do not match your needs, remove
 Unika from the bootstraps and look at the `ScriptSerialization` static class to

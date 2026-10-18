@@ -6,6 +6,53 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic
 Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [0.16.2] – 2026-10-17
+
+Officially supports Entities [1.4.8]
+
+### Fixed
+
+-   Fixed `UnityEngine.Transform` extension `GetWorldSpaceQvvs()` using
+    world-space values instead of local space
+-   Fixed `UnityEngine.Transform` extension `GetQvvsRelativeTo()` not walking
+    hierarchy edge cases correctly
+-   Fixed handling of removed and overridden parent changes during baking
+-   Fixed many instantiation and parent change issues
+-   Fixed fallback logic for children with dead parents when updating transforms
+-   Fixed not write an inverse world transform operation’s result to a child
+    entity
+-   Fixed specific combination of `InheritanceFlags` resulting in rotation not
+    being updated correctly
+-   Fixed `HierarchyCleanupSystem` never working because it was checking the
+    root for existence rather than aliveness
+-   Fixed issue where `TwoAgoTransform` was sometimes not initialized
+-   Fixed several issues with updating ticked motion history
+-   Fixed issue where `ComponentLookup<TickedWorldTransform>` would sometimes be
+    treated as its unticked counterpart
+-   Fixed propagation for multiple commands targeting a non-root entity
+-   Fixed propagation in hierarchies containing dead entities
+-   Fixed `CopyParent` flag sometimes being ignored or misinterpreted during
+    propagation
+-   Fixed `ComponentBroker` methods using a `TransformsKey` not actually using
+    the `TransformsKey`
+-   Fixed some `TransformTools` operations attempting to look up root or solo
+    entities incorrectly when applying transforms
+-   Fixed `TransformTools.SetTickedLocalScale` writing to `WorldTransform`
+    instead of `TickedWorldTransform` on a solo entity
+-   Fixed an entity belonging to a hierarchy with `EntityInHierarchyCleanup` not
+    resolving the `EntityInHierarchyHandle` from its `RootReference` correctly
+-   Fixed various handle types not initializing `TransformAspect` correctly to
+    support `TransformsKey` usage
+-   Fixed `ApplyTransforms()` methods on `TransformBatchWriteCommands` and
+    `TickedTransformBatchWriteCommands` throwing exceptions when all transforms
+    are solo entities or use `InheritanceFlags.CopyParent`
+-   Fixed `TransformDeferableAspect` and `TickedTransformDeferableAspect`
+    methods `TranslateWorld()` and `RotateWorld()` using immediate values to
+    compute the new deferred results
+-   Fixed compile error when trying to use `TransformQvvs_identity` in shaders
+-   Fixed `TransformDirectionWithStretch()` and
+    `TransformDirectionScaledAndStretched()` in both qvvs and shaders
+
 ## [0.16.1] – 2026-9-26
 
 Officially supports Entities [1.4.8]

@@ -6,6 +6,20 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic
 Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [0.16.2] – 2026-10-17
+
+Officially supports Entities [1.4.8]
+
+### Fixed
+
+-   Fixed editor handling of multiple `GraphicsEventTunnel` instances being
+    created consecutively resulting in their `Awake()` methods being called
+    before being assigned an asset GUID
+-   Fixed `TrackedWorldTransform` GPU uploads for large entity counts
+-   Fixed exceptions when generating events for a destroyed receptor
+-   Fixed `TrackedWorldTransform` upload state machine being broken by incorrect
+    change filtering and other logic quirks
+
 ## [0.16.0] – 2026-9-20
 
 Officially supports Entities [1.4.8]

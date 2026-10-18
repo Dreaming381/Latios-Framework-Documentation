@@ -6,6 +6,31 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic
 Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [0.16.2] – 2026-10-17
+
+Officially supports Entities [1.4.8]
+
+### Fixed
+
+-   Fixed `worldBlackboardEntity` not being assigned to
+    `IAudioEcsSystemRunner.ShutdownContext`
+-   Fixed a brickwall limiter regression causing the limiter to relax instantly
+-   Fixed usage of unallocated lists inside Audio ECS presampled buffer
+    processing in specific edge cases
+-   Fixed custom audio clip smart blobber baking stereo clips as mono.
+-   Fixed codec not being assigned when baking custom audio clips
+-   Fixed `ThreadStackAllocator` leak when baking custom stereo clips
+-   Fixed `ListenerProfileBlob` baking left channel volume settings into the
+    right channel
+-   Fixed signal-to-noise ratio computation returning `1f` instead of infinite
+    for uncompressed audio, making uncompressed audio appear very poor in
+    metrics
+-   Fixed `ThreadStackAllocator` exception when calling `GetLeftOrMonoSamples()`
+    or `GetRightSamples()` on an `AudioClipBlob`
+-   Fixed handling of `AudioEcsAtomicFeedbackIds` accidentally invoking a sign
+    extension across multiple packed values
+-   Fixed `SetLookaheadSampleCount()` discarding samples
+
 ## [0.16.0] – 2026-9-20
 
 Officially supports Entities [1.4.8]

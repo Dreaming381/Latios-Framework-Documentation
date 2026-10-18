@@ -26,7 +26,7 @@ in the hierarchy (`LinkedEntityGroup`) are also enabled. The hierarchy is
 captured during playback rather than when the commands were recorded.
 
 To manually play back an `EnableCommandBuffer`, you must provide both an
-`EntityManager` and a read-only `BufferFromEntity<LinkedEntityGroup>`. You must
+`EntityManager` and a read-only `BufferLookup<LinkedEntityGroup>`. You must
 dispose the command buffer after manual playback.
 
 Example:
@@ -45,7 +45,7 @@ public void OnUpdate(ref SystemState state)
             ecb.Add(ship);
 
             var entityTransform          = GetComponent<WorldTransform>(entity);
-            var shipTransform            = GetAspect<TransformAspect>(ship);
+            var shipTransform            = state.EntityManager.GetTransformAspect(ship);
             shipTransform.worldRotation  = entityTransform.rotation;
             shipTransform.worldPosition  = entityTransform.position;
             payload.ValueRW.disabledShip = Entity.Null;

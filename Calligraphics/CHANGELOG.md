@@ -6,6 +6,19 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic
 Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [0.16.2] – 2026-10-17
+
+Officially supports Entities [1.4.8]
+
+### Fixed
+
+-   Fixed atlas arrays being allocated with a depth buffer
+-   Fixed atlas arrays being destroyed by Unity upon scene changes
+
+### Improved
+
+-   Added a warning when a requested system font could not be found
+
 ## [0.16.0] – 2026-9-20
 
 Officially supports Entities [1.4.8]

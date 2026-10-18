@@ -6,6 +6,82 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic
 Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [0.16.2] – 2026-10-17
+
+Officially supports Entities [1.4.8]
+
+### Added
+
+-   Added missing constructor and `Dispose()` method for `AtomicDoubleBuffer<T>`
+
+### Fixed
+
+-   Fixed `ICustomBakingBootstrap` being created and executed twice in a session
+-   Fixed blob disposal issues for blobs created by an unregistered smart
+    blobber
+-   Fixed a `ThreadStackAllocator` issue where an allocation could allocate past
+    the end of a large recycled memory block with an awkward allocation size
+-   Fixed `UnsafeParallelBlockList` method `CopyElementsRaw()` aliasing tail
+    blocks resulting in stomped-over elements
+-   Fixed non-generic `AddComponentsCommandBuffer` not recording added tags
+-   Fixed exception when calling `GetSpan<T>()` on an empty `DynamicCommandSpan`
+-   Fixed `DestroyCommandBuffer` not remembering if it was played back already
+    or not
+-   Fixed `DestroyCommandBuffer` issues when an entity is added for destruction
+    multiple times
+-   Fixed `BootstrapTools.InjectUnitySystems` omitting Unity systems lacking a
+    namespace when `silenceWarnings` is `false` (default)
+-   Fixed `BootstrapTools.InjectSystem()` not respecting `[NoGroupInjection]`
+    when no `[UpdateInGroup]` attribute is present
+-   Fixed `BootstrapTools.InjectSystems()` not respecting `[NoGroupInjection]`
+    on `ISystem` types
+-   Fixed `BootstrapTools.InjectSystems()` exceptions when `null` is passed into
+    the `defaultGroup`
+-   Fixed `BootstrapTools.BuildSystemGroup<T>()` ignoring `ISystem` types
+-   `FluentQuery` `With` and `WithoutEnabled` on the same type are now resolved
+    correctly to `WithDisabled`
+-   Fixed `SuperSystem` and `SubSystem` method `GetEntityQuery()` using an
+    `EntityQueryBuilder` recursing infinitely
+-   Fixed `Bits.SetBits()` for a `ulong` that sets 64 bits
+-   Fixed `DynamicHashMap.EnsureCapacity()` only allocating half the required
+    memory needed
+-   Fixed `AddComponentExtensions` methods throwing when using a zero-sized
+    component type
+-   Removed leftover collection component debug log
+-   Fixed quaternion.hlsl and typed_math_extras.hlsl functions `LookRotation()`,
+    `LookRotationSafe()` and `TRS()` not abiding to HLSL row-construction rules
+    resulting in transposed matrices
+-   Fixed `SceneManagerSystem` forever failing if a rogue default
+    `RequestLoadScene` is encountered
+-   Fixed safety invalidation exceptions in various subscene loading edge cases
+    inside `SceneManagerSystem`
+-   Fixed missing copy logic of enabled bits inside `TickedAutoPreviousSystem`
+-   Fixed incorrect query logic for specific type combinations inside
+    `TickedAutoStructuralChangeSystem`
+-   Fixed first Ticking tick being treated as a resimulation tick
+-   Fixed ticking elapsed time being accumulated too often
+-   Fixed `syncPoint` and `tickedSyncPoint` not entering a pending command
+    buffer state when the only command buffers used were added via extension
+    methods
+-   Fixed `syncPoint` and `tickedSyncPoint` lifecycle handling issues when
+    exceptions are thrown
+-   Fixed various exceptions in `AutoDestroyExpirablesSystem` jobs
+-   Fixed various memory corruption issues in `BlobBuilder` extension methods
+    for allocating `BlobArray`s and `BlobString`s
+-   Fixed exception when passing an empty span to
+    `CollectionsExtensions.CombineDependencies()`
+-   Fixed `Span<T>.Sort()` extension method exceptions of empty spans
+-   Fixed `EntityStorageInfoLookup.IsCreated()` extension method returning the
+    wrong value
+
+### Improved
+
+-   `AddComponentsDestroyedEntityResolution.ThrowException` is now treated as
+    `DropData` when safety checks are disabled to avoid crashing
+-   Added duplicate entity check for `AddComponentsCommandBuffer<>` types
+-   `StringBuilder` fixed string extension methods now support the full
+    4-byte-wide UTF8 codes
+
 ## [0.16.1] – 2026-9-26
 
 Officially supports Entities [1.4.8]

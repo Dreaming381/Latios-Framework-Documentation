@@ -143,24 +143,13 @@ var alsoT = qvvs.inversemulqvvs(TransformQvvs.identity, T);
 var notIdentity = qvvs.inversemulqvvs(T, T); // all identity values except stretch
 ```
 
-What definitely does work is associativity.
+Associativity is deceptive, because it works most of the time, but fails in a
+few cases.
 
-**W** = **GPL** = (**GP**)**L** = **G**(**PL**)
+**W** = **GPL** = (**GP**)**L** != **G**(**PL**)
 
-```csharp
-var temp = qvvs.mul(G, P);
-var W = qvvs.mul(temp, L);
-// Same as
-var temp = qvvs.mul(P, L);
-var W = qvvs.mul(G, temp);
-
-// And for inverses
-var temp = qvvs.inversemulqvvs(G, W);
-var L = qvvs.inversemulqvvs(P, temp);
-// Same as
-var temp = qvvs.mul(G, P); // Yes, not inverse mul
-var L = qvvs.inversemulqvvs(temp, W);
-```
+Always work from left to right, such that a childless transform is always
+multiplied with the pre-multiplied result of its full ancestry.
 
 The `qvvs` class contains many other helpful methods, but feel free to suggest
 ones you find to be missing when you need them.
@@ -411,8 +400,8 @@ simply add the *Latios -\> Transforms -\> Game Object Entity* component.
 ![](media/042a63b2fbf2303d685d4699cf1dbff3.png)
 
 If Host Entity is left empty, the Game Object is considered to be
-“self-hosting”, and it will copy its `UnityEngine.Transform` to the entity’s
-`WorldTransform` every update.
+“self-hosting”, and it will copy its entity’s `WorldTransform` to its
+`UnityEngine.Transform` every frame.
 
 To bind the Game Object to an entity in the subscene, first, add the *Latios -\>
 Transforms -\> Game Object Entity Host* component to the subscene Game Object.

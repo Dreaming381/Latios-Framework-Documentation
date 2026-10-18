@@ -6,6 +6,28 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic
 Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [0.16.2] – 2026-10-17
+
+Officially supports Entities [1.4.8]
+
+### Fixed
+
+-   Fixed computation in `BezierMath.SegmentLengthsOf()`
+-   Fixed edge-case handling for `BezierMath` methods
+    `FactorFromDistanceApproximately()` and `DistanceAlongApproximately()`
+-   Fixed `BezierMath.CurveAndFactorFromApproximateDistanceAlong()` for more
+    than two knots
+-   Fixed `BezierKnot.FromCurveEndpointB()` using the wrong vertex
+-   Fixed implicit conversion from Calci’s `Keyframe` to `UnityEngine.Keyframe`
+    mapping weighted tangent modes incorrectly
+-   Fixed `LatiosMath.SmoothSlide()` not scaling the tail region correctly
+-   Fixed `BinarySearch` methods throwing or accessing invalid memory when there
+    are zero elements
+-   Fixed incorrect transformation sequence in `Qcp` when solving for a
+    translation
+-   Fixed incorrect matrix coefficients in the `Qcp` solver that resulted in
+    approximately a 3% error in results
+
 ## [0.16.0] – 2026-9-20
 
 Officially supports Entities [1.4.8]

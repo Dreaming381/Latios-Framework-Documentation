@@ -58,14 +58,15 @@ Afterwards, we have to call `EndSamplingAndSync()`.
 
 ```csharp
 [BurstCompile]
-partial struct OptimizedJob : IJobEntity
+partial struct OptimizedJob : IJobEach
 {
     public float et;
 
-    public void Execute(OptimizedSkeletonAspect skeleton, in SingleClip singleClip)
+    public void Execute(OptimizedSkeletonInputsAspect skeletonInputs, TransformAspect transform in SingleClip singleClip)
     {
-        ref var clip     = ref singleClip.blob.Value.clips[0];
-        var     clipTime = clip.LoopToClipTime(et);
+        var skeleton = skeletonInputs.ToSkeleton(transform);
+        ref var clip = ref singleClip.blob.Value.clips[0];
+        var clipTime = clip.LoopToClipTime(et);
 
         clip.SamplePose(ref skeleton, clipTime, 1f);
         skeleton.EndSamplingAndSync();

@@ -6,6 +6,19 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic
 Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [0.16.2] – 2026-10-17
+
+Officially supports Entities [1.4.8]
+
+### Fixed
+
+-   Fixed various memory management and corruption issues caused by component
+    removal
+-   Fixed `AuxComponentEnumerator<T>` accessing stale or invalid memory when a
+    new component type is added to an entity that has never been seen before
+    while the enumerator is active
+-   Fixed `AuxWorld` method `RemoveAllComponents()` not actually doing anything
+
 ## [0.16.0] – 2026-9-20
 
 Officially supports Entities [1.4.8]
