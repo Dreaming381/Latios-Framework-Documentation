@@ -6,6 +6,57 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic
 Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [0.16.3] – 2026-10-18
+
+Officially supports Entities [1.4.8]
+
+### Fixed
+
+-   Fixed tests against a terrain when a large object is partially outside the
+    min and max height range
+-   Fixed issue in `Physics.ColliderCast()` when terrain is the caster
+-   Fixed `Physics.WithinDistance()` not respecting a `maxDistance` less than
+    what is possible for the colliders
+-   Fixed various issues in `Physics.DistanceBetween()` involving degenerate
+    colliders
+-   Fixed `Physics.DistanceBetween()` between a capsule and triangle returning
+    incorrect results
+-   Fixed `ColliderCast()` between a capsule and various other collider types
+    setting up an incorrect edge-edge CSO
+-   Fixed `Physics.DistanceBetween()` for spheres and capsules inside a box or
+    convex collider producing the wrong normal
+-   Fixed build regression due to a bad `using` directive
+-   Fixed an issue in `Physics.DistanceBetween()` involving a point or sphere
+    and a box using the wrong `halfSize` values for computing the `hitpoint`
+    when the `hitpoint` is on the y-axis edge
+-   Fixed mid-phase for compound colliders not computing a sufficient AABB
+    accounting for scale and stretch
+-   Fixed `Physics.Raycast()` overload that takes in a `subCollider` index not
+    working correctly with compound colliders
+-   Fixed `Physics.AreOverlapping()` between a point and a triangle always
+    returning `true` if the point lies on the triangle’s plane, even if it was
+    far away from the triangle
+-   Fixed various triangle-related queries for degenerate triangles incorrectly
+    being classified as an inside hit
+-   Fixed various triangle or internal quad queries producing an unnormalized
+    normal vector
+-   Fixed various TriMesh queries not handling scale and stretch correctly
+-   Fixed `Physics.DistanceBetween()` involving a terrain with zero-scale along
+    an axis ignoring `maxDistance` for that axis
+-   Fixed `Physics.DistanceBetween()` between a box and a triangle mishandling a
+    face-edge pair GJK result
+-   Fixed `Physics.ColliderCast()` involving a TriMesh conflating triangle
+    transforms when testing for initial intersection
+-   Fixed `Physics.DistanceBetweenAll()` not returning all pairs between two
+    composite types
+-   Fixed GJK simplex feature identification sometimes producing the wrong
+    result
+-   Fixed issue in various layer queries or TriMesh queries where the query
+    pair’s max being equal to a layer or triangle’s min along the x-axis would
+    not be reported
+-   Fixed `TrueSim` methods using the accumulating mass instead of the
+    individual mass for each collider
+
 ## [0.16.2] – 2026-10-17
 
 Officially supports Entities [1.4.8]
