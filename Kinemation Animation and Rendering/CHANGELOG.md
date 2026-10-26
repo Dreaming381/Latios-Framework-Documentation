@@ -6,6 +6,84 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic
 Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [0.16.4] – 2026-10-25
+
+Officially supports Entities [1.4.8]
+
+### Fixed
+
+-   Fixed `SkeletonClip` and `ParameterClip` methods
+    `CountLoopCycleTransitions()` for negative cycles
+-   Fixed `SkeletonClip.SampleBone()` and `ParameterClip.SampleParameter()` not
+    clamping the bone or parameter index despite what the documentation states
+-   Fixed `ClipEvents` public iteration helper methods dropping events
+-   Fixed persistent `GraphicsBufferBroker` allocations not clamping to 1 GB
+    correctly
+-   Fixed handling of negative texture scaling when evaluating streaming mipmaps
+-   Fixed off-by-one in `MeshNormalizationBlob` safety checks
+-   Fixed `OptimizedSkeletonAspect` and `TickedOptimizedSkeletonAspect`
+    initialization
+-   Fixed `OptimizedSkeletonAspect` and `TickedOptimizedSkeletonAspect` methods
+    `CopyFromPrevious()` losing track of sockets
+-   Fixed `OptimizedSkeletonAspect` and `TickedOptimizedSkeletonAspect` methods
+    `ApplyWorldTransforms()` and `ApplyRootTransforms()` not updating state nor
+    propagating all transforms correctly
+-   Fixed various issues with optimized skeletons where local transforms weren’t
+    being set correctly
+-   Fixed an exception when a shader that uses both Legacy DOTS Deform and
+    Latios Deform nodes
+-   Fixed an incorrect calculation inside frustum culling for shadows which
+    could sometimes produce wrong results
+-   Fixed LOD Pack setting to disable shadows or motion vectors not actually
+    doing those things
+-   Fixed Mesh LOD inside an MMI range not crossfading correctly
+-   Fixed scene culling masks not culling the upper 64 entities within a chunk
+-   Fixed skinning on platforms that only support 512 threads in a thread group
+    (older Apple devices)
+-   Fixed skinning skeletons with very high numbers of bones
+-   Fixed skinning where bone weight targeted index 0 would cause the bone
+    buffer order to get scrambled
+-   Fixed compilation issue with LATIOS_DISABLE_ACL
+-   Fixed `GraphicsBufferUnmanaged` validation checks reading garbage data if no
+    real buffer exists yet
+-   Fixed `RootMotionDeltaAccumulator.SampleAccumulate()` ignoring the
+    `keyframeInterpolationMode`
+-   Fixed `RootMotionDeltaAccumulator` not handling playing clips in reverse
+    correctly
+-   Fixed `SkeletonClipSetSampleData.SampleBone()` not returning the correct
+    bone sample
+-   Fixed `SkinningAlgorithms.ApplyAllBlendShapes()` skipping some blend shapes
+-   Fixed `SkinningAlgorithms.SkinAllUniquePositions()` not handling duplicate
+    positions correctly
+-   Fixed `SkinningAlgorithms.NormalizeMesh()` doubly-weighting some tangent
+    influences
+-   Fixed mipmap streaming evaluation with
+    `PromiseAllEntitiesInChunkUseSameMaterialMeshInfoTag` and an orthographic
+    camera factoring in distance when it shouldn’t
+-   Fixed `UnityRig.SolveTwoBoneIK()` scaling bones in extreme circumstances
+-   Fixed baking of bone bounds when using vertex skinning
+-   Fixed an infinite loop when baking a skinned mesh that had a vertex with
+    zero weights
+-   Fixed ticked optimized skeletons not having history updated correctly
+-   Fixed invalid memory access when updating the bounds of a skinned mesh split
+    across multiple entities without a skeleton
+-   Fixed `WorldRenderBounds` not updating when only a `PostProcessMatrix` or
+    `ShaderEffectRadialBounds` component changes
+-   Fixed runtime exception for a project using light probes
+-   Fixed runtime `RenderBounds` updates for blend shapes
+-   Fixed `RenderBounds` being inflated for deforming meshes in specific edge
+    cases
+-   Fixed exposed skeleton bounds updates breaking if the main thread helps out
+-   Fixed memory leak when UniqueMesh entities are created and destroyed
+    frequently in a `World`
+-   Fixed `BoneReferenceIsDirtyFlag` causing an exception during rebinding when
+    nothing else happens in a frame
+-   Fixed a failed skinned mesh binding potentially corrupting the internal
+    binding tables when the entity is destroyed
+-   Fixed skeleton state not being cleaned up when only some of their public
+    components are removed from the entity
+-   Fixed optimized skeleton skinned mesh removal not shrinking bone bounds
+
 ## [0.16.2] – 2026-10-17
 
 Officially supports Entities [1.4.8]

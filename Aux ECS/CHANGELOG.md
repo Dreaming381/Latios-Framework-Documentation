@@ -6,6 +6,19 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic
 Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [0.16.4] – 2026-10-25
+
+Officially supports Entities [1.4.8]
+
+### Fixed
+
+-   Fixed memory corruption issue when an entity loses all components
+-   Fixed memory corruption issue when an `AuxQueryEnumerator<>` is iterating
+    and a new component type is added to an entity that has never been seen
+    before
+-   Fixed `AuxWorld.AllOf<T>` corrupting memory when the specified type has
+    never been added to an entity
+
 ## [0.16.2] – 2026-10-17
 
 Officially supports Entities [1.4.8]

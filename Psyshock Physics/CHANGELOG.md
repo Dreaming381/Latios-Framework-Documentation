@@ -6,6 +6,30 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic
 Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [0.16.4] – 2026-10-25
+
+Officially supports Entities [1.4.8]
+
+### Fixed
+
+-   Fixed several issues in `Physics.ColliderCast()` between two TriMesh
+    colliders
+-   Fixed triangle scaling issues in `Physics.DistanceBetween()` and
+    `Physics.DistanceBetweenAll()` between two TriMesh colliders
+
+### Improved
+
+-   Improved the performance, accuracy, and reliability of point and ray queries
+    against spheres and capsules, as well as all other spatial queries which
+    rely on these algorithms internally
+-   Improved the performance, accuracy, and reliability of queries involving two
+    spheres or a sphere and a capsule
+-   Improved the performance, accuracy, and reliability of
+    `Physics.ColliderCast()` between two capsules, plus all other spatial
+    queries which rely on this algorithm internally
+-   Improved the performance and to a lesser extent, accuracy of
+    `Physics.DistanceBetween()` between two capsules
+
 ## [0.16.3] – 2026-10-18
 
 Officially supports Entities [1.4.8]

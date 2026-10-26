@@ -94,6 +94,7 @@ following platforms:
 -   Windows
 -   Linux Desktop
 -   Mac OS
+-   iOS
 -   Android ARM (including Meta Quest headsets)
 
 Other platforms are possible, but will require compiling one or two required
@@ -106,7 +107,6 @@ These are the native plugins:
 -   AclUnity – Used for skeletal animation
     -   To disable, add LATIOS_DISABLE_ACL
 -   HarfBuzz – Used for Calligraphics
-    -   Additionally has out-of-the-box support for Android x86 and iOS
     -   To disable, add LATIOS_DISABLE_CALLIGRAPHICS
 
 If building for IL2CPP, you might need to set the code generation mode to

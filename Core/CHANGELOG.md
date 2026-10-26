@@ -6,6 +6,15 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic
 Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [0.16.4] – 2026-10-25
+
+Officially supports Entities [1.4.8]
+
+### Fixed
+
+-   Fixed `DestroyCommandBuffer` safety error regression when more than 512
+    elements are recorded
+
 ## [0.16.2] – 2026-10-17
 
 Officially supports Entities [1.4.8]

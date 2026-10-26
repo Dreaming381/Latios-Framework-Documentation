@@ -6,6 +6,21 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic
 Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [0.16.4] – 2026-10-25
+
+Officially supports Entities [1.4.8]
+
+### Fixed
+
+-   Fixed an issue where command pipe buffers would be processed out of order if
+    multiple command frames are processed in the same audio frame
+-   Fixed the master output brickwall limiter still having the same instant
+    relaxation regression
+-   Fixed an issue with audio routing when multiple listeners are present
+-   Fixed `AudioSourceChannelID`s muting audio due to a `NativeStream` write
+    ordering issue
+-   Fixed several out-of-bounds exceptions during audio sampling
+
 ## [0.16.2] – 2026-10-17
 
 Officially supports Entities [1.4.8]
