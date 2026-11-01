@@ -6,6 +6,24 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic
 Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [0.16.5] – 2026-11-1
+
+Officially supports Entities [1.4.8]
+
+### Fixed
+
+-   Fixed excessive allocation sizes for triangle indices within
+    `MeshDeformDataBlob`
+-   Fixed mipmap streaming for lightmapped entities baking the wrong materials
+-   Fixed baking exceptions after a warning when baking a null material
+-   Fixed baking of skinned meshes that are split into opaque and transparent
+    entities
+-   Fixed skeleton baking when a `BakingOnlyEntity` is a child of an Animator
+-   Fixed `OptimizedSkeletonStructureCache` caching a temporary transform rather
+    than the real one
+-   Fixed various dual quaternion skinning issues
+-   Fixed EWBIK when a target bone index is larger than a movable bone index
+
 ## [0.16.4] – 2026-10-25
 
 Officially supports Entities [1.4.8]

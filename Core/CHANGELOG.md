@@ -6,6 +6,16 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic
 Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [0.16.5] – 2026-11-1
+
+Officially supports Entities [1.4.8]
+
+### Fixed
+
+-   Fixed an exception during ticking structural changes due to updating a
+    handle before converting it to read-only mode rather than after
+-   Fixed a long first tick being treated as a resimulate tick
+
 ## [0.16.4] – 2026-10-25
 
 Officially supports Entities [1.4.8]

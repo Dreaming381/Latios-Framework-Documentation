@@ -6,6 +6,17 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic
 Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [0.16.5] – 2026-11-1
+
+Officially supports Entities [1.4.8]
+
+### Fixed
+
+-   Fixed an exception when instantiating an entity and assigning it a dead
+    parent
+-   Fixed GameObjectEntity not initializing or writing its ECS transform when
+    `enableTransformSyncing` is enabled and the GameObject is self-hosting
+
 ## [0.16.2] – 2026-10-17
 
 Officially supports Entities [1.4.8]

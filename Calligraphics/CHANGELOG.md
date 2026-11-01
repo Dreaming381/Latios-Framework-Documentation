@@ -6,6 +6,31 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic
 Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [0.16.5] – 2026-11-1
+
+Officially supports Entities [1.4.8]
+
+### Fixed
+
+-   Fixed exception when comparing a `CalliString` to a managed string
+-   Fixed `CalliString.TryResize()` not respecting the `NativeArrayOptions`
+-   Fixed `FontLoadDescription.Equals()` deadlocking the application
+-   Fixed glyphs being allocated with the wrong atlas table allocators, which
+    resulted in some atlases having empty space and in rarer circumstances,
+    glyphs could overwrite each other
+-   Fixed `TextBaseConfiguration.wordWrap` not actually doing anything
+-   Fixed memory stomp in `TextRendererUtility.BakeLanguage()`
+-   Fixed missing `using` in Android builds
+-   Fixed a cleared `CalliString` not actually clearing its glyphs
+-   Fixed a changed `CalliString` not releasing old glyphs in the ref counts
+-   Fixed memory leak when rasterizing bitmaps (such as emoji)
+-   Fixed stale `TextShaderIndex` values that could sometimes happen depending
+    on the material override index assigned to the `TextShaderIndex` type
+-   Fixed scalar hlsl function `getSdfPixelCoverage()` typo that broke dilation
+-   Fixed alpha blending causing `NaN` pixels
+-   Fixed exception when a `CalliString` solely contains “\<\>”
+-   Fixed cubic Bezier curves in a glyph being shifted or cropped
+
 ## [0.16.2] – 2026-10-17
 
 Officially supports Entities [1.4.8]
