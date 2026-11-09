@@ -6,6 +6,16 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic
 Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [0.16.6] – 2026-11-8
+
+Officially supports Entities [1.4.8]
+
+### Fixed
+
+-   Fixed ITD evaluations being biased to the right channel
+-   Fixed listener handling when the audio driver’s output sample buffer size
+    changes
+
 ## [0.16.4] – 2026-10-25
 
 Officially supports Entities [1.4.8]

@@ -6,6 +6,17 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic
 Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [0.16.6] – 2026-11-8
+
+Officially supports Entities [1.4.8]
+
+### Fixed
+
+-   Fixed writing a `LocalTransform` as a `TransformQvvs` or a `WorldTransform`
+    on a solo entity using a `ComponentBroker` and `TransformsKey`
+-   Fixed exception when obtaining a `TransformsKey` from a solo entity obtained
+    via some patterns
+
 ## [0.16.5] – 2026-11-1
 
 Officially supports Entities [1.4.8]

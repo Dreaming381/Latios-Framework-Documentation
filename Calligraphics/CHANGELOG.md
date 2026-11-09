@@ -6,6 +6,22 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic
 Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [0.16.6] – 2026-11-8
+
+Officially supports Entities [1.4.8]
+
+### Fixed
+
+-   Fixed `AnimatedRenderGlyph` UV B values being ignored
+-   Fixed `CalliString.ToString()` not actually returning the text string
+-   Fixed `CalliString.TryResize()` throwing an exception when the specified
+    size is smaller than the current size
+-   Fixed `CalliString.Equals(string)` not matching the behavior of Collections
+    fixed strings
+-   Fixed assignment of `TextBaseConfiguration.wordWrap` to always treat the
+    assigned `value` as `false`
+-   Fixed a remaining case where alpha blending could still cause `NaN` pixels
+
 ## [0.16.5] – 2026-11-1
 
 Officially supports Entities [1.4.8]

@@ -6,6 +6,26 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic
 Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [0.16.6] – 2026-11-8
+
+Officially supports Entities [1.4.8]
+
+### Fixed
+
+-   Fixed `CollisionWorld.Dispose(JobHandle)` not updating the `CollisionWorld`
+    as no longer being created
+-   Fixed `PairStream` enabled flags writing to the wrong bits
+-   Fixed failed baking when a stale destroyed Game Object reference is left
+    inside a `ColliderAuthoring` list
+
+### Improved
+
+-   Improved the performance, accuracy, and reliability of point and ray queries
+    against triangles, as well as all other spatial queries which rely on these
+    algorithms internally
+-   Improved the performance, accuracy, and reliability of queries involving a
+    sphere and a triangle, a capsule and a triangle, and a capsule and a box
+
 ## [0.16.5] – 2026-11-1
 
 Officially supports Entities [1.4.8]

@@ -6,6 +6,30 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic
 Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [0.16.6] – 2026-11-8
+
+Officially supports Entities [1.4.8]
+
+### Fixed
+
+-   Fixed unique meshes that forego any attributes causing exceptions
+-   Fixed handling of UniqueMeshUv3xyz when computing vertex count
+-   Fixed various issues with Mesh LOD crossfading
+-   Fixed skinning shader compilation regression
+-   Fixed regression where persistent buffers were being allocated too large
+-   Fixed regression with allocating too few triangles in `MeshDeformDataBlob`
+-   Fixed exception when baking a `MeshDeformDataBlob` for a mesh missing
+    normals or tangents
+-   Fixed sockets being lost when writing to an `OptimizedBone` without
+    performing any sampling first in a given frame
+-   Fixed constructing an `OptimizedSkeletonAspect` for a skeleton spawned after
+    binding in a frame
+-   Fixed `OptimizedSkeletonAspect` methods `ApplyWorldTransforms()` and
+    `ApplyRootTransforms()` discarding bone writes that were immediate children
+    of the root
+-   Fixed race condition is skinning shader in some cases involving dual
+    quaternion skinning
+
 ## [0.16.5] – 2026-11-1
 
 Officially supports Entities [1.4.8]
