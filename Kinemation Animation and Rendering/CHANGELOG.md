@@ -6,6 +6,26 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic
 Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [0.16.7] – 2026-11-21
+
+Officially supports Entities [1.4.8]
+
+### Added
+
+-   Added new deterministic APIs for sampling animation, which can be used in
+    cross-platform deterministic environments for gameplay purposes
+
+### Changed
+
+-   AclUnity has been updated with various improvements and fixes
+
+### Fixed
+
+-   Fixed baking exceptions when baking a `null` `AvatarMask` or an invalid
+    animation clip
+-   Fixed EWBIK including the root motion bone in the solver loop
+-   Fixed several skinning instruction bugs related to dual-quaternion skinning
+
 ## [0.16.6] – 2026-11-8
 
 Officially supports Entities [1.4.8]

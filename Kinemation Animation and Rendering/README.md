@@ -210,6 +210,11 @@ dumb things sometimes. Adreno GPUs have been susceptible to this.
     combined into a single draw call when structural changes occur, meaning you
     might encounter z-order flipping behavior if you spawn decals projected onto
     the same surface area using the same material and projection.
+-   Animation sampling using the deterministic APIs is only cross-platform
+    deterministic if using identical blob clip data, which is not generated in a
+    cross-platform deterministic way. Therefore, make a Windows build on a
+    Windows x86 device, and a Mac OS build on an ARM Mac will not produce
+    cross-platform deterministic animation between the separate builds.
 
 ## Potential Future Roadmap Items
 

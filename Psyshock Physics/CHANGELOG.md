@@ -6,6 +6,16 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic
 Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [0.16.7] – 2026-11-21
+
+Officially supports Entities [1.4.8]
+
+### Improved
+
+-   Improved the reliability of queries involving a capsule and a box
+-   Improved the performance, accuracy, and reliability of queries involving two
+    boxes
+
 ## [0.16.6] – 2026-11-8
 
 Officially supports Entities [1.4.8]

@@ -233,10 +233,13 @@ character controllers or magical forces.
     structures due to the prohibitive baking costs associated
 -   Compound Colliders do not support embedded Triangle, Convex, or TriMesh
     Colliders
+-   FloatMode.Fast is not officially supported by queries, and may cause
+    undesirable effects
 -   This Readme has too many words and not enough pictures.
 
 ## Potential Future Roadmap Items
 
+-   High-precision query guarantees
 -   More QuickTests
 -   More Character Controller Utilities
 -   Terrain Collider Baking
@@ -252,7 +255,6 @@ character controllers or magical forces.
 -   More Collider Shapes
     -   Quad, RoundedBox, Cone, Cylinder
     -   Marching Cubes, Convex Compound (V-HCAD)
--   Simplified Overlap Queries
 -   More Force Equations
 -   More Constraint Formulas and Solvers
 -   General Optimized Contact Generation

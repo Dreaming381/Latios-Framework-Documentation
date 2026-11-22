@@ -6,6 +6,15 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic
 Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [0.16.7] – 2026-11-21
+
+Officially supports Entities [1.4.8]
+
+### Added
+
+-   Added various new `simd` methods to work with `float3x3`, `AffineTransform`,
+    cross products with fundamental axes, and sign manipulation
+
 ## [0.16.2] – 2026-10-17
 
 Officially supports Entities [1.4.8]

@@ -6,6 +6,15 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic
 Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [0.16.7] – 2026-11-21
+
+Officially supports Entities [1.4.8]
+
+### Added
+
+-   Added mathematics extension `chgsign0Positive()` that only flips the sign
+    when a value is less than -0
+
 ## [0.16.5] – 2026-11-1
 
 Officially supports Entities [1.4.8]
